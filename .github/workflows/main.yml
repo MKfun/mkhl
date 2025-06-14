@@ -18,7 +18,7 @@ jobs:
   build:
     strategy:
       matrix:
-        runs-on: [windows-2019, ubuntu-20.04]
+        runs-on: [windows-2019, ubuntu-latest]
         target: [client, server]
     
     # The type of runner that the job will run on
@@ -38,7 +38,7 @@ jobs:
           python-version: 3.8
       
       - name: Install Ubuntu packages
-        if: matrix.runs-on == 'ubuntu-20.04'
+        if: matrix.runs-on == 'ubuntu-latest'
         run: |
           sudo dpkg --add-architecture i386
           sudo apt update || true
