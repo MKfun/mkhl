@@ -2795,10 +2795,9 @@ void PM_Jump(void)
 	{
 		// Adjust for super long jump module
 		// UNDONE -- note this should be based on forward angles, not current velocity.
-		if (cansuperjump && (pmove->cmd.buttons & IN_DUCK) && (pmove->flDuckTime > 0) && (pmove->velocity.Length() > 50))
+		if (cansuperjump && (pmove->cmd.buttons & IN_DUCK) && (pmove->flDuckTime > 0) && (pmove->velocity.Length() > 50) && (pmove->velocity.Length() < 500))
 		{
 			pmove->punchangle[0] = -5;
-
 			for (i = 0; i < 2; i++)
 			{
 				pmove->velocity[i] = pmove->forward[i] * PLAYER_LONGJUMP_SPEED * 1.6;
