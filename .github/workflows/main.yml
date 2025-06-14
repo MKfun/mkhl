@@ -59,34 +59,3 @@ jobs:
         with:
           name: ${{ steps.build.outputs.artifact_name }}
           path: ./_build_out/BugfixedHL-*.zip
-
-      - name: Bump version and push tag
-        id: tag_version
-        uses: anothrNick/github-tag-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set new tag output
-        id: set_tag
-        run: echo "new_tag=${{ steps.tag_version.outputs.new_tag }}" >> $GITHUB_ENV
-
-      - name: Create Release Zip
-        id: create_release
-        uses: actions/create-release@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.new_tag }}
-          release_name: Release ${{ env.new_tag }}
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Zip
-        uses: actions/upload-release-asset@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./_build_out/BugfixedHL-*.zip
-          asset_name: BugfixedHL-*.zip
-          asset_content_type: application/zip
