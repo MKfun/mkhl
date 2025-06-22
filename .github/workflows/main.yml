@@ -18,7 +18,7 @@ jobs:
   build:
     strategy:
       matrix:
-        runs-on: [windows-2019, ubuntu-20.04]
+        runs-on: [windows-2019, ubuntu-latest]
         target: [client, server]
     
     # The type of runner that the job will run on
@@ -38,11 +38,11 @@ jobs:
           python-version: 3.8
       
       - name: Install Ubuntu packages
-        if: matrix.runs-on == 'ubuntu-20.04'
+        if: matrix.runs-on == 'ubuntu-latest'
         run: |
           sudo dpkg --add-architecture i386
           sudo apt update || true
-          sudo apt install -y libc6:i386 ninja-build gcc-9-multilib g++-9-multilib libssl1.1:i386 libssl-dev:i386 zlib1g-dev:i386
+          sudo apt install -y libc6:i386 ninja-build gcc-9-multilib g++-9-multilib libssl-dev:i386 zlib1g-dev:i386
 
       - name: Build release
         id: build
