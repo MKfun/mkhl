@@ -15,6 +15,7 @@
 //
 // teamplay_gamerules.cpp
 //
+#include "cdll_dll.h"
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -730,6 +731,65 @@ void CHalfLifeMultiplay ::PlayerKilled(CBasePlayer *pVictim, entvars_t *pKiller,
 //=========================================================
 // Deathnotice.
 //=========================================================
+#ifdef KILLFEED
+void CHalfLifeMultiplay::SendDeathMessage(CBaseEntity *pKiller, CBasePlayer *pVictim, CBasePlayer *pAssister, entvars_t *pevInflictor, const char *killerWeaponName, int iDeathMessageFlags, int iRarityOfKill)
+{
+	#ifdef REGAMEDLL_ADD
+	iDeathMessageFlags &= (int)deathmsg_flags.value; // leave only allowed bitsums for extra info
+	#endif
+
+	CBasePlayer *pKillerPlayer = (pKiller && pKiller->IsPlayer()) ? static_cast<CBasePlayer *>(pKiller) : nullptr;
+
+	for (int i = 1; i <= gpGlobals->maxClients; i++)
+	{
+		CBasePlayer *pPlayer = UTIL_PlayerByIndex(i);
+		if (!pPlayer || FNullEnt(pPlayer->edict()))
+			continue;
+
+
+		int iSendDeathMessageFlags = iDeathMessageFlags;
+
+		// An recipient a client is a victim that involved in this kill
+		if (pPlayer == pVictim && pVictim != pKillerPlayer)
+		{
+			// Sets a domination kill for recipient of the victim once until revenge
+			int iKillsUnanswered = pVictim->m_iNumKilledByUnanswered[pKillerPlayer->entindex() - 1];
+			if (iKillsUnanswered >= CS_KILLS_FOR_DOMINATION)
+				iRarityOfKill &= ~KILLRARITY_DOMINATION;
+		}
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgDeathMsg, nullptr, pPlayer->pev);
+		WRITE_BYTE((pKiller && pKiller->IsPlayer()) ? pKiller->entindex() : 0);	// the killer
+		WRITE_BYTE(pVictim->entindex());					// the victim
+		WRITE_BYTE(pVictim->m_bHeadshotKilled);				// is killed headshot
+		WRITE_STRING(killerWeaponName);						// what they were killed by (should this be a string?)
+
+		if (iSendDeathMessageFlags > 0)
+		{
+			WRITE_LONG(iSendDeathMessageFlags);
+
+			// Writes the coordinates of the place where the victim died
+			// The victim has just been killed, so this usefully display 'X' dead icon on the HUD radar
+			if (iSendDeathMessageFlags & PLAYERDEATH_POSITION)
+			{
+				WRITE_COORD(pVictim->pev->origin.x);
+				WRITE_COORD(pVictim->pev->origin.y);
+				WRITE_COORD(pVictim->pev->origin.z);
+			}
+
+			// Writes the index of the teammate who assisted in the kill
+			if (iSendDeathMessageFlags & PLAYERDEATH_ASSISTANT)
+				WRITE_BYTE(pAssister->entindex());
+
+			// Writes the rarity classification of the kill
+			if (iSendDeathMessageFlags & PLAYERDEATH_KILLRARITY)
+				WRITE_LONG(iRarityOfKill);
+		}
+
+		MESSAGE_END();
+	}
+}
+#endif
 void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor)
 {
 	// Work out what killed the player, and send a message to all clients about it
@@ -784,6 +844,7 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, e
 	WRITE_BYTE(killer_index); // the killer
 	WRITE_BYTE(ENTINDEX(pVictim->edict())); // the victim
 	WRITE_STRING(killer_weapon_name); // what they were killed by (should this be a string?)
+	WRITE_BYTE(pVictim->m_bHeadshotKilled);
 	MESSAGE_END();
 
 	// replace the code names with the 'real' names
@@ -1155,7 +1216,34 @@ edict_t *CHalfLifeMultiplay::GetPlayerSpawnSpot(CBasePlayer *pPlayer)
 
 	return pentSpawnSpot;
 }
+#ifdef KILLFEED
+int CHalfLifeMultiplay::GetRarityOfKill(CBaseEntity *pKiller, CBasePlayer *pVictim, const char *killerWeaponName)
+{
+	int iRarity = 0;
+	if (pKiller && pKiller->IsPlayer()) {
+		CBasePlayer *pKillerPlayer = static_cast<CBasePlayer *>(pKiller);
+		int iAttackerEntityIndex = pKillerPlayer->entindex();
+		assert(iAttackerEntityIndex >= 0 && iAttackerEntityIndex < MAX_PLAYERS);
+		int iKillsUnanswered = pVictim->m_iNumKilledByUnanswered[iAttackerEntityIndex - 1] + 1;
+		if (iKillsUnanswered == CS_KILLS_FOR_DOMINATION || pKillerPlayer->IsPlayerDominated(pVictim->entindex() - 1))
+		{
+			// this is the Nth unanswered kill between killer and victim, killer is now dominating victim
+			iRarity |= KILLRARITY_DOMINATION;
+			// set victim to be dominated by killer
+			pKillerPlayer->SetPlayerDominated(pVictim, true);
+		}
+		else if (pVictim->IsPlayerDominated(pKillerPlayer->entindex() - 1))
+		{
+			// the killer killed someone who was dominating him, gains revenge
+			iRarity |= KILLRARITY_REVENGE;
 
+			// set victim to no longer be dominating the killer
+			pVictim->SetPlayerDominated(pKillerPlayer, false);
+		}
+	}
+	return iRarity;
+}
+#endif
 //=========================================================
 //=========================================================
 int CHalfLifeMultiplay::PlayerRelationship(CBaseEntity *pPlayer, CBaseEntity *pTarget)

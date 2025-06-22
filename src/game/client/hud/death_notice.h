@@ -14,6 +14,7 @@ public:
 
 private:
 	int m_HUD_d_skull; // sprite index of skull icon
+	int m_HUD_d_headshot;
 };
 
 #endif

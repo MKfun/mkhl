@@ -56,6 +56,20 @@ enum
 	GR_NEUTRAL,
 };
 
+const int CS_KILLS_FOR_DOMINATION = 4;
+
+enum KillRarity
+{
+	KILLRARITY_HEADSHOT      = 0x001, // The killer player kills the victim with a headshot
+	KILLRARITY_KILLER_BLIND  = 0x002, // The killer player was blind
+	KILLRARITY_NOSCOPE       = 0x004, // The killer player kills the victim with a sniper rifle with no scope
+	KILLRARITY_PENETRATED    = 0x008, // The killer player kills the victim through walls
+	KILLRARITY_THROUGH_SMOKE = 0x010, // The killer player kills the victim through smoke
+	KILLRARITY_ASSIST_FLASH  = 0x020, // The killer player kills the victim with an assistant flashbang grenade
+	KILLRARITY_DOMINATION    = 0x040, // The killer player dominates the victim
+	KILLRARITY_REVENGE       = 0x080  // The killer player got revenge on the victim
+};
+
 class CGameRules
 {
 public:
@@ -349,6 +363,7 @@ public:
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame(void) { GoToIntermission(); }
 
+	int GetRarityOfKill(CBaseEntity *pKiller, CBasePlayer *pVictim, const char *killerWeaponName);
 protected:
 	virtual void ChangeLevel(void);
 	virtual void GoToIntermission(void);

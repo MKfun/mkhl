@@ -15,6 +15,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "cdll_dll.h"
 #include "pm_materials.h"
 #include "pm_shared.h"
 
@@ -358,6 +359,13 @@ public:
 	 * Should be called any time kills/deaths are updated.
 	 */
 	void SendScoreInfo();
+	bool m_bHeadshotKilled;
+#ifdef KILLFEED
+	bool IsPlayerDominated(int iPlayerIndex) const;
+	void SetPlayerDominated(CBasePlayer *pPlayer, bool bDominated);
+#endif
+	int m_iNumKilledByUnanswered[MAX_PLAYERS]; // [0-31] how many unanswered kills this player has been dealt by each other player
+	bool m_bPlayerDominated[MAX_PLAYERS]; // [0-31] array of state per other player whether player is dominating other playersAdd commentMore actions
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

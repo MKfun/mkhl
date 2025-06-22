@@ -15,7 +15,7 @@ public:
 	void InitHudData() override;
 	void Think() override;
 
-	void AddItem(int killerId, int victimId, const char *killedwith);
+	void AddItem(int killerId, int victimId, const char *killedwith, bool isHeadshot);
 
 	void ApplySettings(KeyValues *inResourceData) override;
 	void PaintBackground() override;
@@ -45,9 +45,11 @@ private:
 		bool bIsTeamKill = false;
 		int nSpriteIdx = 0;
 		int iSpriteWide = 0;
+		int iHeadShotId;
 	};
 
 	int m_HUD_d_skull = 0; // sprite index of skull icon
+	int m_HUD_d_headshot = 0;
 	int m_nActiveList = 0;
 	std::vector<Entry> m_EntryList[2];
 	int m_iEntryCount = 0;

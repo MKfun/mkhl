@@ -20,6 +20,7 @@
 
 */
 
+#include "cdll_dll.h"
 #include "extdll.h"
 #include "util.h"
 
@@ -453,6 +454,7 @@ void CBasePlayer ::TraceAttack(entvars_t *pevAttacker, float flDamage, Vector ve
 			break;
 		case HITGROUP_HEAD:
 			flDamage *= gSkillData.plrHead;
+			m_bHeadshotKilled = true;
 			break;
 		case HITGROUP_CHEST:
 			flDamage *= gSkillData.plrChest;
@@ -978,7 +980,8 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 	// Holster weapon immediately, to allow it to cleanup
 	if (m_pActiveItem)
 		m_pActiveItem->Holster();
-
+	if (m_LastHitGroup == HITGROUP_HEAD)
+		m_bHeadshotKilled = true;
 	g_pGameRules->PlayerKilled(this, pevAttacker, g_pevLastInflictor);
 
 	if (m_pTank != NULL)
@@ -3397,7 +3400,7 @@ void CBasePlayer::Spawn(void)
 	m_bitsDamageType = 0;
 	m_afPhysicsFlags = 0;
 	m_fLongJump = FALSE; // no longjump module.
-
+	m_bHeadshotKilled = false;
 	g_engfuncs.pfnSetPhysicsKeyValue(edict(), "slj", "0");
 	g_engfuncs.pfnSetPhysicsKeyValue(edict(), "hl", "1");
 
@@ -4866,6 +4869,24 @@ void CBasePlayer ::SetPrefsFromUserinfo(char *infobuffer)
 	}
 }
 
+// Returns whether this player is dominating the specified other playerAdd commentMore actions
+#ifdef KILLFEED
+inline bool CBasePlayer::IsPlayerDominated(int iPlayerIndex) const
+{
+	if (iPlayerIndex < 0 || iPlayerIndex >= MAX_PLAYERS)
+		return false;
+
+	return m_bPlayerDominated[iPlayerIndex];
+}
+
+// Sets whether this player is dominating the specified other player
+inline void CBasePlayer::SetPlayerDominated(CBasePlayer *pPlayer, bool bDominated)
+{
+	int iPlayerIndex = pPlayer->entindex();
+	assert(iPlayerIndex >= 0 && iPlayerIndex < MAX_PLAYERS);
+	m_bPlayerDominated[iPlayerIndex - 1] = bDominated;
+}
+#endif
 //=========================================================
 // FBecomeProne - Overridden for the player to set the proper
 // physics flags when a barnacle grabs player.
