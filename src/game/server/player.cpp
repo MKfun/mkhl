@@ -22,6 +22,7 @@
 
 #include "cdll_dll.h"
 #include "extdll.h"
+#include "progdefs.h"
 #include "util.h"
 
 #include "cbase.h"
@@ -972,7 +973,6 @@ void CBasePlayer::RemoveAllItems(BOOL removeSuit)
  */
 entvars_t *g_pevLastInflictor; // Set in combat.cpp.  Used to pass the damage inflictor for death messages.
     // Better solution:  Add as parameter to all Killed() functions.
-
 void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 {
 	CSound *pSound;
@@ -980,6 +980,18 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 	// Holster weapon immediately, to allow it to cleanup
 	if (m_pActiveItem)
 		m_pActiveItem->Holster();
+	if (strcmp(m_pActiveItem->pszName(), "weapon_handgrenade") == 0)
+	{
+		Vector vecSrc = pev->origin + pev->view_ofs + gpGlobals->v_forward * 16;
+
+		Vector vecThrow = gpGlobals->v_forward * 0 + pev->velocity;
+		CGrenade *grenade;
+		CBasePlayerWeapon *pWeapon;
+		pWeapon = (CBasePlayerWeapon *)m_pActiveItem;
+		m_rgAmmo[pWeapon->m_iPrimaryAmmoType]--;
+		CGrenade::ShootTimed(pev, vecSrc, vecThrow, 0);
+	}
+
 	if (m_LastHitGroup == HITGROUP_HEAD)
 		m_bHeadshotKilled = true;
 	g_pGameRules->PlayerKilled(this, pevAttacker, g_pevLastInflictor);
