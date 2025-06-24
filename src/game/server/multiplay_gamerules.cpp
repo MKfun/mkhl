@@ -856,7 +856,6 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, e
 		// Writes the rarity classification of the kill
 		if (iSendDeathMessageFlags & PLAYERDEATH_KILLRARITY) {
 			WRITE_LONG(iRarityOfKill);
-			printf(reinterpret_cast<const char*>(&iRarityOfKill));
 	}
 	MESSAGE_END();
 
