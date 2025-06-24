@@ -6,6 +6,7 @@
 #include "hud/death_notice_panel.h"
 #include "vgui/client_viewport.h"
 #include "hud_renderer.h"
+#include "vgui/client_viewport.h"
 
 extern ConVar hud_deathnotice_time;
 ConVar hud_deathnotice_time_self("hud_deathnotice_time_self", "12", FCVAR_BHL_ARCHIVE, "How long should your death notices stay up for");

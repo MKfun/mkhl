@@ -15,7 +15,9 @@
 //
 // teamplay_gamerules.cpp
 //
+
 #include "cdll_dll.h"
+#include "enginecallback.h"
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -672,7 +674,8 @@ int CHalfLifeMultiplay ::IPointsForKill(CBasePlayer *pAttacker, CBasePlayer *pKi
 //=========================================================
 void CHalfLifeMultiplay ::PlayerKilled(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor)
 {
-	CBasePlayer *peKiller = nullptr;
+
+	CBasePlayer *peKiller = (pKiller->flags & FL_CLIENT) ? (CBasePlayer *)CBasePlayer::Instance(pKiller) : nullptr;
 	CBaseEntity *ktmp = CBaseEntity::Instance(pKiller);
 	if (ktmp && ktmp->Classify() == CLASS_PLAYER)
 	{
@@ -689,7 +692,7 @@ void CHalfLifeMultiplay ::PlayerKilled(CBasePlayer *pVictim, entvars_t *pKiller,
 		}
 	}
 
-	DeathNotice(pVictim, pKiller, pInflictor);
+	DeathNotice(pVictim, pKiller, pInflictor, 0, /*GetRarityOfKill(peKiller, pVictim)*/ 1);
 
 	pVictim->m_iDeaths += 1;
 
@@ -742,7 +745,7 @@ void CHalfLifeMultiplay::SendDeathMessage(CBaseEntity *pKiller, CBasePlayer *pVi
 
 	for (int i = 1; i <= gpGlobals->maxClients; i++)
 	{
-		CBasePlayer *pPlayer = UTIL_PlayerByIndex(i);
+		CBasePlayer *pPlayer = (CBasePlayer *)UTIL_PlayerByIndex(i);
 		if (!pPlayer || FNullEnt(pPlayer->edict()))
 			continue;
 
@@ -761,25 +764,15 @@ void CHalfLifeMultiplay::SendDeathMessage(CBaseEntity *pKiller, CBasePlayer *pVi
 		MESSAGE_BEGIN(MSG_ONE, gmsgDeathMsg, nullptr, pPlayer->pev);
 		WRITE_BYTE((pKiller && pKiller->IsPlayer()) ? pKiller->entindex() : 0);	// the killer
 		WRITE_BYTE(pVictim->entindex());					// the victim
-		WRITE_BYTE(pVictim->m_bHeadshotKilled);				// is killed headshot
 		WRITE_STRING(killerWeaponName);						// what they were killed by (should this be a string?)
-
+		WRITE_BYTE(pVictim->m_bHeadshotKilled);				// is killed headshot
 		if (iSendDeathMessageFlags > 0)
 		{
 			WRITE_LONG(iSendDeathMessageFlags);
 
-			// Writes the coordinates of the place where the victim died
-			// The victim has just been killed, so this usefully display 'X' dead icon on the HUD radar
-			if (iSendDeathMessageFlags & PLAYERDEATH_POSITION)
-			{
-				WRITE_COORD(pVictim->pev->origin.x);
-				WRITE_COORD(pVictim->pev->origin.y);
-				WRITE_COORD(pVictim->pev->origin.z);
-			}
-
 			// Writes the index of the teammate who assisted in the kill
-			if (iSendDeathMessageFlags & PLAYERDEATH_ASSISTANT)
-				WRITE_BYTE(pAssister->entindex());
+			// if (iSendDeathMessageFlags & PLAYERDEATH_ASSISTANT)
+				// WRITE_BYTE(pAssister->entindex());
 
 			// Writes the rarity classification of the kill
 			if (iSendDeathMessageFlags & PLAYERDEATH_KILLRARITY)
@@ -790,18 +783,21 @@ void CHalfLifeMultiplay::SendDeathMessage(CBaseEntity *pKiller, CBasePlayer *pVi
 	}
 }
 #endif
-void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor)
+void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor, int iDeathMessageFlags, int iRarityOfKill)
 {
 	// Work out what killed the player, and send a message to all clients about it
 	CBaseEntity *Killer = CBaseEntity::Instance(pKiller);
 
 	const char *killer_weapon_name = "world"; // by default, the player is killed by the world
 	int killer_index = 0;
-
+	CPython *pyth;
+	CCrossbow *cross;
 	// Hack to fix name change
 	char *tau = "tau_cannon";
 	char *gluon = "gluon gun";
-
+	for (int i = 1; i <= gpGlobals->maxClients; i++)
+	{
+		CBasePlayer *pPlayer = (CBasePlayer *)UTIL_PlayerByIndex(i);
 	if (pKiller->flags & FL_CLIENT)
 	{
 		killer_index = ENTINDEX(ENT(pKiller));
@@ -831,7 +827,7 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, e
 			killer_weapon_name = STRING(pevInflictor->classname);
 		}
 	}
-
+	int iSendDeathMessageFlags = iDeathMessageFlags;
 	// strip the monster_* or weapon_* from the inflictor's classname
 	if (strncmp(killer_weapon_name, "weapon_", 7) == 0)
 		killer_weapon_name += 7;
@@ -840,11 +836,28 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, e
 	else if (strncmp(killer_weapon_name, "func_", 5) == 0)
 		killer_weapon_name += 5;
 
+	// An recipient a client is a victim that involved in this kill
+	if (pPlayer == pVictim && pVictim != Killer)
+	{
+		// Sets a domination kill for recipient of the victim once until revenge
+		int iKillsUnanswered = pVictim->m_iNumKilledByUnanswered[Killer->entindex() - 1];
+		if (iKillsUnanswered >= CS_KILLS_FOR_DOMINATION)
+			iRarityOfKill &= ~KILLRARITY_DOMINATION;
+	int iSendDeathMessageFlags = iDeathMessageFlags;
 	MESSAGE_BEGIN(MSG_ALL, gmsgDeathMsg);
 	WRITE_BYTE(killer_index); // the killer
 	WRITE_BYTE(ENTINDEX(pVictim->edict())); // the victim
 	WRITE_STRING(killer_weapon_name); // what they were killed by (should this be a string?)
-	WRITE_BYTE(pVictim->m_bHeadshotKilled);
+	WRITE_BYTE(pVictim->m_bHeadshotKilled); //Headshot
+	WRITE_BYTE( pyth->m_fInZoom || cross->m_fInZoom ); // Noscope
+	if (iSendDeathMessageFlags > 0)
+	{
+		WRITE_LONG(iSendDeathMessageFlags);
+		// Writes the rarity classification of the kill
+		if (iSendDeathMessageFlags & PLAYERDEATH_KILLRARITY) {
+			WRITE_LONG(iRarityOfKill);
+			printf(reinterpret_cast<const char*>(&iRarityOfKill));
+	}
 	MESSAGE_END();
 
 	// replace the code names with the 'real' names
@@ -941,6 +954,7 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, e
 	else
 		WRITE_SHORT(ENTINDEX(ENT(pKiller))); // index number of secondary entity
 	WRITE_LONG(7 | DRC_FLAG_DRAMATIC); // eventflags (priority and flags)
+	}
 	MESSAGE_END();
 
 	//  Print a standard message
@@ -991,6 +1005,9 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, e
 
 	UTIL_ClientPrintAll( szText );
 */
+
+	}
+}
 }
 
 //=========================================================
@@ -1217,7 +1234,7 @@ edict_t *CHalfLifeMultiplay::GetPlayerSpawnSpot(CBasePlayer *pPlayer)
 	return pentSpawnSpot;
 }
 #ifdef KILLFEED
-int CHalfLifeMultiplay::GetRarityOfKill(CBaseEntity *pKiller, CBasePlayer *pVictim, const char *killerWeaponName)
+int CHalfLifeMultiplay::GetRarityOfKill(CBaseEntity *pKiller, CBasePlayer *pVictim)
 {
 	int iRarity = 0;
 	if (pKiller && pKiller->IsPlayer()) {
@@ -2072,7 +2089,7 @@ void CMultiplayBusters::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, en
 	if (!IsPlayerBusting(pVictim) && !IsPlayerBusting(CBaseEntity::Instance(pKiller)))
 		return;
 
-	CHalfLifeMultiplay::DeathNotice(pVictim, pKiller, pevInflictor);
+	CHalfLifeMultiplay::DeathNotice(pVictim, pKiller, pevInflictor, 0, 0);
 }
 
 //=========================================================

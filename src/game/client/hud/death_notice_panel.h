@@ -3,6 +3,7 @@
 #include <vector>
 #include <vgui_controls/Panel.h>
 #include "hud/base.h"
+#include "vgui_controls/Label.h"
 
 class CHudDeathNoticePanel : public CHudElemBase<CHudDeathNoticePanel>, public vgui2::Panel
 {
@@ -75,7 +76,7 @@ private:
 	CPanelAnimationVar(Color, m_ColorNameDeath, "default_name_color_death", "Orange");
 
 	int m_iRowTall = 0;
-
+	vgui2::Label *m_pNoscopeIcon = nullptr;
 	int GetEntryContentWide(const Entry &e);
 	int GetColoredTextWide(const wchar_t *str, int len);
 	int DrawColoredText(int x, int y, const wchar_t *str, int len, Color c);

@@ -246,7 +246,7 @@ void CHalfLifeRules ::PlayerKilled(CBasePlayer *pVictim, entvars_t *pKiller, ent
 //=========================================================
 // Deathnotice
 //=========================================================
-void CHalfLifeRules::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor)
+void CHalfLifeRules::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor, int iDeathMessageFlags, int iRarityOfKill)
 {
 }
 

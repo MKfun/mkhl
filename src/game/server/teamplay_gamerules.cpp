@@ -327,7 +327,7 @@ extern int gmsgDeathMsg;
 //=========================================================
 // Deathnotice.
 //=========================================================
-void CHalfLifeTeamplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor)
+void CHalfLifeTeamplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor, int iDeathMessageFlags, int iRarityOfKill)
 {
 	if (m_DisableDeathMessages)
 		return;
@@ -350,7 +350,7 @@ void CHalfLifeTeamplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, en
 		}
 	}
 
-	CHalfLifeMultiplay::DeathNotice(pVictim, pKiller, pevInflictor);
+	CHalfLifeMultiplay::DeathNotice(pVictim, pKiller, pevInflictor, 0, 0);
 }
 
 //=========================================================

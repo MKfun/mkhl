@@ -19,4 +19,9 @@ add_sources(
 	tga_image.cpp
 	tga_image.h
 	viewport_panel_names.h
+	hud_health.cpp
+	hud_ammo.cpp
+	hud_battery.cpp
+	hud_ammo_secondary.cpp
+
 )

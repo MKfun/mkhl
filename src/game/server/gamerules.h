@@ -15,7 +15,7 @@
 //=========================================================
 // GameRules
 //=========================================================
-
+// #define KILLFEED
 //#include "weapons.h"
 //#include "items.h"
 class CBasePlayerItem;
@@ -57,6 +57,23 @@ enum
 };
 
 const int CS_KILLS_FOR_DOMINATION = 4;
+
+// Flags for specifying extra info about player death
+enum DeathMessageFlags
+{
+	// float[3]
+	// Position where the victim was killed by the enemy
+	PLAYERDEATH_POSITION          = 0x001,
+
+	// byte
+	// Index of the assistant who helped the attacker kill the victim
+	PLAYERDEATH_ASSISTANT         = 0x002,
+
+	// short
+	// Bitsum classification for the rarity of the kill
+	// See enum KillRarity for details
+	PLAYERDEATH_KILLRARITY        = 0x004
+};
 
 enum KillRarity
 {
@@ -113,7 +130,7 @@ public:
 	// Client kills/scoring
 	virtual int IPointsForKill(CBasePlayer *pAttacker, CBasePlayer *pKilled) = 0; // how many points do I award whoever kills this player?
 	virtual void PlayerKilled(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor) = 0; // Called each time a player dies
-	virtual void DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor) = 0; // Call this from within a GameRules class to report an obituary.
+	virtual void DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor, int iDeathMessageFlags, int iRarityOfKill) = 0; // Call this from within a GameRules class to report an obituary.
 	// Weapon retrieval
 	virtual BOOL CanHavePlayerItem(CBasePlayer *pPlayer, CBasePlayerItem *pWeapon); // The player is touching an CBasePlayerItem, do I give it to him?
 	virtual void PlayerGotWeapon(CBasePlayer *pPlayer, CBasePlayerItem *pWeapon) = 0; // Called each time a player picks up a weapon from the ground
@@ -216,7 +233,7 @@ public:
 	// Client kills/scoring
 	virtual int IPointsForKill(CBasePlayer *pAttacker, CBasePlayer *pKilled);
 	virtual void PlayerKilled(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor);
-	virtual void DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor);
+	virtual void DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor, int iDeathMessageFlags, int iRarityOfKill);
 
 	// Weapon retrieval
 	virtual void PlayerGotWeapon(CBasePlayer *pPlayer, CBasePlayerItem *pWeapon);
@@ -311,7 +328,7 @@ public:
 	// Client kills/scoring
 	virtual int IPointsForKill(CBasePlayer *pAttacker, CBasePlayer *pKilled);
 	virtual void PlayerKilled(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor);
-	virtual void DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor);
+	virtual void DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor, int iDeathMessageFlags, int iRarityOfKill);
 
 	// Weapon retrieval
 	virtual void PlayerGotWeapon(CBasePlayer *pPlayer, CBasePlayerItem *pWeapon);
@@ -362,8 +379,8 @@ public:
 
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame(void) { GoToIntermission(); }
-
-	int GetRarityOfKill(CBaseEntity *pKiller, CBasePlayer *pVictim, const char *killerWeaponName);
+	// void SendDeathMessage(CBaseEntity *pKiller, CBasePlayer *pVictim, CBasePlayer *pAssister, entvars_t *pevInflictor, const char *killerWeaponName, int iDeathMessageFlags, int iRarityOfKill);
+	// int GetRarityOfKill(CBaseEntity *pKiller, CBasePlayer *pVictim);
 protected:
 	virtual void ChangeLevel(void);
 	virtual void GoToIntermission(void);

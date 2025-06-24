@@ -70,12 +70,12 @@
 		"command" "OpenCreateMultiplayerGameDialog"
 		"notsingle" "1"
 	}
-//	"12"
-//	{
-//		"name" "LoadDemo"
-//		"label" "#GameUI_GameMenu_PlayDemo"
-//		"command" "OpenLoadDemoDialog"
-//	}
+	"12"
+	{
+		"name" "LoadDemo"
+		"label" "#GameUI_GameMenu_PlayDemo"
+		"command" "OpenLoadDemoDialog"
+	}
 	"13"
 	{
 		"label" ""
