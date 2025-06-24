@@ -47,7 +47,7 @@ jobs:
       - name: Build release
         id: build
         run: |
-          python ./scripts/BuildRelease.py --target ${{ matrix.target }} --build-type release --vs 2022 --toolset v141_xp --linux-compiler gcc-9 --out-dir ./_build_out --cmake-args="-DWARNINGS_ARE_ERRORS=ON" --github-actions
+          python ./scripts/BuildRelease.py --target ${{ matrix.target }} --build-type release --vs 2022 --toolset v143 --linux-compiler gcc-9 --out-dir ./_build_out --cmake-args="-DWARNINGS_ARE_ERRORS=ON" --github-actions
 
       - name: Run tests
         run: |
