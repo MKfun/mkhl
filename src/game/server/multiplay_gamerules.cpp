@@ -790,8 +790,8 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, e
 
 	const char *killer_weapon_name = "world"; // by default, the player is killed by the world
 	int killer_index = 0;
-	CPython *pyth;
-	CCrossbow *cross;
+	// CPython *pyth;
+	// CCrossbow *cross;
 	// Hack to fix name change
 	char *tau = "tau_cannon";
 	char *gluon = "gluon gun";
@@ -849,7 +849,7 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, e
 	WRITE_BYTE(ENTINDEX(pVictim->edict())); // the victim
 	WRITE_STRING(killer_weapon_name); // what they were killed by (should this be a string?)
 	WRITE_BYTE(pVictim->m_bHeadshotKilled); //Headshot
-	WRITE_BYTE( pyth->m_fInZoom || cross->m_fInZoom ); // Noscope
+	// WRITE_BYTE( pyth->m_fInZoom || cross->m_fInZoom ); // Noscope
 	if (iSendDeathMessageFlags > 0)
 	{
 		WRITE_LONG(iSendDeathMessageFlags);
