@@ -787,11 +787,10 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, e
 {
 	// Work out what killed the player, and send a message to all clients about it
 	CBaseEntity *Killer = CBaseEntity::Instance(pKiller);
-
+	CBasePlayer *plKiller = (CBasePlayer *)CBasePlayer::Instance(pKiller);
 	const char *killer_weapon_name = "world"; // by default, the player is killed by the world
 	int killer_index = 0;
-	// CPython *pyth;
-	// CCrossbow *cross;
+
 	// Hack to fix name change
 	char *tau = "tau_cannon";
 	char *gluon = "gluon gun";
@@ -849,7 +848,13 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, e
 	WRITE_BYTE(ENTINDEX(pVictim->edict())); // the victim
 	WRITE_STRING(killer_weapon_name); // what they were killed by (should this be a string?)
 	WRITE_BYTE(pVictim->m_bHeadshotKilled); //Headshot
-	// WRITE_BYTE( pyth->m_fInZoom || cross->m_fInZoom ); // Noscope
+	if (strcmp(plKiller->m_pActiveItem->pszName(), "weapon_357") == 0 || strcmp(plKiller->m_pActiveItem->pszName(), "weapon_python") == 0 || strcmp(plKiller->m_pActiveItem->pszName(), "weapon_crossbow") == 0) {
+		CPython *pyth = (CPython *)plKiller->m_pActiveItem;
+		CCrossbow *cross = (CCrossbow *)plKiller->m_pActiveItem;
+		WRITE_BYTE( pyth->m_fInZoom == 0 || cross->m_fInZoom == 0); // Noscope
+	}
+	else
+		WRITE_BYTE(false);
 	if (iSendDeathMessageFlags > 0)
 	{
 		WRITE_LONG(iSendDeathMessageFlags);

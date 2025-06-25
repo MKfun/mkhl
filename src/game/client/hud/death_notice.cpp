@@ -40,6 +40,7 @@ struct DeathNoticeItem
 	bool bKillerHasColor;
 	bool bVictimHasColor;
 	int iHeadShotId;
+	int iNoScopeId;
 };
 
 extern ConVar hud_deathnotice_vgui;
@@ -75,6 +76,7 @@ void CHudDeathNotice::VidInit()
 {
 	m_HUD_d_skull = gHUD.GetSpriteIndex("d_skull");
 	m_HUD_d_headshot = gHUD.GetSpriteIndex("d_skull");
+	m_HUD_d_noscope = gHUD.GetSpriteIndex("bucket1");
 }
 
 void CHudDeathNotice::Draw(float flTime)
@@ -117,6 +119,8 @@ void CHudDeathNotice::Draw(float flTime)
 
 			if( rgDeathNoticeList[i].iHeadShotId )
 				x -= gHUD.GetSpriteRect(m_HUD_d_headshot).GetWidth();
+			if( rgDeathNoticeList[i].iNoScopeId )
+				x -= gHUD.GetSpriteRect(m_HUD_d_noscope).GetWidth();
 
 			if (!rgDeathNoticeList[i].iSuicide)
 			{
@@ -126,7 +130,11 @@ void CHudDeathNotice::Draw(float flTime)
 				float *color = (rgDeathNoticeList[i].bKillerHasColor) ? rgDeathNoticeList[i].KillerColor : nullptr;
 				x = 5 + DrawConsoleString(x, y, rgDeathNoticeList[i].szKiller, color);
 			}
-
+			if (rgDeathNoticeList[i].iNoScopeId) {
+				SPR_Set( gHUD.GetSprite(m_HUD_d_noscope), spriteColor.r(), spriteColor.g(), spriteColor.b());
+				SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect(m_HUD_d_noscope));
+				x += gHUD.GetSpriteRect(m_HUD_d_noscope).GetWidth();;
+			}
 			// Draw death weapon
 			if (rgDeathNoticeList[i].iTeamKill)
 				SPR_Set(spr, tkSpriteColor.r(), tkSpriteColor.g(), tkSpriteColor.b());
@@ -143,6 +151,7 @@ void CHudDeathNotice::Draw(float flTime)
 				SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect(m_HUD_d_headshot));
 				x += (gHUD.GetSpriteRect(m_HUD_d_headshot).GetWidth());
 			}
+
 			// Draw victims name (if it was a player that was killed)
 			if (rgDeathNoticeList[i].iNonPlayerKill == FALSE)
 			{
@@ -182,13 +191,15 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	strncat(killedwith, READ_STRING(), sizeof(killedwith) - 3);
 	killedwith[sizeof(killedwith) - 1] = 0;
 	int headshot = READ_BYTE();
+	int noscope = READ_BYTE();
+
 	if (g_pViewport)
 		g_pViewport->DeathMsg(killer, victim);
 
 	CHudSpectator::Get()->DeathMessage(victim);
 
 	if (hud_deathnotice_vgui.GetBool() && CHudDeathNoticePanel::Get())
-		CHudDeathNoticePanel::Get()->AddItem(killer, victim, killedwith, headshot);
+		CHudDeathNoticePanel::Get()->AddItem(killer, victim, killedwith, headshot, noscope);
 
 	int i;
 	for (i = 0; i < MAX_DEATHNOTICES; i++)
@@ -278,6 +289,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 
 	// Find the sprite in the list
 	rgDeathNoticeList[i].iHeadShotId = headshot;
+	rgDeathNoticeList[i].iNoScopeId = noscope;
 	int spr = gHUD.GetSpriteIndex(killedwith);
 
 	rgDeathNoticeList[i].iId = spr;

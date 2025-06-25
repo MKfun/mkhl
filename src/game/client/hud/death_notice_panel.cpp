@@ -33,7 +33,7 @@ void CHudDeathNoticePanel::VidInit()
 {
 	m_HUD_d_skull = gHUD.GetSpriteIndex("d_skull");
 	m_HUD_d_headshot = gHUD.GetSpriteIndex("d_skull");
-
+	m_HUD_d_noscope = gHUD.GetSpriteIndex("bucket1");
 	int cornerWide, cornerTall;
 	GetCornerTextureSize(cornerWide, cornerTall);
 
@@ -82,7 +82,7 @@ void CHudDeathNoticePanel::Think()
 	}
 }
 
-void CHudDeathNoticePanel::AddItem(int killerId, int victimId, const char *killedwith, bool isHeadshot)
+void CHudDeathNoticePanel::AddItem(int killerId, int victimId, const char *killedwith, bool isHeadshot, bool isNoScope)
 {
 	if (!GetThisPlayerInfo())
 	{
@@ -95,6 +95,7 @@ void CHudDeathNoticePanel::AddItem(int killerId, int victimId, const char *kille
 	CPlayerInfo *victim = GetPlayerInfoSafe(victimId);
 	int thisPlayerId = GetThisPlayerInfo()->GetIndex();
 	bool headshot = isHeadshot;
+	bool noscope = isNoScope;
 	// Check for suicide
 	if (killerId == victimId || killerId == 0)
 	{
@@ -146,6 +147,7 @@ void CHudDeathNoticePanel::AddItem(int killerId, int victimId, const char *kille
 
 	// Sprite
 	e.iHeadShotId = headshot;
+	e.iNoScopeId = noscope;
 	int spriteId = gHUD.GetSpriteIndex(killedwith);
 
 	if (spriteId == -1)
@@ -213,10 +215,12 @@ void CHudDeathNoticePanel::PaintBackground()
 	{
 		Entry &entry = entries[i];
 		int wide;
+		wide = 2 * m_iHPadding + GetEntryContentWide(entry);
+		if (entry.iNoScopeId )
+			wide += gHUD.GetSpriteRect(m_HUD_d_noscope).GetWidth();
 		if( entry.iHeadShotId)
-			wide = 2 * m_iHPadding + GetEntryContentWide(entry) + gHUD.GetSpriteRect(m_HUD_d_headshot).GetWidth();
-		else
-			wide = 2 * m_iHPadding + GetEntryContentWide(entry);
+			wide += gHUD.GetSpriteRect(m_HUD_d_headshot).GetWidth();
+
 		int x = panelWide - wide;
 		Color bgColor;
 
@@ -240,10 +244,11 @@ void CHudDeathNoticePanel::PaintBackground()
 	{
 		Entry &entry = entries[i];
 		int wide;
+		wide = 2 * m_iHPadding + GetEntryContentWide(entry);
+		if (entry.iNoScopeId )
+			wide += gHUD.GetSpriteRect(m_HUD_d_noscope).GetWidth();
 		if( entry.iHeadShotId)
-			wide = 2 * m_iHPadding + GetEntryContentWide(entry) + gHUD.GetSpriteRect(m_HUD_d_headshot).GetWidth();
-		else
-			wide = 2 * m_iHPadding + GetEntryContentWide(entry);
+			wide += gHUD.GetSpriteRect(m_HUD_d_headshot).GetWidth();
 		int x = panelWide - wide;
 
 		// Get sprite info
@@ -269,13 +274,21 @@ void CHudDeathNoticePanel::PaintBackground()
 		else
 			color = m_ColorIcon;
 
+		if (entry.iNoScopeId ) {
+			CHudRenderer::SpriteSet( gHUD.GetSprite(m_HUD_d_noscope), color.r(), color.g(), color.b() );
+			CHudRenderer::SpriteDrawAdditive( 0, x + iconX, y, &gHUD.GetSpriteRect(m_HUD_d_noscope));
+			x += gHUD.GetSpriteRect(m_HUD_d_headshot).GetWidth();
+		}
+
 		CHudRenderer::SpriteSet(hSprite, color.r(), color.g(), color.b());
 		CHudRenderer::SpriteDrawAdditive(0, x + iconX, y + iconY, &rc);
+
 		if( entry.iHeadShotId)
 		{
 			iconX += (rc.GetWidth());
 			CHudRenderer::SpriteSet( gHUD.GetSprite(m_HUD_d_headshot), color.r(), color.g(), color.b() );
 			CHudRenderer::SpriteDrawAdditive( 0, x + iconX, y, &gHUD.GetSpriteRect(m_HUD_d_headshot));
+			gHUD.GetSpriteRect(m_HUD_d_headshot).GetWidth();
 		}
 		y += m_iRowTall + m_iVMargin;
 	}
@@ -300,10 +313,12 @@ void CHudDeathNoticePanel::Paint()
 	{
 		Entry &entry = entries[i];
 		int wide;
+		wide = 2 * m_iHPadding + GetEntryContentWide(entry);
+
+		if (entry.iNoScopeId )
+			wide += gHUD.GetSpriteRect(m_HUD_d_noscope).GetWidth();
 		if( entry.iHeadShotId)
-			wide = 2 * m_iHPadding + GetEntryContentWide(entry) + gHUD.GetSpriteRect(m_HUD_d_headshot).GetWidth();
-		else
-			wide = 2 * m_iHPadding + GetEntryContentWide(entry);
+			wide += gHUD.GetSpriteRect(m_HUD_d_headshot).GetWidth();
 		int x = panelWide - wide;
 		x += m_iHPadding ;
 
@@ -315,11 +330,15 @@ void CHudDeathNoticePanel::Paint()
 		}
 
 		// Skip icon
+
 		x += entry.iSpriteWide + m_iIconPadding;
+		if (entry.iNoScopeId )
+			x += (gHUD.GetSpriteRect(m_HUD_d_noscope).GetWidth());
 		if( entry.iHeadShotId)
 		{
 			x += (gHUD.GetSpriteRect(m_HUD_d_headshot).GetWidth());
 		}
+
 		// Draw victim name
 		DrawColoredText(x, y + textY, entry.wszVictim, entry.iVictimLen, entry.victimColor);
 		x += entry.iVictimWide;
