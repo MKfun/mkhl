@@ -848,12 +848,12 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, e
 	WRITE_BYTE(ENTINDEX(pVictim->edict())); // the victim
 	WRITE_STRING(killer_weapon_name); // what they were killed by (should this be a string?)
 	WRITE_BYTE(pVictim->m_bHeadshotKilled); //Headshot
-	if (strcmp(plKiller->m_pActiveItem->pszName(), "weapon_357") == 0 || strcmp(plKiller->m_pActiveItem->pszName(), "weapon_python") == 0 || strcmp(plKiller->m_pActiveItem->pszName(), "weapon_crossbow") == 0) {
-		CPython *pyth = (CPython *)plKiller->m_pActiveItem;
-		CCrossbow *cross = (CCrossbow *)plKiller->m_pActiveItem;
-		WRITE_BYTE( pyth->m_fInZoom == 0 || cross->m_fInZoom == 0); // Noscope
-	}
-	else
+	// if (strcmp(plKiller->m_pActiveItem->pszName(), "weapon_357") == 0 || strcmp(plKiller->m_pActiveItem->pszName(), "weapon_python") == 0 || strcmp(plKiller->m_pActiveItem->pszName(), "weapon_crossbow") == 0) {
+		// CPython *pyth = (CPython *)plKiller->m_pActiveItem;
+		// CCrossbow *cross = (CCrossbow *)plKiller->m_pActiveItem;
+		// WRITE_BYTE( pyth->m_fInZoom == 0 || cross->m_fInZoom == 0); // Noscope
+	// }
+	// else
 		WRITE_BYTE(false);
 	if (iSendDeathMessageFlags > 0)
 	{
