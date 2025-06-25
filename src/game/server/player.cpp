@@ -21,6 +21,7 @@
 */
 
 #include "cdll_dll.h"
+#include "convar.h"
 #include "extdll.h"
 #include "progdefs.h"
 #include "util.h"
@@ -61,7 +62,7 @@ ConVar mp_teamspawn("mp_teamspawn", "0", FCVAR_SERVER, "When teamplay is enabled
 ConVar mp_weaponbox_time("mp_weaponbox_time", "120", FCVAR_SERVER, "Dead player's weapons will stay for this many seconds, 0 disables them, -1 forever");
 ConVar mp_weapondrop_time("mp_weapondrop_time", "0", FCVAR_SERVER, "Manually dropped weapons will stay for this many seconds, 0 forever");
 ConVar mp_spawntype("mp_spawntype", "0", FCVAR_SERVER, "Spawn point selection method:\n0 - HL25\n1 - Pre-HL25\n2 - Random with item accounting");
-
+ConVar mp_eventondeath("mp_eventondeath", "1", FCVAR_SERVER, "Do something special on death (grenade/gauss)");
 #define TRAIN_ACTIVE  0x80
 #define TRAIN_NEW     0xc0
 #define TRAIN_OFF     0x00
@@ -980,16 +981,26 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 	// Holster weapon immediately, to allow it to cleanup
 	if (m_pActiveItem)
 		m_pActiveItem->Holster();
-	if (strcmp(m_pActiveItem->pszName(), "weapon_handgrenade") == 0)
+	CHandGrenade *pGrenade = (CHandGrenade *)m_pActiveItem;
+	if (strcmp(m_pActiveItem->pszName(), "weapon_handgrenade") == 0 && mp_eventondeath.GetBool() && pGrenade->m_flStartThrow > 0)
 	{
 		Vector vecSrc = pev->origin + pev->view_ofs + gpGlobals->v_forward * 16;
-
-		Vector vecThrow = gpGlobals->v_forward * 0 + pev->velocity;
-		CGrenade *grenade;
+		Vector vecThrow = gpGlobals->v_forward + pev->velocity;
 		CBasePlayerWeapon *pWeapon;
 		pWeapon = (CBasePlayerWeapon *)m_pActiveItem;
 		m_rgAmmo[pWeapon->m_iPrimaryAmmoType]--;
-		CGrenade::ShootTimed(pev, vecSrc, vecThrow, 0);
+		CGrenade::ShootTimed(pev, vecSrc, vecThrow, 0.5f);
+	}
+	if (strcmp(m_pActiveItem->pszName(), "weapon_gauss") == 0 && mp_eventondeath.GetBool() && m_flStartCharge < gpGlobals->time - 1)
+	{
+		Vector vecAiming = gpGlobals->v_forward;
+		Vector vecSrc = GetGunPosition();
+		CBasePlayerWeapon *pWeapon;
+		pWeapon = (CBasePlayerWeapon *)m_pActiveItem;
+		m_rgAmmo[pWeapon->m_iPrimaryAmmoType]--;
+		CGauss *pGauss = (CGauss *)m_pActiveItem;
+		// pGauss->Fire(vecSrc, vecAiming, 50);
+		pGauss->PrimaryAttack();
 	}
 
 	if (m_LastHitGroup == HITGROUP_HEAD)
