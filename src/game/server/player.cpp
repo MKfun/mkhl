@@ -982,27 +982,32 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 	if (m_pActiveItem)
 		m_pActiveItem->Holster();
 	CHandGrenade *pGrenade = (CHandGrenade *)m_pActiveItem;
-	if (strcmp(m_pActiveItem->pszName(), "weapon_handgrenade") == 0 && mp_eventondeath.GetBool() && pGrenade->m_flStartThrow > 0)
+	if (pGrenade != NULL)
 	{
-		Vector vecSrc = pev->origin + pev->view_ofs + gpGlobals->v_forward * 16;
-		Vector vecThrow = gpGlobals->v_forward + pev->velocity;
-		CBasePlayerWeapon *pWeapon;
-		pWeapon = (CBasePlayerWeapon *)m_pActiveItem;
-		m_rgAmmo[pWeapon->m_iPrimaryAmmoType]--;
-		CGrenade::ShootTimed(pev, vecSrc, vecThrow, 0.5f);
-	}
-	if (strcmp(m_pActiveItem->pszName(), "weapon_gauss") == 0 && mp_eventondeath.GetBool() && m_flStartCharge < gpGlobals->time - 1)
-	{
-		Vector vecAiming = gpGlobals->v_forward;
-		Vector vecSrc = GetGunPosition();
-		CBasePlayerWeapon *pWeapon;
-		pWeapon = (CBasePlayerWeapon *)m_pActiveItem;
-		m_rgAmmo[pWeapon->m_iPrimaryAmmoType]--;
-		CGauss *pGauss = (CGauss *)m_pActiveItem;
-		// pGauss->Fire(vecSrc, vecAiming, 50);
-		pGauss->PrimaryAttack();
-	}
+		if (strcmp(m_pActiveItem->pszName(), "weapon_handgrenade") == 0 && mp_eventondeath.GetBool() && pGrenade->m_flStartThrow > 0)
+		{
+			Vector vecSrc = pev->origin + pev->view_ofs + gpGlobals->v_forward * 16;
+			Vector vecThrow = gpGlobals->v_forward + pev->velocity;
+			CBasePlayerWeapon *pWeapon;
+			pWeapon = (CBasePlayerWeapon *)m_pActiveItem;
+			m_rgAmmo[pWeapon->m_iPrimaryAmmoType]--;
+			CGrenade::ShootTimed(pev, vecSrc, vecThrow, 0.5f);
+		}
 
+		if (strcmp(m_pActiveItem->pszName(), "weapon_gauss") == 0 && mp_eventondeath.GetBool() && m_flStartCharge < gpGlobals->time - 1)
+		{
+			Vector vecAiming = gpGlobals->v_forward;
+			Vector vecSrc = GetGunPosition();
+			CBasePlayerWeapon *pWeapon;
+			if (pWeapon) {
+				pWeapon = (CBasePlayerWeapon *)m_pActiveItem;
+				m_rgAmmo[pWeapon->m_iPrimaryAmmoType]--;
+				CGauss *pGauss = (CGauss *)m_pActiveItem;
+				if (pGauss)
+					pGauss->PrimaryAttack();
+			}
+		}
+	}
 	if (m_LastHitGroup == HITGROUP_HEAD)
 		m_bHeadshotKilled = true;
 	g_pGameRules->PlayerKilled(this, pevAttacker, g_pevLastInflictor);
