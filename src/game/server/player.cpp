@@ -906,8 +906,10 @@ void CBasePlayer::PackDeadPlayerItems()
 				pPlayerItem = pPlayerItem->m_pNext;
 			}
 		}
+		if (m_pActiveItem ){
 		if (strcmp(m_pActiveItem->pszName(), "weapon_crowbar") != 0 && (m_pActiveItem))
 			PackPlayerItem(this, m_pActiveItem, bPackAmmo);
+		}
 	}
 
 	RemoveAllItems(TRUE);
