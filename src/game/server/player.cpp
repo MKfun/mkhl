@@ -491,7 +491,30 @@ void CBasePlayer ::TraceAttack(entvars_t *pevAttacker, float flDamage, Vector ve
 
 #define ARMOR_RATIO 0.2 // Armor Takes 80% of the damage
 #define ARMOR_BONUS 0.5 // Each Point of Armor is work 1/x points of health
+const char *GetModelName(int item_id)
+{
+	const char *modelName = nullptr;
+	switch (item_id)
+	{
+		case WEAPON_CROWBAR:         modelName = "models/w_crowbar.mdl"; break;
+		case WEAPON_GLOCK:        modelName = "models/w_9mmhandgun.mdl"; break;
+		case WEAPON_PYTHON:    modelName = "models/w_357.mdl"; break;
+		case WEAPON_MP5:       modelName = "models/w_9mmar.mdl"; break;
+		case WEAPON_SHOTGUN:           modelName = "models/w_shotgun.mdl"; break;
+		case WEAPON_CROSSBOW:        modelName = "models/w_crossbow.mdl"; break;
+		case WEAPON_RPG:          modelName = "models/w_rpg.mdl"; break;
+		case WEAPON_GAUSS: modelName = "models/w_gauss.mdl"; break;
+		case WEAPON_EGON:        modelName = "models/w_egon.mdl"; break;
+		case WEAPON_HORNETGUN:    modelName = "models/w_hgun.mdl"; break;
+		case WEAPON_HANDGRENADE:        modelName = "models/w_grenade.mdl"; break;
+		case WEAPON_SATCHEL:        modelName = "models/w_satchel.mdl"; break;
+		case WEAPON_SNARK:        modelName = "models/w_squeak.mdl"; break;
+		default:
+			ALERT(at_console, "CBasePlayer::PackDeadPlayerItems(): Unhandled item- not creating weaponbox\n");
+	}
 
+	return modelName;
+}
 int CBasePlayer ::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType)
 {
 	// have suit diagnose the problem - ie: report damage type
@@ -721,6 +744,73 @@ int CBasePlayer ::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 
 	return fTookDamage;
 }
+CWeaponBox *CreateWeaponBox(CBasePlayerItem *pItem, CBasePlayer *pPlayerOwner, const char *modelName, Vector &origin, Vector &angles, Vector &velocity, bool packAmmo)
+{
+	// create a box to pack the stuff into.
+	CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create("weaponbox", origin, angles, pPlayerOwner ? ENT(pPlayerOwner->pev) : nullptr);
+
+	if (pWeaponBox)
+	{
+		// don't let weaponbox tilt.
+		pWeaponBox->pev->angles.x = 0;
+		pWeaponBox->pev->angles.z = 0;
+		pWeaponBox->pev->velocity = velocity;
+		pWeaponBox->SetThink(&CWeaponBox::Kill);
+		pWeaponBox->PackWeapon(pItem); // now pack all of the items in the lists
+
+		// player is the ammo source
+		if (pPlayerOwner)
+		{
+			// by removing ammo ONLY on exhaustible weapons (slot 4 and 5)
+			// you are allowing to duplicate ammo whenever:
+			// (1) you have 2 weapons sharing the same ammo type (e.g. mp5navy and glock)
+			// (2) you are dropping a weapon alive and pickup another (with same ammo type) without ammo
+			// and, logically, you throw your ammo with your gun with packing enabled
+			bool exhaustibleAmmo = (pItem->iFlags() & ITEM_FLAG_EXHAUSTIBLE) == ITEM_FLAG_EXHAUSTIBLE;
+
+			// pack the primary ammo
+			if (exhaustibleAmmo || packAmmo)
+			{
+				#ifndef REGAMEDLL_ADD
+				pWeaponBox->PackAmmo(MAKE_STRING(pItem->pszAmmo1()), pPlayerOwner->m_rgAmmo[pItem->PrimaryAmmoIndex()]);
+				#else
+				pWeaponBox->GiveAmmo(pPlayerOwner->m_rgAmmo[pItem->PrimaryAmmoIndex()], (char *)pItem->pszAmmo1(), pItem->iMaxAmmo1());
+				#endif
+
+				#ifndef REGAMEDLL_FIXES
+				if (exhaustibleAmmo)
+					#endif
+				{
+					pPlayerOwner->m_rgAmmo[pItem->PrimaryAmmoIndex()] = 0;
+				}
+			}
+
+			// (3rd party support) now that reapi can register custom ammo
+			#ifdef REGAMEDLL_ADD
+			// use this flag if you don't want the player harvesting this kind of ammo from dropped weapons
+			bool exhaustSecondaryAmmo = (pItem->iFlags() & ITEM_FLAG_EXHAUST_SECONDARYAMMO) == ITEM_FLAG_EXHAUST_SECONDARYAMMO;
+			int iSecondaryAmmoIndex = pItem->SecondaryAmmoIndex();
+
+			// pack secondary ammo now (must be valid too)
+			if ((exhaustibleAmmo || exhaustSecondaryAmmo || packAmmo) && iSecondaryAmmoIndex != -1)
+			{
+				pWeaponBox->GiveAmmo(pPlayerOwner->m_rgAmmo[iSecondaryAmmoIndex], (char *)pItem->pszAmmo2(), pItem->iMaxAmmo2());
+
+				#ifndef REGAMEDLL_FIXES
+				if (exhaustibleAmmo)
+					#endif
+				{
+					pPlayerOwner->m_rgAmmo[iSecondaryAmmoIndex] = 0;
+				}
+			}
+			#endif
+		}
+
+		pWeaponBox->SetModel(modelName);
+	}
+
+	return pWeaponBox;
+}
 
 //=========================================================
 // PackDeadPlayerItems - call this when a player dies to
@@ -729,194 +819,125 @@ int CBasePlayer ::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 //
 // This is pretty brute force :(
 //=========================================================
-void CBasePlayer::PackDeadPlayerItems(void)
+CWeaponBox *PackPlayerItem(CBasePlayer *pPlayer, CBasePlayerItem *pItem, bool packAmmo)
 {
-	int iWeaponRules;
-	int iAmmoRules;
-	int i;
-	CBasePlayerWeapon *rgpPackWeapons[MAX_WEAPONS];
-	int iPackAmmo[MAX_AMMO_SLOTS];
-	int iPW = 0; // index into packweapons array
-	int iPA = 0; // index into packammo array
+	if (!pItem)
+		return nullptr;
 
-	memset(rgpPackWeapons, NULL, sizeof(rgpPackWeapons));
-	memset(iPackAmmo, -1, sizeof(iPackAmmo));
-
-	// get the game rules
-	iWeaponRules = g_pGameRules->DeadPlayerWeapons(this);
-	iAmmoRules = g_pGameRules->DeadPlayerAmmo(this);
-
-	if (mp_weaponbox_time.GetFloat() == 0 || (iWeaponRules == GR_PLR_DROP_GUN_NO && iAmmoRules == GR_PLR_DROP_AMMO_NO))
+	const char *modelName = GetModelName(pItem->m_iId);
+	if (modelName)
 	{
-		// nothing to pack. Remove the weapons and return. Don't call create on the box!
-		RemoveAllItems(TRUE);
-		return;
+		Vector vecOrigin   = pPlayer->pev->origin;
+		Vector vecAngles   = pPlayer->pev->angles;
+		Vector vecVelocity = pPlayer->pev->velocity * 0.75f;
+
+		// create a box to pack the stuff into
+		return CreateWeaponBox(pItem, pPlayer,
+							   modelName,
+						 vecOrigin,
+						 vecAngles,
+						 vecVelocity,
+						packAmmo
+		);
 	}
 
-	// go through all of the weapons and make a list of the ones to pack
-	for (i = 0; i < MAX_ITEM_TYPES && iPW < MAX_WEAPONS; i++)
-	{
-		if (m_rgpPlayerItems[i])
-		{
-			// there's a weapon here. Should I pack it?
-			CBasePlayerItem *pPlayerItem = m_rgpPlayerItems[i];
-
-			while (pPlayerItem && iPW < MAX_WEAPONS)
-			{
-				switch (iWeaponRules)
-				{
-				case GR_PLR_DROP_GUN_ACTIVE:
-					if (m_pActiveItem && pPlayerItem == m_pActiveItem)
-					{
-						CBasePlayerWeapon *pWeapon = (CBasePlayerWeapon *)pPlayerItem;
-						int nIndex = iPW++;
-
-						// this is the active item. Pack it.
-						rgpPackWeapons[nIndex] = pWeapon;
-
-						//Reload the weapon before dropping it if we have ammo
-						int j = min(pWeapon->iMaxClip() - pWeapon->m_iClip, m_rgAmmo[pWeapon->m_iPrimaryAmmoType]);
-
-						// Add them to the clip
-						pWeapon->m_iClip += j;
-						m_rgAmmo[pWeapon->m_iPrimaryAmmoType] -= j;
-
-						TabulateAmmo();
-					}
-					break;
-
-				case GR_PLR_DROP_GUN_ALL:
-					rgpPackWeapons[iPW++] = (CBasePlayerWeapon *)pPlayerItem;
-					break;
-
-				default:
-					break;
-				}
-
-				pPlayerItem = pPlayerItem->m_pNext;
-			}
-		}
-	}
-
-	// now go through ammo and make a list of which types to pack.
-	if (iAmmoRules != GR_PLR_DROP_AMMO_NO)
-	{
-		for (i = 0; i < MAX_AMMO_SLOTS; i++)
-		{
-			if (m_rgAmmo[i] > 0)
-			{
-				// player has some ammo of this type.
-				switch (iAmmoRules)
-				{
-				case GR_PLR_DROP_AMMO_ALL:
-					iPackAmmo[iPA++] = i;
-					break;
-
-				case GR_PLR_DROP_AMMO_ACTIVE:
-					if (m_pActiveItem && i == m_pActiveItem->PrimaryAmmoIndex())
-					{
-						// this is the primary ammo type for the active weapon
-						iPackAmmo[iPA++] = i;
-					}
-					else if (m_pActiveItem && i == m_pActiveItem->SecondaryAmmoIndex())
-					{
-						// this is the secondary ammo type for the active weapon
-						iPackAmmo[iPA++] = i;
-					}
-					break;
-
-				default:
-					break;
-				}
-			}
-		}
-	}
-
-	// create a box to pack the stuff into.
-	CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create("weaponbox", pev->origin, pev->angles, edict());
-
-	pWeaponBox->pev->angles.x = 0; // don't let weaponbox tilt.
-	pWeaponBox->pev->angles.z = 0;
-
-	if (mp_weaponbox_time.GetFloat() > 0)
-	{
-		pWeaponBox->SetThink(&CWeaponBox::Kill);
-		pWeaponBox->pev->nextthink = gpGlobals->time + mp_weaponbox_time.GetFloat();
-	}
-	else
-	{
-		// Stays forever
-		pWeaponBox->pev->nextthink = 0;
-	}
-
-	// back these two lists up to their first elements
-	iPA = 0;
-	iPW = 0;
-
-	if (IsBustingGame())
-	{
-		if (HasNamedPlayerItem("weapon_egon"))
-		{
-			for (i = 0; i < MAX_ITEM_TYPES; i++)
-			{
-				CBasePlayerItem *pItem = m_rgpPlayerItems[i];
-
-				if (pItem)
-				{
-					if (!strcmp("weapon_egon", STRING(pItem->pev->classname)))
-					{
-						pWeaponBox->PackWeapon(pItem);
-
-						SET_MODEL(ENT(pWeaponBox->pev), "models/w_egon.mdl");
-
-						pWeaponBox->pev->velocity = Vector(0, 0, 0);
-						pWeaponBox->pev->renderfx = kRenderFxGlowShell;
-						pWeaponBox->pev->renderamt = 25;
-						pWeaponBox->pev->rendercolor = Vector(0, 75, 250);
-
-						break;
-					}
-				}
-			}
-		}
-	}
-	else
-	{
-		bool bPackItems = TRUE;
-
-		if (iAmmoRules == GR_PLR_DROP_AMMO_ACTIVE && iWeaponRules == GR_PLR_DROP_GUN_ACTIVE)
-		{
-			if (rgpPackWeapons[0] && FClassnameIs(rgpPackWeapons[0]->pev, "weapon_satchel") && (iPackAmmo[0] == -1 || (m_rgAmmo[iPackAmmo[0]] == 0)))
-			{
-				bPackItems = FALSE;
-			}
-		}
-
-		if (bPackItems)
-		{
-			// pack the ammo
-			while (iPackAmmo[iPA] != -1)
-			{
-				pWeaponBox->PackAmmo(MAKE_STRING(CBasePlayerItem::AmmoInfoArray[iPackAmmo[iPA]].pszName), m_rgAmmo[iPackAmmo[iPA]]);
-				iPA++;
-			}
-
-			// now pack all of the items in the lists
-			while (rgpPackWeapons[iPW])
-			{
-				// weapon unhooked from the player. Pack it into der box.
-				pWeaponBox->PackWeapon(rgpPackWeapons[iPW]);
-
-				iPW++;
-			}
-		}
-
-		pWeaponBox->pev->velocity = pev->velocity * 1.2; // weaponbox has player's velocity, then some.
-	}
-
-	RemoveAllItems(TRUE); // now strip off everything that wasn't handled by the code above.
+	return nullptr;
 }
 
+
+void CBasePlayer::PackDeadPlayerItems()
+{
+	// get the game rules
+	int iPackGun = g_pGameRules->DeadPlayerWeapons(this);
+	bool bPackAmmo = (g_pGameRules->DeadPlayerAmmo(this) != GR_PLR_DROP_AMMO_NO);
+
+	if (iPackGun != GR_PLR_DROP_GUN_NO)
+	{
+		bool bSkipPrimSec = false;
+
+		int nBestWeight = 0;
+		CBasePlayerItem *pBestItem = nullptr;
+
+		#ifdef REGAMEDLL_ADD
+		int iGunsPacked = 0;
+
+		if (iPackGun == GR_PLR_DROP_GUN_ACTIVE)
+		{
+			// check if we've just already dropped our active gun
+			if (!bSkipPrimSec && m_pActiveItem && m_pActiveItem->CanDrop() && m_pActiveItem->iItemSlot() < KNIFE_SLOT)
+			{
+				pBestItem = m_pActiveItem;
+
+				// if active item is undroppable, then nothing is dropped
+			}
+
+			// are we allowing nade drop?
+			if ((int)nadedrops.value >= 1)
+			{
+				// goto item loop but skip guns
+				iPackGun = GR_PLR_DROP_GUN_ALL;
+				bSkipPrimSec = true;
+			}
+		}
+
+		if (iPackGun == GR_PLR_DROP_GUN_ALL || iPackGun == GR_PLR_DROP_GUN_BEST)
+			#endif
+		{
+			for (int n = 0; n < MAX_ITEM_TYPES; n++)
+			{
+				// there's a weapon here. Should I pack it?
+				CBasePlayerItem *pPlayerItem = m_rgpPlayerItems[n];
+
+				while (pPlayerItem)
+				{
+					ItemInfo info;
+					if ( !bSkipPrimSec)
+					{
+						#ifdef REGAMEDLL_API
+						if (pPlayerItem->CSPlayerItem()->GetItemInfo(&info)
+							#else
+							if (pPlayerItem->GetItemInfo(&info)
+								#endif
+								#ifdef REGAMEDLL_FIXES
+								&& pPlayerItem->CanDrop() // needs to be droppable
+								#endif
+							)
+							{
+								#ifdef REGAMEDLL_ADD
+								if (iPackGun == GR_PLR_DROP_GUN_ALL)
+								{
+									CBasePlayerItem *pNext = pPlayerItem->m_pNext;
+
+									CWeaponBox *pWeaponBox = PackPlayerItem(this, pPlayerItem, bPackAmmo);
+									if (pWeaponBox)
+									{
+										// just push a few units in forward to separate them
+										pWeaponBox->pev->velocity = pWeaponBox->pev->velocity * (1.0 + (iGunsPacked * 0.2));
+										iGunsPacked++;
+									}
+
+									pPlayerItem = pNext;
+									continue;
+								}
+								#endif
+								if (info.iWeight > nBestWeight)
+								{
+									nBestWeight = info.iWeight;
+									pBestItem = pPlayerItem;
+								}
+							}
+					}
+
+					pPlayerItem = pPlayerItem->m_pNext;
+				}
+			}
+		}
+
+		PackPlayerItem(this, pBestItem, bPackAmmo);
+	}
+
+	RemoveAllItems(TRUE);
+}
 void CBasePlayer::RemoveAllItems(BOOL removeSuit)
 {
 	if (m_pActiveItem)
@@ -999,8 +1020,8 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 			Vector vecAiming = gpGlobals->v_forward;
 			Vector vecSrc = GetGunPosition();
 			CBasePlayerWeapon *pWeapon;
+			pWeapon = (CBasePlayerWeapon *)m_pActiveItem;
 			if (pWeapon) {
-				pWeapon = (CBasePlayerWeapon *)m_pActiveItem;
 				m_rgAmmo[pWeapon->m_iPrimaryAmmoType]--;
 				CGauss *pGauss = (CGauss *)m_pActiveItem;
 				if (pGauss)

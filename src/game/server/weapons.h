@@ -450,7 +450,7 @@ public:
 	int Save(CSave &save);
 	int Restore(CRestore &restore);
 	static TYPEDESCRIPTION m_SaveData[];
-
+	void SetModel(const char *pszModelName);
 	BOOL HasWeapon(CBasePlayerItem *pCheckItem);
 	BOOL PackWeapon(CBasePlayerItem *pWeapon);
 	BOOL PackAmmo(int iszName, int iCount);

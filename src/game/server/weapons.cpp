@@ -1247,6 +1247,11 @@ void CWeaponBox ::KeyValue(KeyValueData *pkvd)
 	}
 }
 
+void CWeaponBox::SetModel(const char *pszModelName)
+{
+	SET_MODEL(ENT(pev), pszModelName);
+}
+
 //=========================================================
 // CWeaponBox - Spawn
 //=========================================================
