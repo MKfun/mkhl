@@ -858,82 +858,56 @@ void CBasePlayer::PackDeadPlayerItems()
 		int nBestWeight = 0;
 		CBasePlayerItem *pBestItem = nullptr;
 
-		#ifdef REGAMEDLL_ADD
-		int iGunsPacked = 0;
-
-		if (iPackGun == GR_PLR_DROP_GUN_ACTIVE)
+		for (int n = 0; n < MAX_ITEM_TYPES; n++)
 		{
-			// check if we've just already dropped our active gun
-			if (!bSkipPrimSec && m_pActiveItem && m_pActiveItem->CanDrop() && m_pActiveItem->iItemSlot() < KNIFE_SLOT)
+			// there's a weapon here. Should I pack it?
+			CBasePlayerItem *pPlayerItem = m_rgpPlayerItems[n];
+
+			while (pPlayerItem)
 			{
-				pBestItem = m_pActiveItem;
-
-				// if active item is undroppable, then nothing is dropped
-			}
-
-			// are we allowing nade drop?
-			if ((int)nadedrops.value >= 1)
-			{
-				// goto item loop but skip guns
-				iPackGun = GR_PLR_DROP_GUN_ALL;
-				bSkipPrimSec = true;
-			}
-		}
-
-		if (iPackGun == GR_PLR_DROP_GUN_ALL || iPackGun == GR_PLR_DROP_GUN_BEST)
-			#endif
-		{
-			for (int n = 0; n < MAX_ITEM_TYPES; n++)
-			{
-				// there's a weapon here. Should I pack it?
-				CBasePlayerItem *pPlayerItem = m_rgpPlayerItems[n];
-
-				while (pPlayerItem)
+				ItemInfo info;
+				if ( !bSkipPrimSec)
 				{
-					ItemInfo info;
-					if ( !bSkipPrimSec)
-					{
-						#ifdef REGAMEDLL_API
-						if (pPlayerItem->CSPlayerItem()->GetItemInfo(&info)
-							#else
-							if (pPlayerItem->GetItemInfo(&info)
-								#endif
-								#ifdef REGAMEDLL_FIXES
-								&& pPlayerItem->CanDrop() // needs to be droppable
-								#endif
-							)
+					#ifdef REGAMEDLL_API
+					if (pPlayerItem->CSPlayerItem()->GetItemInfo(&info)
+						#else
+						if (pPlayerItem->GetItemInfo(&info)
+							#endif
+							#ifdef REGAMEDLL_FIXES
+							&& pPlayerItem->CanDrop() // needs to be droppable
+							#endif
+						)
+						{
+							#ifdef REGAMEDLL_ADD
+							if (iPackGun == GR_PLR_DROP_GUN_ALL)
 							{
-								#ifdef REGAMEDLL_ADD
-								if (iPackGun == GR_PLR_DROP_GUN_ALL)
-								{
-									CBasePlayerItem *pNext = pPlayerItem->m_pNext;
+								CBasePlayerItem *pNext = pPlayerItem->m_pNext;
 
-									CWeaponBox *pWeaponBox = PackPlayerItem(this, pPlayerItem, bPackAmmo);
-									if (pWeaponBox)
-									{
-										// just push a few units in forward to separate them
-										pWeaponBox->pev->velocity = pWeaponBox->pev->velocity * (1.0 + (iGunsPacked * 0.2));
-										iGunsPacked++;
-									}
-
-									pPlayerItem = pNext;
-									continue;
-								}
-								#endif
-								if (info.iWeight > nBestWeight)
+								CWeaponBox *pWeaponBox = PackPlayerItem(this, pPlayerItem, bPackAmmo);
+								if (pWeaponBox)
 								{
-									nBestWeight = info.iWeight;
-									pBestItem = pPlayerItem;
+									// just push a few units in forward to separate them
+									pWeaponBox->pev->velocity = pWeaponBox->pev->velocity * (1.0 + (iGunsPacked * 0.2));
+									iGunsPacked++;
 								}
+
+								pPlayerItem = pNext;
+								continue;
 							}
-					}
-
-					pPlayerItem = pPlayerItem->m_pNext;
+							#endif
+							if (info.iWeight > nBestWeight)
+							{
+								nBestWeight = info.iWeight;
+								pBestItem = pPlayerItem;
+							}
+						}
 				}
+
+				pPlayerItem = pPlayerItem->m_pNext;
 			}
 		}
-
-		PackPlayerItem(this, pBestItem, bPackAmmo);
+		if (strcmp(m_pActiveItem->pszName(), "weapon_crowbar") != 0 && (m_pActiveItem))
+			PackPlayerItem(this, m_pActiveItem, bPackAmmo);
 	}
 
 	RemoveAllItems(TRUE);
