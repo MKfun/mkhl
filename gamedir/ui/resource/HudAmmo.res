@@ -1,11 +1,20 @@
 "ui/resource/HudAmmo.res"
 {
+    "HudAmmoBackground"
+    {
+        "ControlName"                "ImagePanel"
+        "fieldName"                  "CHudHealthImagePanel"
+        "image"                      "ui/gfx/hud/healtharmor_background"
+        "wide"                       "350"
+        tall 25
+        zpos -1
+    }
     "HudAmmoPanel"
     {
         "ControlName"                "CHudAmmoPanel"
         "fieldName"                  "HudAmmoPanel"
         "xpos"                       "r120"
-        "ypos"                       "r35"
+        "ypos"                       "r25"
         "wide"                       "100"
         "tall"                       "25"
         "autoResize"                 "0"
@@ -16,10 +25,9 @@
         "visible"                    "0"
         "enabled"                    "1"
         "tabPosition"                "0"
-        "PaintBackgroundType"        "2"
-
-        "bgcolor_override"           "0 0 0 96"
-
+        "PaintBackgroundType"        "0"
+        "bgcolor_override"           "0 0 0 0"
+        //"Texture1"			"ui/gfx/hud/ammo_background"
         // Divider bar
         "divider_xpos"               "60"
         "divider_ypos"               "4"
@@ -40,6 +48,7 @@
         "ammoicon_ypos"              "4"
         "ammoicon_wide"              "16"
         "ammoicon_tall"              "16"
+        zpos 2
     }
     "Clip"
     {

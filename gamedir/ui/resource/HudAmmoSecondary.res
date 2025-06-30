@@ -18,7 +18,7 @@
         "tabPosition"                "0"
         "PaintBackgroundType"        "2"
 
-        "bgcolor_override"           "0 0 0 96"
+        "bgcolor_override"           "0 0 0 0"
 
         // Ammo icon position
         "ammoicon_xpos"              "30"

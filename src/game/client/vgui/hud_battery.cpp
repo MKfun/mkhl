@@ -3,13 +3,14 @@
 #include <vgui/ISurface.h>
 #include <vgui_controls/ImagePanel.h>
 #include <vgui_controls/Label.h>
+#include "convar.h"
 #include "hud.h"
 #include "cl_util.h"
 #include "client_steam_context.h"
 #include "client_vgui.h"
 #include "client_viewport.h"
 #include "hud_battery.h"
-
+extern ConVar hud_custom_progressbar;
 CHudBatteryPanel::CHudBatteryPanel()
     : BaseClass(nullptr, VIEWPORT_PANEL_HUD_BATTERY)
 {
@@ -74,6 +75,13 @@ void CHudBatteryPanel::OnThink()
 	currentColor[3] = a2;
 	m_pBatteryAmount->SetFgColor(currentColor);
 	m_pBatteryIcon->SetFgColor(currentColor);
+	if (!hud_custom_progressbar.GetBool())
+	{
+		m_pBatteryProgress->SetVisible(false);
+	}
+	else {
+		m_pBatteryProgress->SetVisible(true);
+	}
 }
 
 void CHudBatteryPanel::ShowPanel(bool state)

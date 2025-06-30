@@ -33,6 +33,7 @@
 
 #include "hud.h"
 #include "cl_util.h"
+#include "cvardef.h"
 #include "parsemsg.h"
 #include "vgui/client_viewport.h"
 #include "gameui/options/colorpicker/texture_manager.h"
@@ -130,7 +131,8 @@ ConVar hud_color2("hud_color2", "255 160 0", FCVAR_BHL_ARCHIVE, "HUD color when 
 ConVar hud_color3("hud_color3", "255 96 0", FCVAR_BHL_ARCHIVE, "HUD color when (25%; 50%)");
 ConVar hud_color4("hud_color4", "255 0 0", FCVAR_BHL_ARCHIVE, "HUD color when (0%; 25%)");
 ConVar hud_color_override("hud_color_override", "0", FCVAR_ARCHIVE, "Enables/disables HUD coloring according to amount");
-ConVar hud_custom("hud_custom", "0", FCVAR_BHL_ARCHIVE, "Custom HUD using VGUI2");
+ConVar hud_custom("hud_custom", "1", FCVAR_BHL_ARCHIVE, "Custom HUD using VGUI2");
+ConVar hud_custom_progressbar("hud_custom_progressbar", "1", FCVAR_BHL_ARCHIVE, "csgo-like hud");
 ConVar hud_draw("hud_draw", "1", FCVAR_ARCHIVE, "Opacity of the HUD");
 ConVar hud_dim("hud_dim", "1", FCVAR_BHL_ARCHIVE, "Dim inactive HUD elements");
 ConVar hud_scale("hud_scale", "0", FCVAR_BHL_ARCHIVE, "HUD Scale: Auto, 50%, 100%, 200%, 400% (restart required)");

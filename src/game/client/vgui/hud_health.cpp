@@ -11,6 +11,7 @@
 #include "vgui_controls/ProgressBar.h"
 #include "hud_health.h"
 
+extern ConVar hud_custom_progressbar;
 CHudHealthPanel::CHudHealthPanel()
     : BaseClass(nullptr, VIEWPORT_PANEL_HUD_HEALTH)
 {
@@ -23,6 +24,7 @@ CHudHealthPanel::CHudHealthPanel()
 	m_pHealthAmount = new vgui2::Label(this, "HealthAmount", "100");
 	m_pHealthProgress = new vgui2::ContinuousProgressBar( this, "HealthAmountProgress");
 	LoadControlSettings(VGUI2_ROOT_DIR "resource/HudHealth.res");
+
 
 	SetVisible(false);
 }
@@ -75,6 +77,13 @@ void CHudHealthPanel::OnThink()
 	currentColor[3] = a2;
 	m_pHealthAmount->SetFgColor(currentColor);
 	m_pHealthIcon->SetFgColor(currentColor);
+	if (!hud_custom_progressbar.GetBool())
+	{
+		m_pHealthProgress->SetVisible(false);
+	}
+	else {
+		m_pHealthProgress->SetVisible(true);
+	}
 }
 
 void CHudHealthPanel::ShowPanel(bool state)

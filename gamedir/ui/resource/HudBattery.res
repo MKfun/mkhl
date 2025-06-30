@@ -1,12 +1,20 @@
 "ui/resource/HudBattery.res"
 {
+//    "BatteryImagePanel"
+//    {
+ //       "ControlName"                "ImagePanel"
+ //       "fieldName"                  "CHudBatteryImagePanel"
+ //       "image"                      "ui/gfx/hud/healtharmor_background"
+ //       "wide"                       "350"
+  //      tall 25
+    //}
     "HudBatteryPanel"
     {
         "ControlName"                "CHudBatteryPanel"
         "fieldName"                  "HudBatteryPanel"
-        "xpos"                       "112"
-        "ypos"                       "r35"
-        "wide"                       "76"
+        "xpos"                       "162"
+        "ypos"                       "r25"
+        "wide"                       "160"
         "tall"                       "25"
         "autoResize"                 "0"
         "pinCorner"                  "0"
@@ -17,7 +25,8 @@
         "enabled"                    "1"
         "tabPosition"                "0"
         "PaintBackgroundType"        "2"
-        "bgcolor_override"           "0 0 0 96"
+        "bgcolor_override"           "0 0 0 0"
+        zpos 2
     }
     "BatteryIcon"
     {
@@ -28,6 +37,7 @@
         "wide"                       "144"
         "tall"                       "18"
         "autoResize"                 "0"
+        zpos 1
         "pinCorner"                  "0"
         "RoundedCorners"             "15"
         "pin_corner_to_sibling"      "0"
@@ -54,6 +64,7 @@
         "xpos"                       "18"
         "ypos"                       "0"
         "wide"                       "50"
+        zpos 1
         "tall"                       "20"
         "autoResize"                 "0"
         "pinCorner"                  "0"
@@ -82,6 +93,7 @@
         "xpos"                       "18"
         "ypos"                       "0"
         "wide"                       "50"
+        zpos 1
         "tall"                       "20"
         "autoResize"                 "0"
         "pinCorner"                  "0"
@@ -108,6 +120,7 @@
         "xpos"                       "18"
         "ypos"                       "0"
         "wide"                       "50"
+        zpos 1
         "tall"                       "20"
         "autoResize"                 "0"
         "pinCorner"                  "0"
@@ -130,6 +143,9 @@
     }
     "BatteryAmountProgress"
     {
-        "visible"   "0"
+        "visible"   "1"
+        "xpos"      "70"
+        "ypos"      "7"
+        "wide"      "80"
     }
 }
