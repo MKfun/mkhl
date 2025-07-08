@@ -63,6 +63,7 @@ ConVar mp_weaponbox_time("mp_weaponbox_time", "120", FCVAR_SERVER, "Dead player'
 ConVar mp_weapondrop_time("mp_weapondrop_time", "0", FCVAR_SERVER, "Manually dropped weapons will stay for this many seconds, 0 forever");
 ConVar mp_spawntype("mp_spawntype", "0", FCVAR_SERVER, "Spawn point selection method:\n0 - HL25\n1 - Pre-HL25\n2 - Random with item accounting");
 ConVar mp_eventondeath("mp_eventondeath", "1", FCVAR_SERVER, "Do something special on death (grenade/gauss)");
+ConVar mp_egon("mp_egon", "1", FCVAR_SERVER, "egon enable");
 #define TRAIN_ACTIVE  0x80
 #define TRAIN_NEW     0xc0
 #define TRAIN_OFF     0x00
@@ -552,7 +553,23 @@ int CBasePlayer ::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 
 	// keep track of amount of damage last sustained
 	m_lastDamageAmount = flDamage;
-
+	// check for quad damage powerup on the attacker
+	if (pAttacker->IsPlayer())
+	{
+		if ( ((CBasePlayer*)pAttacker)->m_flSuperDamageFinished > gpGlobals->time )
+		{
+			flDamage *= 4;
+		}
+	}
+	if (m_flInvincibleFinished > gpGlobals->time)
+	{
+		if (m_fInvincSound < gpGlobals->time)
+		{
+			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/protect3.wav", 1, ATTN_NORM);
+			m_fInvincSound = gpGlobals->time + 2;
+		}
+		return 0;
+	}
 	// Armor.
 	if (pev->armorvalue && !(bitsDamageType & (DMG_FALL | DMG_DROWN))) // armor doesn't protect against fall or drown damage!
 	{
@@ -953,7 +970,8 @@ void CBasePlayer::RemoveAllItems(BOOL removeSuit)
 		m_rgAmmo[i] = 0;
 
 	// Remove deployed satchels
-	DeactivateSatchels(this);
+	if ( !mp_eventondeath.GetBool())
+		DeactivateSatchels(this);
 
 	UpdateClientData();
 	// send Selected Weapon Message to our client
@@ -978,10 +996,10 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 	// Holster weapon immediately, to allow it to cleanup
 	if (m_pActiveItem)
 		m_pActiveItem->Holster();
-	CHandGrenade *pGrenade = (CHandGrenade *)m_pActiveItem;
-	if (pGrenade != NULL)
+	CHandGrenade *pGrenade = (CHandGrenade *)m_pActiveItem;;
+	if (pGrenade && mp_eventondeath.GetBool())
 	{
-		if (strcmp(m_pActiveItem->pszName(), "weapon_handgrenade") == 0 && mp_eventondeath.GetBool() && pGrenade->m_flStartThrow > 0)
+		if (strcmp(m_pActiveItem->pszName(), "weapon_handgrenade") == 0 && pGrenade->m_flStartThrow > 0)
 		{
 			Vector vecSrc = pev->origin + pev->view_ofs + gpGlobals->v_forward * 16;
 			Vector vecThrow = gpGlobals->v_forward + pev->velocity;
@@ -991,7 +1009,7 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 			CGrenade::ShootTimed(pev, vecSrc, vecThrow, 0.5f);
 		}
 
-		if (strcmp(m_pActiveItem->pszName(), "weapon_gauss") == 0 && mp_eventondeath.GetBool() && m_flStartCharge < gpGlobals->time - 1)
+		if (strcmp(m_pActiveItem->pszName(), "weapon_gauss") == 0 && m_flStartCharge < gpGlobals->time - 1)
 		{
 			Vector vecAiming = gpGlobals->v_forward;
 			Vector vecSrc = GetGunPosition();
@@ -1004,6 +1022,20 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 					pGauss->PrimaryAttack();
 			}
 		}
+		if (strcmp(m_pActiveItem->pszName(), "weapon_satchel") == 0 )
+		{
+			CBaseEntity *pSatchel = NULL;
+			while ((pSatchel = UTIL_FindEntityInSphere(pSatchel, this->pev->origin, 8192)) != NULL)
+			{
+				if (FClassnameIs(pSatchel->pev, "monster_satchel"))
+				{
+					if (pSatchel->pev->owner == this->edict())
+					{
+						pSatchel->Use(this, this, USE_ON, 0);
+					}
+				}
+			}
+		}
 	}
 	if (m_LastHitGroup == HITGROUP_HEAD)
 		m_bHeadshotKilled = true;
@@ -1013,7 +1045,9 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 	{
 		m_pTank->Use(this, this, USE_OFF, 0);
 	}
-
+	//Remove all powerups and powerup timers
+	m_flInvincibleFinished = m_flRadsuitFinished = m_flInvisibleFinished = m_flSuperDamageFinished = 0.0;
+	PowerUpThink();
 	// this client isn't going to be thinking for a while, so reset the sound until they respawn
 	pSound = CSoundEnt::SoundPointerForIndex(CSoundEnt::ClientSoundIndex(edict()));
 	{
@@ -2053,6 +2087,225 @@ void CBasePlayer::UpdateStatusBar()
 	}
 }
 
+void CBasePlayer::PowerUpThink(void)
+{
+	int iPowerUp = 0;
+	bool bUpdate = FALSE;
+
+	//Quad time ran out
+	if ( m_iQuakeItems & IT_QUAD && m_flSuperDamageFinished < gpGlobals->time )
+	{
+		//Clear the glowing shell effect
+		pev->renderfx = kRenderFxNone;
+		//Reset quad timer
+		m_flSuperDamageFinished = 0.0;
+		m_bPlayedQuadSound = FALSE;
+
+		//Remove the powerup
+		m_iQuakeItems &= ~IT_QUAD;
+
+		//We have other powerups, choose the one with more time remaining
+		if ( m_iQuakeItems & IT_INVISIBILITY || m_iQuakeItems & IT_INVULNERABILITY )
+		{
+			if ( m_iQuakeItems & IT_INVULNERABILITY )
+			{
+				pev->renderfx = kRenderFxGlowShell;
+				pev->rendercolor = Vector( 255, 128, 0 );	// RGB
+				pev->renderamt = 100;	// Shell size
+
+				iPowerUp = 2;
+			}
+
+			if ( m_iQuakeItems & IT_INVISIBILITY )
+			{
+				pev->renderfx = kRenderFxGlowShell;
+				pev->rendercolor = Vector( 128, 128, 128 );	// RGB
+				pev->renderamt = 5;	// Shell size
+			}
+		}
+
+		bUpdate = TRUE;
+	}
+
+	if ( m_iQuakeItems & IT_QUAD && m_flSuperDamageFinished <= gpGlobals->time + 3 && !m_bPlayedQuadSound )
+	{
+		ClientPrint(pev, HUD_PRINTNOTIFY, "#Quad_Damage_Off" );
+		EMIT_SOUND( ENT(pev), CHAN_ITEM, "items/damage2.wav", 1, ATTN_NORM );
+
+		m_bPlayedQuadSound = TRUE;
+	}
+
+	//Env Suit time ran out
+	if ( m_iQuakeItems & IT_SUIT && m_flRadsuitFinished < gpGlobals->time )
+	{
+		m_flRadsuitFinished = 0.0;
+		m_bPlayedEnvSound = FALSE;
+
+		//Remove the powerup
+		m_iQuakeItems &= ~IT_SUIT;
+
+		//We have other powerups, choose the one with more time remaining
+		if ( m_iQuakeItems & IT_QUAD || m_iQuakeItems & IT_INVULNERABILITY )
+		{
+
+			if ( m_iQuakeItems & IT_INVULNERABILITY && m_iQuakeItems & IT_QUAD )
+			{
+				pev->renderfx = kRenderFxGlowShell;
+				pev->rendercolor = Vector( 255, 125, 255 );	// RGB
+				pev->renderamt = 100;	// Shell size
+			}
+
+			else if ( m_flSuperDamageFinished > m_flInvincibleFinished )
+			{
+				pev->renderfx = kRenderFxNone;
+				pev->rendermode = kRenderNormal;
+				pev->renderamt = 255;
+
+				pev->renderfx = kRenderFxGlowShell;
+				pev->rendercolor = Vector( 128, 128, 255 );	// RGB
+				pev->renderamt = 100;	// Shell size
+			}
+			else
+			{
+				pev->renderfx = kRenderFxNone;
+				pev->rendermode = kRenderNormal;
+				pev->renderamt = 255;
+
+				pev->renderfx = kRenderFxGlowShell;
+				pev->rendercolor = Vector( 255, 128, 0 );	// RGB
+				pev->renderamt = 100;	// Shell size
+			}
+		}
+		else //Clear the invisi screen effect
+		{
+			pev->renderfx = kRenderFxNone;
+			pev->rendermode = kRenderNormal;
+			pev->renderamt = 255;
+		}
+	}
+
+	if ( m_iQuakeItems & IT_SUIT && m_flRadsuitFinished <= gpGlobals->time + 3 && !m_bPlayedEnvSound )
+	{
+		ClientPrint(pev, HUD_PRINTNOTIFY, "#BioSuit_Off" );
+		EMIT_SOUND( ENT(pev), CHAN_ITEM, "items/suit2.wav", 1, ATTN_NORM );
+
+		m_bPlayedEnvSound = TRUE;
+
+	}
+
+	//Invisibility time ran out
+	if ( m_iQuakeItems & IT_INVISIBILITY && m_flInvisibleFinished < gpGlobals->time )
+	{
+		//Reset the invi timer
+		m_flInvisibleFinished = 0.0;
+		m_bPlayedProtectSound = FALSE;
+
+		//Remove the powerup
+		m_iQuakeItems &= ~IT_INVISIBILITY;
+
+		pev->renderfx = kRenderFxNone;
+		pev->rendermode = kRenderNormal;
+		pev->renderamt = 255;
+
+		//We have other powerups, choose the one with more time remaining
+		if ( m_iQuakeItems & IT_QUAD || m_iQuakeItems & IT_INVULNERABILITY )
+		{
+			if ( m_iQuakeItems & IT_QUAD && m_iQuakeItems & IT_INVULNERABILITY )
+			{
+				pev->renderfx = kRenderFxGlowShell;
+				pev->rendercolor = Vector( 255, 125, 255 );	// RGB
+				pev->renderamt = 100;	// Shell size
+
+			}
+
+			else if ( m_flSuperDamageFinished > m_flInvincibleFinished )
+			{
+				pev->renderfx = kRenderFxGlowShell;
+				pev->rendercolor = Vector( 128, 128, 255 );	// RGB
+				pev->renderamt = 100;	// Shell size
+			}
+			else
+			{
+				pev->renderfx = kRenderFxGlowShell;
+				pev->rendercolor = Vector( 255, 128, 0 );	// RGB
+				pev->renderamt = 100;	// Shell size
+			}
+		}
+		else //Clear the invisi screen effect
+		{
+			pev->renderfx = kRenderFxNone;
+			pev->rendermode = kRenderNormal;
+			pev->renderamt = 255;
+		}
+
+		//Forces our view model to re-appear
+		// W_SetCurrentAmmo();
+
+	}
+
+	if ( m_iQuakeItems & IT_INVISIBILITY && m_flInvisibleFinished <= gpGlobals->time + 3 && !m_bPlayedInvSound )
+	{
+		ClientPrint(pev, HUD_PRINTNOTIFY, "#Ring_Shadows_Off" );
+		EMIT_SOUND( ENT(pev), CHAN_ITEM, "items/inv2.wav", 1, ATTN_NORM );
+
+		m_bPlayedInvSound = TRUE;
+
+	}
+
+	//666 time ran out
+	if ( m_iQuakeItems & IT_INVULNERABILITY && m_flInvincibleFinished < gpGlobals->time )
+	{
+		//Clear the glowing shell effect
+		pev->renderfx = kRenderFxNone;
+		//Reset 666 timer
+		m_flInvincibleFinished = 0.0;
+		m_bPlayedProtectSound = FALSE;
+
+		//Remove the powerup
+		m_iQuakeItems &= ~IT_INVULNERABILITY;
+
+		//We have other powerups, choose the one with more time remaining
+		if ( m_iQuakeItems & IT_QUAD || m_iQuakeItems & IT_INVISIBILITY )
+		{
+			if ( m_flSuperDamageFinished > m_flInvisibleFinished )
+			{
+				pev->renderfx = kRenderFxGlowShell;
+				pev->rendercolor = Vector( 128, 128, 255 );	// RGB
+				pev->renderamt = 100;	// Shell size
+
+				iPowerUp = 1;
+			}
+			else
+			{
+				pev->renderfx = kRenderFxGlowShell;
+				pev->rendercolor = Vector( 128, 128, 128 );	// RGB
+				pev->renderamt = 5;	// Shell size
+			}
+		}
+
+		bUpdate = TRUE;
+	}
+
+	if ( m_iQuakeItems & IT_INVULNERABILITY && m_flInvincibleFinished <= gpGlobals->time + 3 && !m_bPlayedProtectSound )
+	{
+		ClientPrint(pev, HUD_PRINTNOTIFY, "#Protection_Off" );
+		EMIT_SOUND( ENT(pev), CHAN_ITEM, "items/protect2.wav", 1, ATTN_NORM );
+
+		m_bPlayedProtectSound = TRUE;
+	}
+
+	if ( bUpdate )
+	{
+		// W_SetCurrentAmmo();
+
+		PLAYBACK_EVENT_FULL( FEV_GLOBAL | FEV_RELIABLE,
+							 edict(), g_usPowerUp, 0, (float *)&g_vecZero, (float *)&g_vecZero,
+							 (float)iPowerUp, 0.0, entindex(), pev->team, 1, 0 );
+	}
+
+}
+
+
 #define CLIMB_SHAKE_FREQUENCY 22 // how many frames in between screen shakes when climbing
 #define MAX_CLIMB_SPEED       200 // fastest vertical climbing speed possible
 #define CLIMB_SPEED_DEC       15 // climbing deceleration rate
@@ -2122,7 +2375,8 @@ void CBasePlayer::PreThink(void)
 		PlayerDeathThink();
 		return;
 	}
-
+	//Run Powerup think (removes powerups over time, etc)
+	PowerUpThink();
 	// So the correct flags get sent to client asap.
 	//
 	if (m_afPhysicsFlags & PFLAG_ONTRAIN)
