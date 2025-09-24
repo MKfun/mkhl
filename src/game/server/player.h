@@ -59,6 +59,11 @@
 
 #define SOUND_FLASHLIGHT_ON  "items/flashlight1.wav"
 #define SOUND_FLASHLIGHT_OFF "items/flashlight1.wav"
+#define IT_SUPERHEALTH                  (1 << 16)
+#define IT_INVISIBILITY                 (1 << 19)
+#define IT_INVULNERABILITY              (1 << 20)
+#define IT_SUIT                         (1 << 21)
+#define IT_QUAD                         (1 << 22)
 
 typedef enum
 {
@@ -189,12 +194,32 @@ public:
 
 	int m_nCustomSprayFrames; // Custom clan logo frames for this player
 	float m_flNextDecalTime; // next time this player can spray a decal
+	int		m_iQuakeItems;
+	int		m_iClientQuakeItems;	// The last status of the m_iQuakeItems sent to the client.
+	// Powerups
+	float	m_flSuperDamageFinished;
+	float	m_flInvincibleFinished;
+	float	m_flInvisibleFinished;
+	float	m_flRadsuitFinished;
+	void	PowerUpThink( void ); //Checks powerup timers and hadles their effects
+	char	m_chOldModel[64];			      //Save the player's model here
+	bool	m_bPlayedQuadSound;
+	bool	m_bPlayedEnvSound;
+	bool	m_bPlayedInvSound;
+	bool	m_bPlayedProtectSound;
+
+	BOOL	m_bLostInvincSound;
+	BOOL	m_bLostInvisSound;
+	BOOL	m_bLostSuperSound;
+	BOOL	m_bLostRadSound;
+	float	m_fInvincSound;
+	float	m_fSuperSound;
 
 	char m_szTeamName[MAX_TEAM_NAME];
 
 	virtual void Spawn(void);
 	void Pain(void);
-
+	void	W_SetCurrentAmmo( int sendanim = 1 );
 	//	virtual void Think( void );
 	virtual void Jump(void);
 	virtual void Duck(void);
@@ -367,6 +392,7 @@ public:
 	int m_iNumKilledByUnanswered[MAX_PLAYERS]; // [0-31] how many unanswered kills this player has been dealt by each other player
 	bool m_bPlayerDominated[MAX_PLAYERS]; // [0-31] array of state per other player whether player is dominating other playersAdd commentMore actions
 	CWeaponBox *CreateWeaponBox(CBasePlayerItem *pItem, CBasePlayer *pPlayerOwner, const char *modelName, Vector &origin, Vector &angles, Vector &velocity, float lifeTime, bool packAmmo);
+	void PickupObject(CBasePlayerWeapon *pWeapon);
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

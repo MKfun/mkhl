@@ -24,21 +24,19 @@
 #include "effects.h"
 #include "customentity.h"
 #include "gamerules.h"
-
+#include "convar.h"
 #define EGON_PRIMARY_VOLUME 450
 #define EGON_BEAM_SPRITE    "sprites/xbeam1.spr"
 #define EGON_FLARE_SPRITE   "sprites/XSpark1.spr"
 #define EGON_SOUND_OFF      "weapons/egon_off1.wav"
 #define EGON_SOUND_RUN      "weapons/egon_run3.wav"
 #define EGON_SOUND_STARTUP  "weapons/egon_windup2.wav"
-
 #define EGON_SWITCH_NARROW_TIME 0.75 // Time it takes to switch fire modes
 #define EGON_SWITCH_WIDE_TIME   1.5
-
 #ifndef CLIENT_DLL
+ConVar mp_egon("mp_egon", "0", FCVAR_SERVER, "enable egon");
 extern bool IsBustingGame();
 #endif
-
 enum egon_e
 {
 	EGON_IDLE1 = 0,
@@ -93,17 +91,24 @@ BOOL CEgon::Deploy(void)
 {
 	m_deployed = FALSE;
 	m_fireState = FIRE_OFF;
+
 	return DefaultDeploy("models/v_egon.mdl", "models/p_egon.mdl", EGON_DRAW, "egon");
+}
+
+
+void CEgon::Touch(CBaseEntity *pOther) {
+//	if (mp_egon.GetBool())
+		CBasePlayerWeapon::Touch(pOther);
 }
 
 int CEgon::AddToPlayer(CBasePlayer *pPlayer)
 {
+
 	if (CBasePlayerWeapon::AddToPlayer(pPlayer))
 	{
 		CBasePlayerWeapon::SendWeaponPickup(pPlayer);
 		return TRUE;
 	}
-
 	return FALSE;
 }
 
@@ -168,6 +173,8 @@ void CEgon::UseAmmo(int count)
 
 void CEgon::Attack(void)
 {
+//	PlayEmptySound();
+//	return;
 	// don't fire underwater
 	if (m_pPlayer->pev->waterlevel == 3)
 	{

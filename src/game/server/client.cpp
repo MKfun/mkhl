@@ -51,6 +51,7 @@ extern int giPrecacheGrunt;
 extern int gmsgSayText;
 
 extern int g_teamplay;
+extern unsigned short g_usPowerUp;
 
 void LinkUserMessages(void);
 
@@ -980,6 +981,8 @@ void ClientPrecache(void)
 	PRECACHE_SOUND("player/geiger3.wav");
 	PRECACHE_SOUND("player/geiger2.wav");
 	PRECACHE_SOUND("player/geiger1.wav");
+
+	g_usPowerUp			= PRECACHE_EVENT( 1, "events/powerup.sc" );
 
 	if (giPrecacheGrunt)
 		UTIL_PrecacheOther("monster_human_grunt");

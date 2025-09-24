@@ -194,6 +194,7 @@ public:
 	int MsgFunc_SetFOV(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_Concuss(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_Fog(const char *pszName, int iSize, void *pbuf);
+	int MsgFunc_GaussCharge(const char *pszName, int iSize, void *pbuf);
 
 	float GetSensitivity();
 	EBHopCap GetBHopCapState();

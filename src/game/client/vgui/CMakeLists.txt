@@ -23,5 +23,5 @@ add_sources(
 	hud_ammo.cpp
 	hud_battery.cpp
 	hud_ammo_secondary.cpp
-
+	hud_gauss.cpp
 )

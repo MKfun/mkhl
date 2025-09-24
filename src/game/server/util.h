@@ -85,6 +85,7 @@ inline edict_t *FIND_ENTITY_BY_TARGET(edict_t *entStart, const char *pszName)
 #define FILE_GLOBAL static
 #define DLL_GLOBAL
 
+extern unsigned short g_usPowerUp;
 // Until we figure out why "const" gives the compiler problems, we'll just have to use
 // this bogus "empty" define to mark things as constant.
 #define CONSTANT

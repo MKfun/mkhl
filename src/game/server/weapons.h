@@ -296,7 +296,6 @@ public:
 	// generic weapon versions of CBasePlayerItem calls
 	virtual int AddToPlayer(CBasePlayer *pPlayer);
 	virtual int AddDuplicate(CBasePlayerItem *pItem);
-
 	virtual int ExtractAmmo(CBasePlayerWeapon *pWeapon); //{ return TRUE; };			// Return TRUE if you can add ammo to yourself when picked up
 	virtual int ExtractClipAmmo(CBasePlayerWeapon *pWeapon); // { return TRUE; };			// Return TRUE if you can add ammo to yourself when picked up
 
@@ -442,6 +441,7 @@ class CWeaponBox : public CBaseEntity
 	void Touch(CBaseEntity *pOther);
 	void KeyValue(KeyValueData *pkvd);
 	BOOL IsEmpty(void);
+	void Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 	int GiveAmmo(int iCount, char *szName, int iMax, int *pIndex = NULL);
 	void SetObjectCollisionBox(void);
 
@@ -815,7 +815,7 @@ public:
 	int iItemSlot(void) { return 4; }
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer(CBasePlayer *pPlayer);
-
+	BOOL MyTouch (CBasePlayer *pPlayer);
 	BOOL Deploy(void);
 	void Holster(int skiplocal = 0);
 
@@ -838,7 +838,7 @@ public:
 
 	BOOL HasAmmo(void);
 	BOOL CanHolster();
-
+	virtual void Touch(CBaseEntity *pEntity);
 	void UseAmmo(int count);
 
 	enum EGON_FIREMODE

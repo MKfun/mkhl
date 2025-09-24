@@ -1127,7 +1127,7 @@ void CBasePlayerAmmo ::DefaultTouch(CBaseEntity *pOther)
 		{
 			SetTouch(NULL);
 			SetThink(&CBasePlayerAmmo::SUB_Remove);
-			pev->nextthink = gpGlobals->time + .1;
+			pev->nextthink = gpGlobals->time + .1f;
 		}
 	}
 	else if (gEvilImpulse101)
@@ -1135,7 +1135,7 @@ void CBasePlayerAmmo ::DefaultTouch(CBaseEntity *pOther)
 		// evil impulse 101 hack, kill always
 		SetTouch(NULL);
 		SetThink(&CBasePlayerAmmo::SUB_Remove);
-		pev->nextthink = gpGlobals->time + .1;
+		pev->nextthink = gpGlobals->time + .1f;
 	}
 }
 
@@ -1230,6 +1230,29 @@ void CWeaponBox::Precache(void)
 	PRECACHE_MODEL("models/w_weaponbox.mdl");
 }
 
+void CWeaponBox::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	if ( !pActivator || !pActivator->IsPlayer() )
+	{
+		return;
+	}
+
+	CBasePlayer *pPlayer = (CBasePlayer *)pActivator;
+//	if ( g_pGameRules->CanHaveItem( pPlayer, this ) )
+//	{
+//		// Добавляем оружие в инвентарь игрока
+//		if ( pPlayer->AddWeapon( this ) )
+//		{
+//		// Успешно подобрали, теперь удаляем сущность из мира
+//			UTIL_Remove( this );
+//
+//			// Опционально: можно воспроизвести звук подбора или сообщение
+//			EMIT_SOUND(pActivator->edict(), CHAN_ITEM, "items/gunpickup.wav", 1, ATTN_NORM); // Пример
+//			pPlayer->pev->weapons |= (1 << (GetItemInfo(NULL)->iSlot)); // Устанавливаем бит, что игрок владеет этим оружием
+//		}
+//	}
+	UTIL_Remove(pActivator);
+}
 //=========================================================
 //=========================================================
 void CWeaponBox ::KeyValue(KeyValueData *pkvd)
@@ -1263,7 +1286,7 @@ void CWeaponBox::Spawn(void)
 	pev->solid = SOLID_TRIGGER;
 
 	UTIL_SetSize(pev, g_vecZero, g_vecZero);
-
+	SetUse(&CWeaponBox::Use);
 	SET_MODEL(ENT(pev), "models/w_weaponbox.mdl");
 }
 

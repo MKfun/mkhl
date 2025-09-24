@@ -72,6 +72,7 @@ extern "C"
 	void EV_HornetGunFire(struct event_args_s *args);
 	void EV_TripmineFire(struct event_args_s *args);
 	void EV_SnarkFire(struct event_args_s *args);
+	void EV_PlayerPowerup( struct event_args_s *args  );
 
 	void EV_TrainPitchAdjust(struct event_args_s *args);
 	void EV_VehiclePitchAdjust(struct event_args_s *args);
@@ -1444,6 +1445,122 @@ enum EGON_FIREMODE
 
 #define HLARRAYSIZE(p) (sizeof(p) / sizeof(p[0]))
 
+bool CheckPVS( int playerIndex )
+{
+	//returns true if the player is in the same PVS
+	cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
+	cl_entity_t *player;
+
+	player = gEngfuncs.GetEntityByIndex( playerIndex );
+
+	if( !player || !localPlayer )
+		return false;
+
+	if ( player == localPlayer )
+		return true;
+
+	if( player->curstate.messagenum < localPlayer->curstate.messagenum )
+		return false;
+
+	return true;
+}
+
+void EV_PowerupCallback ( struct tempent_s *ent, float frametime, float currenttime )
+{
+	//If the Player is not on our PVS, then go back
+	if ( !CheckPVS( ent->clientIndex ) )
+		return;
+
+	dlight_t *dl = gEngfuncs.pEfxAPI->CL_AllocDlight ( 0 );
+
+	cl_entity_t *player = gEngfuncs.GetEntityByIndex( ent->clientIndex );
+
+	if ( !player )
+		return;
+
+	VectorCopy ( player->origin, dl->origin );
+
+	dl->radius = 270;
+	dl->dark = true;
+	dl->die = gEngfuncs.GetClientTime() + 0.001; //Kill it right away
+
+	if ( ent->entity.baseline.iuser2 == 1 )
+	{
+		if ( ent->entity.baseline.iuser1 == 1 )
+		{
+			dl->color.r = 255;
+			dl->color.g = 128;
+			dl->color.b = 128;
+		}
+		else
+		{
+			dl->color.r = 0;
+			dl->color.g = 75;
+			dl->color.b = 255;
+		}
+	}
+	else if ( ent->entity.baseline.iuser2 == 2 )
+	{
+		if ( ent->entity.baseline.iuser1 == 1 )
+		{
+			dl->color.r = 255;
+			dl->color.g = 128;
+			dl->color.b = 0;
+		}
+		else if ( ent->entity.baseline.iuser1 == 2 )
+		{
+			dl->color.r = 0;
+			dl->color.g = 128;
+			dl->color.b = 250;
+		}
+		else
+		{
+			dl->color.r = 255;
+			dl->color.g = 75;
+			dl->color.b = 0;
+		}
+	}
+	else if ( ent->entity.baseline.iuser2 == 3 )
+	{
+		dl->color.r = 255;
+		dl->color.g = 125;
+		dl->color.b = 255;
+	}
+}
+
+
+
+void EV_PlayerPowerup (event_args_t *args)
+{
+	int iEntIndex = args->iparam1;
+	int iTeam	  = args->iparam2;
+	int iPowerUp  = (int)args->fparam1;
+
+	int modelIndex;
+	char *model = "sprites/smoke.spr";
+
+	modelIndex = gEngfuncs.pEventAPI->EV_FindModelIndex ( model );
+
+	if ( args->bparam1 == 1)
+		gEngfuncs.pEfxAPI->R_KillAttachedTents ( iEntIndex );
+
+	if ( iPowerUp )
+	{
+		TEMPENTITY *pTrailSpawner = NULL;
+		pTrailSpawner = gEngfuncs.pEfxAPI->R_TempModel ( args->origin, args->velocity, args->angles, 9999, modelIndex, TE_BOUNCE_NULL );
+
+		if ( pTrailSpawner != NULL)
+		{
+			pTrailSpawner->flags |= ( FTENT_PLYRATTACHMENT | FTENT_PERSIST | FTENT_NOMODEL | FTENT_CLIENTCUSTOM );
+			pTrailSpawner->clientIndex = iEntIndex;
+
+			pTrailSpawner->entity.baseline.iuser1 = iTeam;
+			pTrailSpawner->entity.baseline.iuser2 = iPowerUp;
+
+			pTrailSpawner->callback = EV_PowerupCallback;
+		}
+	}
+}
 BEAM *pBeam;
 BEAM *pBeam2;
 

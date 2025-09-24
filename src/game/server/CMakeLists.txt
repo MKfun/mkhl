@@ -148,6 +148,7 @@ add_sources(
 	wpn_shared/hl_wpn_glock.cpp
 	xen.cpp
 	zombie.cpp
+	quake_items.cpp
 )
 
 if( PLATFORM_WINDOWS )

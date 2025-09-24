@@ -63,7 +63,7 @@ ConVar mp_weaponbox_time("mp_weaponbox_time", "120", FCVAR_SERVER, "Dead player'
 ConVar mp_weapondrop_time("mp_weapondrop_time", "0", FCVAR_SERVER, "Manually dropped weapons will stay for this many seconds, 0 forever");
 ConVar mp_spawntype("mp_spawntype", "0", FCVAR_SERVER, "Spawn point selection method:\n0 - HL25\n1 - Pre-HL25\n2 - Random with item accounting");
 ConVar mp_eventondeath("mp_eventondeath", "1", FCVAR_SERVER, "Do something special on death (grenade/gauss)");
-ConVar mp_egon("mp_egon", "1", FCVAR_SERVER, "egon enable");
+//ConVar mp_egon("mp_egon", "1", FCVAR_SERVER, "egon enable");
 #define TRAIN_ACTIVE  0x80
 #define TRAIN_NEW     0xc0
 #define TRAIN_OFF     0x00

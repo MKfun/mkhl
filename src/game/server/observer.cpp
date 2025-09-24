@@ -422,3 +422,6 @@ void CBasePlayer::Observer_CheckTarget()
 		pev->iuser2 = 0;
 	}
 }
+void CBasePlayer::PickupObject(CBasePlayerWeapon *pWeapon)
+{
+}

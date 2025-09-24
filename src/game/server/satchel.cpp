@@ -58,7 +58,7 @@ class CSatchelCharge : public CGrenade
 	void EXPORT SatchelThink(void);
 
 public:
-	void Deactivate(void);
+	void Deactivate(CBasePlayer *pOwner);
 };
 LINK_ENTITY_TO_CLASS(monster_satchel, CSatchelCharge);
 
@@ -66,8 +66,9 @@ LINK_ENTITY_TO_CLASS(monster_satchel, CSatchelCharge);
 // Deactivate - do whatever it is we do to an orphaned
 // satchel when we don't want it in the world anymore.
 //=========================================================
-void CSatchelCharge::Deactivate(void)
+void CSatchelCharge::Deactivate(CBasePlayer *pOwner)
 {
+	CSatchelCharge::DetonateUse(this, this, USE_ON, 0);
 	pev->solid = SOLID_NOT;
 	UTIL_Remove(this);
 }
@@ -491,9 +492,10 @@ void DeactivateSatchels(CBasePlayer *pOwner)
 
 		if (pSatchel)
 		{
+			pSatchel->DetonateUse(pOwner, pOwner, USE_ON, 0);
 			if (pSatchel->pev->owner == pOwner->edict())
 			{
-				pSatchel->Deactivate();
+				pSatchel->Deactivate(pOwner);
 			}
 		}
 

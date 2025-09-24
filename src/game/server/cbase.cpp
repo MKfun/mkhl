@@ -13,6 +13,8 @@
 *
 ****/
 #include <pm_shared.h>
+#include "convar.h"
+#include "enginecallback.h"
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -769,3 +771,5 @@ CBaseEntity *CBaseEntity::Create(char *szName, const Vector &vecOrigin, const Ve
 	DispatchSpawn(pEntity->edict());
 	return pEntity;
 }
+
+
