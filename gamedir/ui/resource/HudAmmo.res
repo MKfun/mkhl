@@ -4,8 +4,9 @@
     {
         "ControlName"                "ImagePanel"
         "fieldName"                  "CHudHealthImagePanel"
-        "image"                      "ui/gfx/hud/healtharmor_background"
-        "wide"                       "350"
+        "image"                      "ui/gfx/hud/ammo_background"
+        "wide"                       "300"
+        //"xpos"                       "r10"
         tall 25
         zpos -1
     }
@@ -13,19 +14,19 @@
     {
         "ControlName"                "CHudAmmoPanel"
         "fieldName"                  "HudAmmoPanel"
-        "xpos"                       "r120"
+        "xpos"                       "0"
         "ypos"                       "r25"
-        "wide"                       "100"
-        "tall"                       "25"
+        "wide"                       "150"
+        "tall"                       "90"
         "autoResize"                 "0"
         "pinCorner"                  "0"
-        "RoundedCorners"             "15"
+        "RoundedCorners"             "0"
         "pin_corner_to_sibling"      "0"
         "pin_to_sibling_corner"      "0"
-        "visible"                    "0"
+        "visible"                    "1"
         "enabled"                    "1"
         "tabPosition"                "0"
-        "PaintBackgroundType"        "0"
+        "PaintBackgroundType"        "2"
         "bgcolor_override"           "0 0 0 0"
         //"Texture1"			"ui/gfx/hud/ammo_background"
         // Divider bar
@@ -48,8 +49,33 @@
         "ammoicon_ypos"              "4"
         "ammoicon_wide"              "16"
         "ammoicon_tall"              "16"
-        zpos 2
+        //zpos 2
     }
+    "KillCounter"
+	{
+		"fieldName"			"KillCounter"
+		"xpos"				"100"
+		"ypos"				"8"
+		"wide"				"64"
+		"tall"				"24"
+		"base_resolution_wide" "1920"
+		"base_resolution_tall" "1080"
+		"textAlignment"		"west"
+		//"font"				"HudNumbersSmall"
+		"fgcolor_override"	"White"
+	}
+		"KillCounterImage"
+	{
+		"fieldName"			"KillCounterImage"
+		"xpos"				"74"
+		"ypos"				"6"
+		"wide"				"24"
+		"tall"				"24"
+		"base_resolution_wide" "1920"
+		"base_resolution_tall" "1080"
+		"image"				"hud/kill_icon"
+		"scaleImage"			"1"
+	}
     "Clip"
     {
         "ControlName"                "Label"
@@ -78,6 +104,7 @@
         "textinsety"                 "0"
         "auto_wide_tocontents"       "0"
         "use_proportional_insets"    "0"
+        zpos 2
     }
     "ClipGlow"
     {
