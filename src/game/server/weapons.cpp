@@ -829,6 +829,8 @@ int CBasePlayerWeapon::UpdateClientData(CBasePlayer *pPlayer)
 			WRITE_BYTE(state);
 			WRITE_BYTE(m_iId);
 			WRITE_BYTE(m_iClip);
+			WRITE_BYTE(pPlayer->m_NumEnemiesKilledThisSpawn);
+			
 			MESSAGE_END();
 		}
 
@@ -836,6 +838,7 @@ int CBasePlayerWeapon::UpdateClientData(CBasePlayer *pPlayer)
 		WRITE_BYTE(state);
 		WRITE_BYTE(m_iId);
 		WRITE_BYTE(m_iClip);
+		WRITE_BYTE(pPlayer->m_NumEnemiesKilledThisSpawn);
 		MESSAGE_END();
 
 		m_iClientClip = m_iClip;

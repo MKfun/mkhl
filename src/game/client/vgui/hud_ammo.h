@@ -41,7 +41,8 @@ private:
 	vgui2::Label *m_pDigitRightLabel = nullptr;
 	vgui2::Label *m_pDigitRightBgLabel = nullptr;
 	vgui2::Label *m_pDigitRightLabelGlow = nullptr;
-
+	vgui2::Label				*m_pKillCounter;
+//	vgui2::ImagePanel			*m_pKillCounterImage = nullptr;
 	int m_iBarX = 0;
 	int m_iBarFullX = 0;
 	CPanelAnimationStringVar(32, m_szBarFullX, "bar_full_xpos", "100");
@@ -91,7 +92,7 @@ private:
 	int m_iMaxClip;
 	int m_iAmmoCount;
 	int m_iAmmoCount2;
-
+	int iNumKills;
 	ConVarRef m_pHudDim{"hud_dim"};
 };
 

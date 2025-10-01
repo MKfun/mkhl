@@ -550,6 +550,7 @@ int CHudAmmo::MsgFunc_CurWeapon(const char *pszName, int iSize, void *pbuf)
 	int iState = READ_BYTE();
 	int iId = READ_CHAR();
 	int iClip = READ_CHAR();
+	int m_NumEnemiesKilledThisSpawn = READ_CHAR();
 
 	// detect if we're also on target
 	m_fOnTarget = iState > 1;
@@ -582,12 +583,12 @@ int CHudAmmo::MsgFunc_CurWeapon(const char *pszName, int iSize, void *pbuf)
 		pWeapon->iClip = abs(iClip);
 	else
 		pWeapon->iClip = iClip;
-
+	pWeapon->iNumKills = m_NumEnemiesKilledThisSpawn;
 	if (iState == 0) // we're not the current weapon, so update no more
 		return 1;
 
 	m_pWeapon = pWeapon;
-
+	cl_entity_t *player = gEngfuncs.GetLocalPlayer();
 	UpdateCrosshair();
 
 	m_fFade = FADE_TIME;

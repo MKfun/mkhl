@@ -27,7 +27,10 @@ CHudAmmoPanel::CHudAmmoPanel()
 
 	// Default icon
 	m_pAmmoIcon = m_pAmmoIconDefault = new CTGAImage(VGUI2_ROOT_DIR "gfx/hud/default_ammo");
-
+	// Kill counter
+	m_pKillCounter = new vgui2::Label( this, "KillCounter", L"x0" );
+//	m_pKillCounterImage = new vgui2::ImagePanel(this, "KillCounterImage");
+//	m_pKillCounterImage->SetImage("gfx/hud/kill_icon.tga");
 	// Ammo icons
 	m_pAmmo357 = new CTGAImage(VGUI2_ROOT_DIR "gfx/hud/ammo_357");
 	m_pAmmo9mm = new CTGAImage(VGUI2_ROOT_DIR "gfx/hud/ammo_9mm");
@@ -124,7 +127,7 @@ void CHudAmmoPanel::UpdateAmmoPanel(WEAPON *pWeapon, int maxClip, int ammo1, int
 		m_iMaxClip = maxClip;
 		m_iAmmoCount = ammo1;
 		m_iAmmoCount2 = ammo2;
-
+		iNumKills = pWeapon->iNumKills;
 		// Set the ammo icon based on the ammo type
 		switch (m_iAmmoType)
 		{
@@ -209,7 +212,6 @@ void CHudAmmoPanel::OnThink()
 			snprintf(buf, sizeof(buf), "%d", m_iAmmoCount);
 			m_pDigitRightLabel->SetText(buf);
 			m_pDigitRightLabelGlow->SetText(buf);
-
 			// Position and size
 			SetPos(m_iBarFullX, GetYPos());
 			SetSize(m_iBarFullWide, GetTall());
@@ -252,10 +254,21 @@ void CHudAmmoPanel::OnThink()
 			}
 		}
 	}
-
+	wchar_t wszString[8];
+	if ( iNumKills > 0 )
+	{
+		V_snwprintf( wszString, sizeof( wszString ), L"x%d", iNumKills );
+		m_pKillCounter->SetText( wszString );
+		m_pKillCounter->SetVisible( true );
+//		m_pKillCounterImage->SetVisible( true );
+	}
+	else
+	{
+		m_pKillCounter->SetVisible( false );
+//		m_pKillCounterImage->SetVisible( false );
+	}
 	// Show glow effect when dimmed, if not, set full alpha and hide glow digits
 	auto [a1, a2] = gHUD.GetHudDimAlphas(m_pHudDim.GetBool(), m_fFade, gHUD.m_flTimeDelta);
-	
 	// Set colors for glow and normal digits
 	m_hudCurrentColor = Color(r, g, b, a1);
 	m_pDigitRightLabelGlow->SetFgColor(m_hudCurrentColor);

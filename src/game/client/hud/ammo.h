@@ -33,7 +33,7 @@ struct WEAPON
 	int iFlags;
 	int iId;
 	int iClip;
-
+	int iNumKills;
 	int iCount; // # of itesm in plist
 
 	HSPRITE hActive;

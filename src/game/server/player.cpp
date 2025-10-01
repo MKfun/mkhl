@@ -240,7 +240,7 @@ void LinkUserMessages(void)
 	}
 
 	gmsgSelAmmo = REG_USER_MSG("SelAmmo", sizeof(SelAmmo));
-	gmsgCurWeapon = REG_USER_MSG("CurWeapon", 3);
+	gmsgCurWeapon = REG_USER_MSG("CurWeapon", 4);
 	gmsgGeigerRange = REG_USER_MSG("Geiger", 1);
 	gmsgFlashlight = REG_USER_MSG("Flashlight", 2);
 	gmsgFlashBattery = REG_USER_MSG("FlashBat", 1);
@@ -979,6 +979,7 @@ void CBasePlayer::RemoveAllItems(BOOL removeSuit)
 	WRITE_BYTE(0);
 	WRITE_BYTE(0);
 	WRITE_BYTE(0);
+	WRITE_BYTE(0);
 	MESSAGE_END();
 }
 
@@ -996,7 +997,11 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 	// Holster weapon immediately, to allow it to cleanup
 	if (m_pActiveItem)
 		m_pActiveItem->Holster();
-	CHandGrenade *pGrenade = (CHandGrenade *)m_pActiveItem;;
+	m_NumEnemiesKilledThisSpawn = 0;
+	CHandGrenade *pGrenade = (CHandGrenade *)m_pActiveItem;
+	CBasePlayer *peKiller = (pevAttacker->flags & FL_CLIENT) ? (CBasePlayer *)CBasePlayer::Instance(pevAttacker) : nullptr;
+	if (peKiller)
+		peKiller->m_NumEnemiesKilledThisSpawn++;
 	if (pGrenade && mp_eventondeath.GetBool())
 	{
 		if (strcmp(m_pActiveItem->pszName(), "weapon_handgrenade") == 0 && pGrenade->m_flStartThrow > 0)
@@ -1081,6 +1086,7 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 
 	// Tell Ammo Hud that the player is dead
 	MESSAGE_BEGIN(MSG_ONE, gmsgCurWeapon, NULL, pev);
+	WRITE_BYTE(0);
 	WRITE_BYTE(0);
 	WRITE_BYTE(0);
 	WRITE_BYTE(0);
@@ -1695,6 +1701,7 @@ void CBasePlayer::StartWelcomeCam(void)
 
 	// Remove crosshair
 	MESSAGE_BEGIN(MSG_ONE, gmsgCurWeapon, NULL, pev);
+	WRITE_BYTE(0);
 	WRITE_BYTE(0);
 	WRITE_BYTE(0);
 	WRITE_BYTE(0);
@@ -3657,7 +3664,7 @@ void CBasePlayer::Spawn(void)
 {
 	m_flStartCharge = gpGlobals->time;
 	m_bConnected = TRUE;
-
+	m_NumEnemiesKilledThisSpawn = 0;
 	pev->classname = MAKE_STRING("player");
 	pev->health = 100;
 	pev->armorvalue = 0;
@@ -5090,10 +5097,12 @@ void CBasePlayer ::UpdateClientData(void)
 				WRITE_BYTE(0);
 				WRITE_BYTE(0);
 				WRITE_BYTE(0);
+				WRITE_BYTE(0);
 				MESSAGE_END();
 			}
 
 			MESSAGE_BEGIN(MSG_ONE, gmsgCurWeapon, NULL, pPlayer->pev);
+			WRITE_BYTE(0);
 			WRITE_BYTE(0);
 			WRITE_BYTE(0);
 			WRITE_BYTE(0);
@@ -5115,6 +5124,8 @@ void CBasePlayer ::UpdateClientData(void)
 				WRITE_BYTE(state);
 				WRITE_BYTE(gun->m_iId);
 				WRITE_BYTE(gun->m_iClip);
+				WRITE_BYTE(0);
+
 				MESSAGE_END();
 			}
 		}

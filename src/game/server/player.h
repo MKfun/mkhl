@@ -101,6 +101,7 @@ public:
 	int m_iObserverMode;
 
 	int random_seed; // See that is shared between client & server for shared weapons code
+	int m_NumEnemiesKilledThisSpawn;
 
 	int m_iPlayerSound; // the index of the sound list slot reserved for this player
 	int m_iTargetVolume; // ideal sound volume.

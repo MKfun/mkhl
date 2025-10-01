@@ -59,6 +59,7 @@ void CBasePlayer::StartObserver(void)
 	WRITE_BYTE(0);
 	WRITE_BYTE(0);
 	WRITE_BYTE(0);
+	WRITE_BYTE(0);
 	MESSAGE_END();
 
 	// reset FOV

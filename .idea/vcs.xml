@@ -3,7 +3,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/external/metamod" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/mumble-plugin-cpp" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/source_sdk" vcs="Git" />
   </component>
 </project>
