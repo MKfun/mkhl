@@ -356,6 +356,7 @@ void EXPORT W_Precache(void)
 #if !defined(OEM_BUILD) && !defined(HLDEMO_BUILD)
 	// satchel charge
 	UTIL_PrecacheOtherWeapon("weapon_satchel");
+	UTIL_PrecacheOtherWeapon("weapon_bumpmine");
 #endif
 
 	// hand grenade
@@ -1621,3 +1622,7 @@ TYPEDESCRIPTION CSatchel::m_SaveData[] = {
 	DEFINE_FIELD(CSatchel, m_chargeReady, FIELD_INTEGER),
 };
 IMPLEMENT_SAVERESTORE(CSatchel, CBasePlayerWeapon);
+TYPEDESCRIPTION CHandBump::m_SaveData[] = {
+	DEFINE_FIELD(CHandBump, m_chargeReady, FIELD_INTEGER),
+};
+IMPLEMENT_SAVERESTORE(CHandBump, CBasePlayerWeapon);

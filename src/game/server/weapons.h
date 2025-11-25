@@ -22,7 +22,7 @@ extern int gmsgAmmoPickup;
 extern int gmsgWeapPickup;
 
 void DeactivateSatchels(CBasePlayer *pOwner);
-
+void DeactivateBumps(CBasePlayer *pOwner);
 // Contact Grenade / Timed grenade / Satchel Charge
 class CGrenade : public CBaseMonster
 {
@@ -82,7 +82,7 @@ public:
 #define WEAPON_TRIPMINE    13
 #define WEAPON_SATCHEL     14
 #define WEAPON_SNARK       15
-
+#define WEAPON_BUMPMINE     16
 #define WEAPON_ALLWEAPONS (~(1 << WEAPON_SUIT))
 
 #define WEAPON_SUIT 31 // ?????
@@ -105,7 +105,9 @@ public:
 #define HANDGRENADE_WEIGHT 5
 #define SNARK_WEIGHT       5
 #define SATCHEL_WEIGHT     -10
+#define BUMPMINE_WEIGHT     -10
 #define TRIPMINE_WEIGHT    -10
+
 
 // weapon clip/carry ammo capacities
 #define URANIUM_MAX_CARRY      100
@@ -120,7 +122,7 @@ public:
 #define SNARK_MAX_CARRY        15
 #define HORNET_MAX_CARRY       8
 #define M203_GRENADE_MAX_CARRY 10
-
+#define BUMPMINE_MAX_CARRY 3
 // the maximum amount of ammo each weapon's clip can hold
 #define WEAPON_NOCLIP -1
 
@@ -156,7 +158,7 @@ public:
 #define TRIPMINE_DEFAULT_GIVE    1
 #define SNARK_DEFAULT_GIVE       5
 #define HIVEHAND_DEFAULT_GIVE    8
-
+#define BUMPMINE_DEFAULT_GIVE       1
 // The amount of ammo given to a player by an ammo item.
 #define AMMO_URANIUMBOX_GIVE   20
 #define AMMO_GLOCKCLIP_GIVE    GLOCK_MAX_CLIP
@@ -931,6 +933,40 @@ public:
 };
 
 class CSatchel : public CBasePlayerWeapon
+{
+public:
+#ifndef CLIENT_DLL
+	int Save(CSave &save);
+	int Restore(CRestore &restore);
+	static TYPEDESCRIPTION m_SaveData[];
+#endif
+
+	void Spawn(void);
+	void Precache(void);
+	int iItemSlot(void) { return 5; }
+	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer(CBasePlayer *pPlayer);
+	void PrimaryAttack(void);
+	void SecondaryAttack(void);
+	int AddDuplicate(CBasePlayerItem *pOriginal);
+	BOOL CanDeploy(void);
+	BOOL Deploy(void);
+	BOOL IsUseable(void);
+
+	void Holster(int skiplocal = 0);
+	void WeaponIdle(void);
+	void Throw(void);
+
+	virtual BOOL UseDecrement(void)
+	{
+#if defined(CLIENT_WEAPONS)
+		return TRUE;
+#else
+		return FALSE;
+#endif
+	}
+};
+class CHandBump : public CBasePlayerWeapon
 {
 public:
 #ifndef CLIENT_DLL

@@ -510,7 +510,8 @@ const char *GetModelName(int item_id)
 		case WEAPON_HANDGRENADE:        modelName = "models/w_grenade.mdl"; break;
 		case WEAPON_SATCHEL:        modelName = "models/w_satchel.mdl"; break;
 		case WEAPON_SNARK:        modelName = "models/w_squeak.mdl"; break;
-		default:
+	    case WEAPON_BUMPMINE:		modelName = "models/w_bumpmine.mdl"; break;
+	    default:
 			ALERT(at_console, "CBasePlayer::PackDeadPlayerItems(): Unhandled item- not creating weaponbox\n");
 	}
 
@@ -972,7 +973,7 @@ void CBasePlayer::RemoveAllItems(BOOL removeSuit)
 	// Remove deployed satchels
 	if ( !mp_eventondeath.GetBool())
 		DeactivateSatchels(this);
-
+	DeactivateBumps(this);
 	UpdateClientData();
 	// send Selected Weapon Message to our client
 	MESSAGE_BEGIN(MSG_ONE, gmsgCurWeapon, NULL, pev);
@@ -1002,9 +1003,9 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 	CBasePlayer *peKiller = (pevAttacker->flags & FL_CLIENT) ? (CBasePlayer *)CBasePlayer::Instance(pevAttacker) : nullptr;
 	if (peKiller)
 		peKiller->m_NumEnemiesKilledThisSpawn++;
-	if (pGrenade && mp_eventondeath.GetBool())
+	if (pGrenade && mp_eventondeath.GetBool() && pGrenade->pszName() != NULL)
 	{
-		if (strcmp(m_pActiveItem->pszName(), "weapon_handgrenade") == 0 && pGrenade->m_flStartThrow > 0)
+		if (strcmp(pGrenade->pszName(), "weapon_handgrenade") == 0 && pGrenade->m_flStartThrow > 0)
 		{
 			Vector vecSrc = pev->origin + pev->view_ofs + gpGlobals->v_forward * 16;
 			Vector vecThrow = gpGlobals->v_forward + pev->velocity;
@@ -1014,7 +1015,7 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 			CGrenade::ShootTimed(pev, vecSrc, vecThrow, 0.5f);
 		}
 
-		if (strcmp(m_pActiveItem->pszName(), "weapon_gauss") == 0 && m_flStartCharge < gpGlobals->time - 1)
+		if (strcmp(pGrenade->pszName(), "weapon_gauss") == 0 && m_flStartCharge < gpGlobals->time - 1 && !FStrEq(pGrenade->pszName(), "weapon_bumpmine"))
 		{
 			Vector vecAiming = gpGlobals->v_forward;
 			Vector vecSrc = GetGunPosition();
@@ -1027,7 +1028,7 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 					pGauss->PrimaryAttack();
 			}
 		}
-		if (strcmp(m_pActiveItem->pszName(), "weapon_satchel") == 0 )
+		if (strcmp(pGrenade->pszName(), "weapon_satchel") == 0 && !FStrEq(pGrenade->pszName(), "weapon_bumpmine") )
 		{
 			CBaseEntity *pSatchel = NULL;
 			while ((pSatchel = UTIL_FindEntityInSphere(pSatchel, this->pev->origin, 8192)) != NULL)
@@ -1312,6 +1313,7 @@ void CBasePlayer::TabulateAmmo()
 	ammo_rockets = AmmoInventory(GetAmmoIndex("rockets"));
 	ammo_uranium = AmmoInventory(GetAmmoIndex("uranium"));
 	ammo_hornets = AmmoInventory(GetAmmoIndex("Hornets"));
+	ammo_bumps = AmmoInventory(GetAmmoIndex("Bump Mines"));
 }
 
 /*
@@ -4391,6 +4393,7 @@ void CBasePlayer::CheatImpulseCommands(int iImpulse)
 		GiveNamedItem("weapon_satchel");
 		GiveNamedItem("weapon_snark");
 		GiveNamedItem("weapon_hornetgun");
+		GiveNamedItem("weapon_bumpmine");
 #endif
 		gEvilImpulse101 = FALSE;
 		break;

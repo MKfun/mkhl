@@ -64,6 +64,7 @@ CEgon g_Egon;
 CHgun g_HGun;
 CHandGrenade g_HandGren;
 CSatchel g_Satchel;
+CHandBump g_BumpMine;
 CTripmine g_Tripmine;
 CSqueak g_Snark;
 
@@ -623,6 +624,7 @@ void HUD_InitClientWeapons(void)
 	HUD_PrepEntity(&g_HGun, &player);
 	HUD_PrepEntity(&g_HandGren, &player);
 	HUD_PrepEntity(&g_Satchel, &player);
+	HUD_PrepEntity(&g_BumpMine, &player);
 	HUD_PrepEntity(&g_Tripmine, &player);
 	HUD_PrepEntity(&g_Snark, &player);
 }
@@ -737,7 +739,9 @@ void HUD_WeaponsPostThink(local_state_s *from, local_state_s *to, usercmd_t *cmd
 	case WEAPON_SATCHEL:
 		pWeapon = &g_Satchel;
 		break;
-
+	case WEAPON_BUMPMINE:
+		pWeapon = &g_BumpMine;
+		break;
 	case WEAPON_TRIPMINE:
 		pWeapon = &g_Tripmine;
 		break;
@@ -795,7 +799,7 @@ void HUD_WeaponsPostThink(local_state_s *from, local_state_s *to, usercmd_t *cmd
 		pCurrent->m_chargeReady = pfrom->iuser1;
 		pCurrent->m_fInAttack = pfrom->iuser2;
 		pCurrent->m_fireState = pfrom->iuser3;
-
+		player.ammo_bumps = (int)from->client.vuser3[0];
 		pCurrent->m_iSecondaryAmmoType = (int)from->client.vuser3[2];
 		pCurrent->m_iPrimaryAmmoType = (int)from->client.vuser4[0];
 
@@ -921,7 +925,7 @@ void HUD_WeaponsPostThink(local_state_s *from, local_state_s *to, usercmd_t *cmd
 	to->client.ammo_cells = player.ammo_uranium;
 	to->client.vuser2[0] = player.ammo_hornets;
 	to->client.ammo_rockets = player.ammo_rockets;
-
+	to->client.vuser3[0] = player.ammo_bumps;
 	if (player.m_pActiveItem->m_iId == WEAPON_RPG)
 	{
 		to->client.vuser2[1] = ((CRpg *)player.m_pActiveItem)->m_fSpotActive;

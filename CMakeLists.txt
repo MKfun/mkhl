@@ -637,7 +637,8 @@ add_sources( "${HL_PUBLIC_SRCS}" )
 add_subdirectory( src/bugfixedapi_amxx )
 
 preprocess_sources()
-add_library( bugfixedapi_amxx SHARED ${PREP_SRCS} )
+add_library( bugfixedapi_amxx SHARED ${PREP_SRCS}
+		src/game/server/bumpmine.cpp)
 check_winxp_support( bugfixedapi_amxx )
 add_auto_deploy( bugfixedapi_amxx PublishPathAMXX.txt )
 bhl_version_info( bugfixedapi_amxx "bugfixedapi_amxx.dll" "BugfixedHL-Rebased AMXX Module" )

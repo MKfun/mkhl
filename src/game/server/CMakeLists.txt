@@ -106,6 +106,7 @@ add_sources(
 	roach.cpp
 	rpg.cpp
 	satchel.cpp
+	bumpmine.cpp
 	saverestore.h
 	schedule.cpp
 	schedule.h
