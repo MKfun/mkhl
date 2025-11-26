@@ -443,5 +443,17 @@ protected:
 	float m_flEgonBustingCheckTime = -1.0f;
 	void CheckForEgons(void);
 };
-
+class CFlyingShots : public CHalfLifeMultiplay
+{
+public:
+	CFlyingShots();
+	virtual ~CFlyingShots();
+	virtual void Think(void);
+	virtual void PlayerSpawn(CBasePlayer* pPlayer);
+	virtual int WeaponShouldRespawn(CBasePlayerItem *pWeapon);
+private:
+	float m_flMinesCheckTime;
+	void CheckForMines();
+	BOOL CanHavePlayerItem(CBasePlayer *pPlayer, CBasePlayerItem *pItem);
+};
 extern DLL_GLOBAL CGameRules *g_pGameRules;

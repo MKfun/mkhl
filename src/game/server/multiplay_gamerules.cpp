@@ -58,7 +58,7 @@ float g_flIntermissionStartTime = 0;
 #define MAX_INTERMISSION_TIME 120
 
 extern cvar_t timeleft, fragsleft, sv_busters;
-
+extern ConVar sv_flyingshots;
 extern cvar_t mp_chattime;
 
 CVoiceGameMgr g_VoiceGameMgr;
@@ -2258,4 +2258,65 @@ void CMultiplayBusters::SetPlayerModel(CBasePlayer *pPlayer)
 	{
 		g_engfuncs.pfnSetClientKeyValue(pPlayer->entindex(), g_engfuncs.pfnGetInfoKeyBuffer(pPlayer->edict()), "model", "skeleton");
 	}
+}
+BOOL IsFlyingShotguns() {
+	return sv_flyingshots.GetBool();
+}
+
+#define MINES_TIME 20
+CFlyingShots::CFlyingShots() : CHalfLifeMultiplay()
+{
+	m_flMinesCheckTime = -1;
+}
+CFlyingShots::~CFlyingShots() {
+
+}
+void CFlyingShots::PlayerSpawn(CBasePlayer* pPlayer) {
+	CHalfLifeMultiplay::PlayerSpawn(pPlayer);
+	pPlayer->RemoveAllItems(0);
+	pPlayer->GiveNamedItem("weapon_bumpmine");
+	pPlayer->GiveNamedItem("weapon_shotgun");
+	pPlayer->GiveAmmo(4*SHOTGUN_DEFAULT_GIVE, "buckshot", SHOTGUN_MAX_CLIP);
+	pPlayer->GiveAmmo(3, "Bump Mines", 3);
+}
+void CFlyingShots::Think()
+{
+	CHalfLifeMultiplay::Think();
+	CheckForMines();
+}
+void CFlyingShots::CheckForMines()
+{
+	if (m_flMinesCheckTime <= 0.0f)
+	{
+		m_flMinesCheckTime = gpGlobals->time + MINES_TIME;
+		return;
+	}
+
+	if (m_flMinesCheckTime <= gpGlobals->time)
+	{
+		m_flMinesCheckTime = -1.0f;
+		for (int i = 1; i <= gpGlobals->maxClients; i++)
+		{
+			CBasePlayer *pPlayer = (CBasePlayer *)UTIL_PlayerByIndex(i);
+			if  (pPlayer)
+			{
+				pPlayer->GiveNamedItem("weapon_bumpmine");
+			}
+		}
+	}
+}
+
+int CFlyingShots::WeaponShouldRespawn(CBasePlayerItem *pWeapon) {
+	if (!FStrEq(pWeapon->pszName(), "weapon_shotgun") || !pWeapon || !pWeapon->pszName()) {
+		return GR_WEAPON_RESPAWN_NO;
+	}
+	return GR_WEAPON_RESPAWN_YES;
+}
+BOOL CFlyingShots::CanHavePlayerItem(CBasePlayer *pPlayer, CBasePlayerItem *pItem)
+{
+	if (!FStrEq(pItem->pszName(), "weapon_shotgun") && !FStrEq(pItem->pszName(), "weapon_bumpmine") || !pItem || !pItem->pszName()) {
+		pItem->DestroyItem();
+		return FALSE;
+	}
+	return CHalfLifeMultiplay::CanHavePlayerItem(pPlayer, pItem);
 }
