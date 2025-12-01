@@ -148,6 +148,7 @@ ConVar aghl_supports("aghl_supports", "0", 0, "Bitfield of features supported by
 ConVar cl_enable_html_motd("cl_enable_html_motd", "1", FCVAR_BHL_ARCHIVE, "Enables/disables support for HTML MOTDs");
 
 ConVar zoom_sensitivity_ratio("zoom_sensitivity_ratio", "1.2", FCVAR_ARCHIVE | FCVAR_BHL_ARCHIVE);
+hud_player_info_t	 g_PlayerInfoList[MAX_PLAYERS+1];	   // player info from the engine
 
 static Color s_DefaultColorCodeColors[10] = {
 	Color(0xFF, 0xAA, 0x00, 0xFF), // ^0 orange/reset

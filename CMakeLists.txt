@@ -485,13 +485,14 @@ add_sources( "${SDL2_INCLUDE_FILES}" )
 add_subdirectory( src/game/client )
 
 preprocess_sources()
-add_library( client SHARED ${PREP_SRCS} )
+add_library( client SHARED ${PREP_SRCS})
 check_winxp_support( client )
 add_auto_deploy( client PublishPathClient.txt )
 bhl_version_info( client "client.dll" "BugfixedHL-Rebased Client" )
 
 target_include_directories( client PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/game/client
+	${CMAKE_SOURCE_DIR}/external/imgui
 	${GAME_COMMON_INCLUDE_PATHS}
 	${SOURCE_SDK_INCLUDE_PATHS}
 	${UPDATER_INCLUDE_PATHS}
@@ -526,6 +527,7 @@ if( WIN32 )
 
 	target_include_directories( client PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/external/SDL2/include
+		${CMAKE_SOURCE_DIR}/external/imgui
 	)
 else()
 	# Only link with SDL2 on Linux. Windows will conditionally link in runtime.
@@ -543,6 +545,7 @@ target_link_libraries( client
 	glad
 	pcre
 	semver
+	GL
 	nlohmann_json
 	${CLIENT_PLAT_LIBS}
 	Threads::Threads
@@ -562,7 +565,42 @@ set_target_properties( client PROPERTIES PREFIX "" )
 
 create_source_groups( "${CMAKE_SOURCE_DIR}" )
 clear_sources()
+#-----------------------------------------------------------------
+# REGameUI library
+#-----------------------------------------------------------------
+add_subdirectory(src/regameui)
+preprocess_sources()
+add_library(gameui SHARED ${PREP_SRCS}
+		src/regameui/EngineInterface.h
+		src/regameui/icvar.cpp
+		src/regameui/icvar.h
+		src/regameui/VGuiSystemModuleLoader.cpp
+		src/regameui/VGuiSystemModuleLoader.h
+		src/regameui/BasePanel.cpp
+		src/regameui/BasePanel.h
+)
+target_include_directories( gameui PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR}/src/game/client
+		${CMAKE_SOURCE_DIR}/external/imgui
+		${GAME_COMMON_INCLUDE_PATHS}
+		${SOURCE_SDK_INCLUDE_PATHS}
+		${UPDATER_INCLUDE_PATHS}
+)
+target_compile_definitions( gameui PRIVATE
+		GAMEUI_EXPORTS
+		NO_STEAM
+		VERSION_SAFE_STEAM_API_INTERFACES
+		${SOURCE_SDK_DEFINES}
+		${UPDATER_DEFINES}
+)
+target_link_libraries(gameui
+		${SOURCE_SDK_LIBS}
+		SDL2
+)
+set_target_properties( gameui PROPERTIES PREFIX "" )
 
+create_source_groups( "${CMAKE_SOURCE_DIR}" )
+clear_sources()
 #-----------------------------------------------------------------
 # Server library
 #-----------------------------------------------------------------
@@ -638,6 +676,11 @@ add_subdirectory( src/bugfixedapi_amxx )
 
 preprocess_sources()
 add_library( bugfixedapi_amxx SHARED ${PREP_SRCS}
+		src/common/rgb_color.h
+		src/regameui/GameUI_Interface.cpp
+		src/regameui/GameUI_Interface.h
+		src/common/IVGuiModuleLoader.h
+		src/common/IVguiModule.h
 )
 check_winxp_support( bugfixedapi_amxx )
 add_auto_deploy( bugfixedapi_amxx PublishPathAMXX.txt )

@@ -360,5 +360,5 @@ extern int g_iTeamNumber;
 extern int g_iUser1;
 extern int g_iUser2;
 extern int g_iUser3;
-
+extern hud_player_info_t	g_PlayerInfoList[MAX_PLAYERS + 1];
 #endif

@@ -62,7 +62,7 @@ struct client_sprite_t
 	char szSprite[64];
 	int hspr;
 	int iRes;
-	wrect_t rc;
+	vrect_t rc;
 };
 
 struct hud_player_info_t

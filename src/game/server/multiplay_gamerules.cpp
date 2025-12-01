@@ -2298,7 +2298,7 @@ void CFlyingShots::CheckForMines()
 		for (int i = 1; i <= gpGlobals->maxClients; i++)
 		{
 			CBasePlayer *pPlayer = (CBasePlayer *)UTIL_PlayerByIndex(i);
-			if  (pPlayer)
+			if  (pPlayer != NULL)
 			{
 				pPlayer->GiveNamedItem("weapon_bumpmine");
 			}
