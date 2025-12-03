@@ -5,6 +5,8 @@
 
 #include "BasePanel.h"
 #include "EngineInterface.h"
+#include "IEngineVGui.h"
+#include "GameUI_Interface.h"
 
 #include <vgui/IPanel.h>
 #include <vgui/ISurface.h>
@@ -12,10 +14,19 @@
 #include <vgui/IVGui.h>
 
 using namespace vgui2;
-//-----------------------------------------------------------------------------
-CBasePanel::CBasePanel() : Panel(NULL, "BasePanel")
+static CBasePanel	*g_pBasePanel = NULL;
+
+CBasePanel *BasePanel()
 {
+	return g_pBasePanel;
+}
+
+//-----------------------------------------------------------------------------
+CBasePanel::CBasePanel() : Panel(NULL, "BaseGameUIPanel")
+{
+	g_pBasePanel = this;
 	m_eBackgroundState = BACKGROUND_NONE;
+
 }
 
 void CBasePanel::OnChildAdded(VPANEL child)
@@ -75,13 +86,13 @@ void CBasePanel::ApplySchemeSettings(IScheme *pScheme)
 	surface()->GetScreenSize(wide, tall);
 	bool hardwareFilter = false; //(wide != 800);
 
-	bimage_t &bimage = m_ImageID[0][0];
-	bimage.imageID = surface()->CreateNewTextureID();
+//	bimage_t &bimage = m_ImageID[0][0];
+//	bimage.imageID = surface()->CreateNewTextureID();
 
-	char filename[512];
-	sprintf(filename, "console/console_background" );
-	surface()->DrawSetTextureFile(bimage.imageID, filename, hardwareFilter, false);
-	surface()->DrawGetTextureSize(bimage.imageID, bimage.width, bimage.height);
+//	char filename[512];
+//	sprintf(filename, "console/console_background" );
+//	surface()->DrawSetTextureFile(bimage.imageID, filename, hardwareFilter, false);
+//	surface()->DrawGetTextureSize(bimage.imageID, bimage.width, bimage.height);
 
 	/*
 	for (int y = 0; y < BACKGROUND_ROWS; y++)
@@ -144,15 +155,39 @@ void CBasePanel::DrawBackgroundImage()
 			}
 
   */
-	bimage_t &bimage = m_ImageID[0][0];
+//	bimage_t &bimage = m_ImageID[0][0];
 	// draw the color image only if the mono image isn't yet fully opaque
-	surface()->DrawSetColor(255, 255, 255, 255);
-	surface()->DrawSetTexture(bimage.imageID);
-	surface()->DrawTexturedRect(0, 0, wide, tall);
+//	surface()->DrawSetColor(255, 255, 255, 255);
+//	surface()->DrawSetTexture(bimage.imageID);
+//	surface()->DrawTexturedRect(0, 0, wide, tall);
 
 	/*	xpos += bimage.width;
 		}
 		ypos += m_ImageID[y][0].height;
 	}
 	*/
+}
+void CBasePanel::RunFrame()
+{
+	InvalidateLayout();
+//	vgui2::GetAnimationController()->UpdateAnimations( engine->Time() );
+
+//	UpdateBackgroundState();
+
+//	if ( !m_bPlatformMenuInitialized )
+//	{
+//		// check to see if the platform is ready to load yet
+//		if ( IsX360() || g_VModuleLoader.IsPlatformReady() )
+//		{
+//			m_bPlatformMenuInitialized = true;
+//		}
+//	}
+
+	// Check to see if a pending async task has already finished
+//	if ( m_pAsyncJob && !m_pAsyncJob->m_hThreadHandle )
+//	{
+//		m_pAsyncJob->Completed();
+//		delete m_pAsyncJob;
+//		m_pAsyncJob = NULL;
+//	}
 }

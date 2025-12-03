@@ -33,6 +33,8 @@ public:
 
 	void SetBackgroundRenderState(EBackgroundState state);
 
+	void RunFrame();
+
 private:
 	void DrawBackgroundImage();
 
@@ -48,5 +50,9 @@ private:
 	typedef vgui2::Panel BaseClass;
 };
 
+//-----------------------------------------------------------------------------
+// Purpose: singleton accessor
+//-----------------------------------------------------------------------------
+extern CBasePanel *BasePanel();
 
 #endif // BASEPANEL_H

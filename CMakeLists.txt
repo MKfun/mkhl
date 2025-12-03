@@ -571,13 +571,15 @@ clear_sources()
 add_subdirectory(src/regameui)
 preprocess_sources()
 add_library(gameui SHARED ${PREP_SRCS}
-		src/regameui/EngineInterface.h
-		src/regameui/icvar.cpp
-		src/regameui/icvar.h
-		src/regameui/VGuiSystemModuleLoader.cpp
-		src/regameui/VGuiSystemModuleLoader.h
-		src/regameui/BasePanel.cpp
-		src/regameui/BasePanel.h
+		src/regameui/Sys_Utils.cpp
+		src/regameui/Sys_Utils.h
+		src/regameui/ModInfo.cpp
+		src/regameui/ModInfo.h
+		src/regameui/GameConsole.cpp
+		src/regameui/GameConsole.h
+		src/regameui/GameConsoleDialog.cpp
+		src/regameui/GameConsoleDialog.h
+
 )
 target_include_directories( gameui PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/src/game/client
@@ -595,6 +597,7 @@ target_compile_definitions( gameui PRIVATE
 )
 target_link_libraries(gameui
 		${SOURCE_SDK_LIBS}
+		GL
 		SDL2
 )
 set_target_properties( gameui PROPERTIES PREFIX "" )

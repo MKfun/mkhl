@@ -1,3 +1,10 @@
 add_sources(
         GameUI_Interface.cpp
+        EngineInterface.h
+        icvar.cpp
+        icvar.h
+        VGuiSystemModuleLoader.cpp
+        VGuiSystemModuleLoader.h
+        BasePanel.cpp
+        BasePanel.h
 )

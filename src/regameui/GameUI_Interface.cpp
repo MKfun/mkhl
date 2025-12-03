@@ -24,6 +24,7 @@
 #include "FileSystem.h"
 #include "GameUI_Interface.h"
 //#include "Sys_Utils.h"
+#include "ModInfo.h"
 #include "string.h"
 #include "tier0/icommandline.h"
 
@@ -53,13 +54,14 @@ IEngineVGui *enginevguifuncs = NULL;
 vgui2::ISurface *enginesurfacefuncs = NULL;
 IBaseUI *baseuifuncs = NULL;
 //IFriendsUser *g_pFriendsUser = NULL;
-
+cl_enginefunc_t gEngfuncs;
 #include "tier0/dbg.h"
 #include "cl_dll/IGameClientExports.h"
 #include "IGameUI.h"
 #include "IGameUIFuncs.h"
 #include "icvar.h"
 #include "VGuiSystemModuleLoader.h"
+#include "Sys_Utils.h"
 //#include "engine/.h"
 cl_enginefunc_t *engine = NULL;
 ICvar *cvar = NULL;
@@ -78,6 +80,18 @@ static CGameUI g_GameUI;
 static int g_hMutex = NULL;
 static int g_hWaitMutex = NULL;
 
+typedef CBasePanel UI_BASEMOD_PANEL_CLASS;
+inline UI_BASEMOD_PANEL_CLASS &GetUiBaseModPanelClass() { return *BasePanel(); }
+inline UI_BASEMOD_PANEL_CLASS &ConstructUiBaseModPanelClass()
+{
+	if (!BasePanel())
+		new CBasePanel();
+	return *BasePanel();
+}
+vgui2::VPANEL GetGameUIBasePanel()
+{
+	return GetUiBaseModPanelClass().GetVPanel();
+}
 static IGameClientExports *g_pGameClientExports = NULL;
 
 IGameClientExports *GameClientExports()
@@ -106,176 +120,141 @@ CGameUI::~CGameUI()
 {
 	g_pGameUI = NULL;
 }
-void CGameUI::Initialize( CreateInterfaceFn *factories, int count )
+
+static CUtlVector<CreateInterfaceFn> s_FactoryList;
+
+static void *MegaFactory(const char *pName, int *pReturnCode)
 {
-	CreateInterfaceFn factory = factories[ 0 ];
-	CreateInterfaceFn fileSystemFactory = factories[ 0 ];
-	CreateInterfaceFn vguiFactory = factories[ 0 ];
-	CreateInterfaceFn engineFactory = factories[ 0 ];
-	CreateInterfaceFn clientFactory = factories[ 0 ];
+	for (int i = 0; i < s_FactoryList.Size(); i++)
+	{
+		void *pIface = s_FactoryList[i](pName, pReturnCode);
+		if (pIface)
+			return pIface;
+	}
 
+	return nullptr;
+}
 
-//	enginesound = (IEngineSound *)factory(IENGINESOUND_CLIENT_INTERFACE_VERSION, NULL);
-	cvar		= (ICvar *)factory( VENGINE_CVAR_INTERFACE_VERSION, NULL );
-//	engine		= (cl_enginefunc_t *)factory( VENGINE_CLIENT_INTERFACE_VERSION, NULL );
+static CreateInterfaceFn s_pFactory = MegaFactory;
+void CGameUI::Initialize(CreateInterfaceFn *factories, int count)
+{
+	s_FactoryList.SetSize(count);
+	memcpy(s_FactoryList.Base(), factories, count * sizeof(CreateInterfaceFn));
+}
 
-	m_FactoryList[ 0 ] = Sys_GetFactoryThis();
-	m_FactoryList[ 1 ] = factory;
-	m_iNumFactories = count;
+//-----------------------------------------------------------------------------
+// Purpose: Initialization and setup
+//-----------------------------------------------------------------------------
+void CGameUI::Start(cl_enginefunc_t *pEnginefuncs, int iVersion, void *system)
+{
+	if (iVersion != CLDLL_INTERFACE_VERSION)
+	{
+		Error("CGameUI::Start: Incorrect engine version (expected %d, got %d)\n",
+		    CLDLL_INTERFACE_VERSION, iVersion);
+	}
 
-	vgui2::VGui_InitInterfacesList( "GameUI", m_FactoryList, 2 );
+	memcpy(&gEngfuncs, pEnginefuncs, sizeof(cl_enginefunc_t));
+
+	InternalInitialize();
+	InternalStart();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Initialization
+//-----------------------------------------------------------------------------
+void CGameUI::InternalInitialize()
+{
+	ConnectTier1Libraries(&s_pFactory, 1);
+	ConnectTier2Libraries(&s_pFactory, 1);
+//	CvarSystem::RegisterCvars();
+
+	// TODO: Remove completely, only leave gEngfuncs
+	gEngfuncs.pfnClientCmd("map c1a0"); // TODO: randomize - ScriptedSnark
+
+//	SteamAPI_InitSafe();
+//	steamapicontext->Init();
+
+//	ma_engine_init(NULL, &miniaudio);
+
+	vgui2::VGui_InitInterfacesList("GameUI", &s_pFactory, 1);
 
 	// load localization file
-	g_pVGuiLocalize->AddFile(g_pFullFileSystem, "resource/gameui_english.txt");
+	g_pVGuiLocalize->AddFile(g_pFullFileSystem, "Resource/gameui_%language%.txt");
+
+	// load mod info
+	ModInfo().LoadCurrentGameInfo();
 
 	// load localization file for kb_act.lst
-	g_pVGuiLocalize->AddFile(g_pFullFileSystem, "resource/valve_english.txt");
+	g_pVGuiLocalize->AddFile(g_pFullFileSystem, "Resource/valve_%language%.txt");
+
+	bool bFailed = false;
+	enginevguifuncs = (IEngineVGui *)s_pFactory(VENGINE_VGUI_VERSION, NULL);
+	enginesurfacefuncs = g_pVGuiSurface;
+	gameuifuncs = (IGameUIFuncs *)s_pFactory(IGAMEUIFUNCS_NAME, NULL);
+//	xboxsystem = (IXboxSystem *)s_pFactory(XBOXSYSTEM_INTERFACE_VERSION, NULL);
+	bFailed = !enginesurfacefuncs || !gameuifuncs || !enginevguifuncs;
+	if (bFailed)
+	{
+		Error("CGameUI::Start() failed to get necessary interfaces\n");
+	}
 
 	// setup base panel
-	staticPanel = new CBasePanel();
-	staticPanel->SetBounds(0, 0, 400, 300);
-	staticPanel->SetPaintBorderEnabled(false);
-	staticPanel->SetPaintBackgroundEnabled(true);
-	staticPanel->SetPaintEnabled(false);
-	staticPanel->SetVisible( true );
-	staticPanel->SetMouseInputEnabled( false );
-	staticPanel->SetKeyBoardInputEnabled( false );
+//	CBasePanel *factoryBasePanel = new CBasePanel(); // explicit singleton instantiation
+	CBasePanel *factoryBasePanel = new CBasePanel();
+	factoryBasePanel->SetBounds(0, 0, 640, 480);
+	factoryBasePanel->SetPaintBorderEnabled(false);
+	factoryBasePanel->SetPaintBackgroundEnabled(true);
+	factoryBasePanel->SetPaintEnabled(true);
+	factoryBasePanel->SetVisible(true);
 
-	enginevguifuncs = (IEngineVGui * )engineFactory( VENGINE_VGUI_VERSION, NULL);
-	if(enginevguifuncs)
-	{
-		vgui2::VPANEL rootpanel = enginevguifuncs->GetPanel(PANEL_GAMEUIDLL);
-		staticPanel->SetParent(rootpanel);
-	}
+	factoryBasePanel->SetMouseInputEnabled(IsPC());
+	// factoryBasePanel.SetKeyBoardInputEnabled( IsPC() );
+	factoryBasePanel->SetKeyBoardInputEnabled(true);
 
-	gameuifuncs = (IGameUIFuncs * )engineFactory( IGAMEUIFUNCS_NAME, NULL );
-	enginesurfacefuncs = (vgui2::ISurface * )engineFactory(VGUI_SURFACE_INTERFACE_VERSION_GS,NULL);
-	baseuifuncs = (IBaseUI *)engineFactory( BASEUI_INTERFACE_VERSION, NULL);
-	if (clientFactory)
-	{
-		g_pGameClientExports = (IGameClientExports *)clientFactory(GAMECLIENTEXPORTS_INTERFACE_VERSION, NULL);
-	}
+	vgui2::VPANEL rootpanel = enginevguifuncs->GetPanel(PANEL_GAMEUIDLL);
+	factoryBasePanel->SetParent(rootpanel);
+
+	// Client DLL interface
+	g_pGameClientExports = (IGameClientExports *)s_pFactory(GAMECLIENTEXPORTS_INTERFACE_VERSION, NULL);
 }
-int __stdcall SendShutdownMsgFunc(int hwnd, int lparam)
+int __stdcall SendShutdownMsgFunc(WHANDLE hwnd, int lparam)
 {
-//	Sys_PostMessage(hwnd, Sys_RegisterWindowMessage("ShutdownValvePlatform"), 0, 1);
+	Sys_PostMessage(hwnd, Sys_RegisterWindowMessage("ShutdownValvePlatform"), 0, 1);
 	return 1;
 }
-void CGameUI::Start(cl_enginefunc_t *engineFuncs, int interfaceVersion, void *system)
+
+void CGameUI::InternalStart()
 {
-//	ModInfo().LoadCurrentGameInfo();
+	// determine Steam location for configuration
 
+//	if (!FindPlatformDirectory(m_szPlatformDir, sizeof(m_szPlatformDir)))
+//		return;
 
-	// Determine Tracker location.
-	// ...If running with Steam, Tracker is in a well defined location relative to the game dir.  Use it if there.
-	// ...Otherwise get the tracker location from the registry key
-	if (FindPlatformDirectory(m_szPlatformDir, sizeof(m_szPlatformDir)))
+	if (IsPC())
 	{
-		// add the tracker directory to the search path
-		// add localized version first if we're not in english
-		char language[128];
-		if (vgui2::system()->GetRegistryString("HKEY_LOCAL_MACHINE\\Software\\Valve\\Steam\\Language", language, sizeof(language)))
-		{
-			if (strlen(language) > 0 && stricmp(language, "english"))
-			{
-				char path[256];
-				sprintf(path, "platform_%s", language);
-				g_pFullFileSystem->AddSearchPath(path, "PLATFORM");
-			}
-		}
-		g_pFullFileSystem->AddSearchPath("platform", "PLATFORM");
-
 		// setup config file directory
 		char szConfigDir[512];
+		Q_strncpy(szConfigDir, m_szPlatformDir, sizeof(szConfigDir));
+		Q_strncat(szConfigDir, "config", sizeof(szConfigDir), COPY_ALL_CHARACTERS);
 
-		strcpy(szConfigDir, m_szPlatformDir);
-		strcat(szConfigDir, "config");
+		Msg("Steam config directory: %s\n", szConfigDir);
 
-		/*
-		// make sure the path exists
-		_finddata_t findData;
-		long findHandle = _findfirst(steamPath, &findData);
-		if (steamPath && findHandle != -1)
-		{
-			// put the config dir directly under steam
-			_snprintf(szConfigDir, sizeof(szConfigDir), "%s/config", steamPath);
-			_findclose(findHandle);
-		}
-		else
-		{
-			// we're not running steam, so just put the config dir under the platform
-			_snprintf(szConfigDir, sizeof(szConfigDir), "%sconfig", m_szPlatformDir);
-		}
-		*/
-
-		// add the path
 		g_pFullFileSystem->AddSearchPath(szConfigDir, "CONFIG");
-		// make sure the config directory has been created
-		_mkdir(szConfigDir);
-
-		vgui2::ivgui()->DPrintf("Platform config directory: %s\n", szConfigDir);
+		g_pFullFileSystem->CreateDirHierarchy("", "CONFIG");
 
 		// user dialog configuration
 		vgui2::system()->SetUserConfigFile("InGameDialogConfig.vdf", "CONFIG");
 
-		// localization
-//		g_pVGuiLocalize->AddFile(g_pFullFileSystem, "resource/platform_%language%.txt");
-//		g_pVGuiLocalize->AddFile(g_pFullFileSystem, "resource/vgui_%language%.txt");
-
-
-		//!! hack to work around problem with userinfo not being uploaded (and therefore *Tracker field)
-		//!! this is done to make sure the *tracker userinfo field is set before we connect so that it
-		//!! will get communicated to the server
-		//!! this needs to be changed to a system where it is communicated to server when known but not before
-
-		//!! addendum: this may very happen now with the platform changes; needs to be tested before this code
-		//!! can be removed
-		{
-			// get the last known userID from the registry and set it in our userinfo string
-//			HKEY key;
-//			DWORD bufSize = sizeof(m_szPlatformDir);
-//			unsigned int lastUserID = 0;
-//			bufSize = sizeof(lastUserID);
-//			if (ERROR_SUCCESS == g_pVCR->Hook_RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Valve\\Tracker", 0, KEY_READ, &key))
-//			{
-//				g_pVCR->Hook_RegQueryValueEx(key, "LastUserID", NULL, NULL, (unsigned char *)&lastUserID, &bufSize);
-//
-//				// close the registry key
-//				g_pVCR->Hook_RegCloseKey(key);
-//			}
-//			if (lastUserID)
-//			{
-//				char buf[32];
-//				sprintf(buf, "%d", lastUserID);
-//				engine->PlayerInfo_SetValueForKey("*tracker", buf);
-//			}
-		}
+		g_pFullFileSystem->AddSearchPath("platform", "PLATFORM");
 	}
 
-	// FOR SRC
-	//	vgui::surface()->SetWorkspaceInsets( 0, 0, 0, g_pTaskbar->GetTall() );
+	// localization
+	g_pVGuiLocalize->AddFile(g_pFullFileSystem, "Resource/platform_%language%.txt");
+	g_pVGuiLocalize->AddFile(g_pFullFileSystem, "Resource/vgui_%language%.txt");
 
-	// Start loading tracker
-	if (m_szPlatformDir[0] != 0)
+	Sys_SetLastError(0L);
+	if (IsPC())
 	{
-		vgui2::ivgui()->DPrintf2("Initializing platform...\n");
-
-		// open a mutex
-//		Sys_SetLastError((unsigned long) 0);
-
-		// primary mutex is the platform.exe name
-		char szExeName[sizeof(m_szPlatformDir) + 32];
-		sprintf(szExeName, "%splatform.exe", m_szPlatformDir);
-		// convert the backslashes in the path string to be forward slashes so it can be used as a mutex name
-		for (char *ch = szExeName; *ch != 0; ch++)
-		{
-			*ch = tolower(*ch);
-			if (*ch == '\\')
-			{
-				*ch = '/';
-			}
-		}
-
 //		g_hMutex = Sys_CreateMutex("ValvePlatformUIMutex");
 //		g_hWaitMutex = Sys_CreateMutex("ValvePlatformWaitMutex");
 //		if (g_hMutex == NULL || g_hWaitMutex == NULL || Sys_GetLastError() == SYS_ERROR_INVALID_HANDLE)
@@ -291,33 +270,28 @@ void CGameUI::Start(cl_enginefunc_t *engineFuncs, int interfaceVersion, void *sy
 //			}
 //			g_hMutex = NULL;
 //			g_hWaitMutex = NULL;
-//			Error("Tracker Error: Could not access Tracker, bad mutex\n");
+//			Error("Steam Error: Could not access Steam, bad mutex\n");
 //			return;
 //		}
 //		unsigned int waitResult = Sys_WaitForSingleObject(g_hMutex, 0);
 //		if (!(waitResult == SYS_WAIT_OBJECT_0 || waitResult == SYS_WAIT_ABANDONED))
 //		{
-//			// mutex locked, need to close other tracker
-//
-//			// get the wait mutex, so that tracker.exe knows that we're trying to acquire ValveTrackerMutex
+//			// mutex locked, need to deactivate Steam (so we have the Friends/ServerBrowser data files)
+//			// get the wait mutex, so that Steam.exe knows that we're trying to acquire ValveTrackerMutex
 //			waitResult = Sys_WaitForSingleObject(g_hWaitMutex, 0);
 //			if (waitResult == SYS_WAIT_OBJECT_0 || waitResult == SYS_WAIT_ABANDONED)
 //			{
 //				Sys_EnumWindows(SendShutdownMsgFunc, 1);
 //			}
 //		}
-//		m_bTryingToLoadTracker = true;
-		// now we are set up to check every frame to see if we can Start tracker
+
+		// Play the start-up music
+//		PlayGameStartupSound();
+
+		// now we are set up to check every frame to see if we can friends/server browser
+//		m_bTryingToLoadFriends = true;
+//		m_iFriendsLoadPauseFrames = 1;
 	}
-
-	staticPanel->SetBackgroundRenderState(CBasePanel::BACKGROUND_DESKTOPIMAGE);
-
-	// start mp3 playing
-	//engine->pfnClientCmd("mp3 loop media/gamestartup.mp3\n");
-
-	// SRC version
-	//engine->ClientCmd("loop media/gamestartup.mp3\n");
-
 }
 
 bool CGameUI::FindPlatformDirectory(char *platformDir, int bufferSize)
@@ -367,7 +341,7 @@ void CGameUI::Shutdown()
 	g_VModuleLoader.UnloadPlatformModules();
 
 	// free mod info
-//	ModInfo().FreeModInfo();
+	ModInfo().FreeModInfo();
 
 }
 bool CGameUI::IsGameUIActive()
@@ -393,7 +367,7 @@ int CGameUI::ActivateGameUI()
 	// hide/show the main panel to Activate all game ui
 	staticPanel->SetVisible(true);
 	// pause the game
-	engine->pfnClientCmd("setpause");
+	gEngfuncs.pfnClientCmd("setpause");
 
 
 	// return that things have been handled
@@ -404,14 +378,14 @@ void CGameUI::HideGameUI()
 {
 	//	TRACE_FUNCTION("CGameUI::HideGameUI");
 	// we can't hide the UI if we're not in a level
-	const char *levelName = engine->pfnGetLevelName();
+	const char *levelName = gEngfuncs.pfnGetLevelName();
 	if (levelName && levelName[0])
 	{
 		//show both the background panel and the taskbar
 		staticPanel->SetVisible(false);
 
 		// unpause the game
-		engine->pfnClientCmd("unpause");
+		gEngfuncs.pfnClientCmd("unpause");
 	}
 }
 int CGameUI::HasExclusiveInput()
@@ -419,26 +393,73 @@ int CGameUI::HasExclusiveInput()
 	return IsGameUIActive();
 }
 
-void CGameUI::RunFrame()
+void CGameUI::RunFrame(void)
 {
-	// resize the background panel to the screen size
 	int wide, tall;
+#if defined(TOOLFRAMEWORK_VGUI_REFACTOR)
+	// resize the background panel to the screen size
+	vgui::VPANEL clientDllPanel = enginevguifuncs->GetPanel(PANEL_ROOT);
+
+	int x, y;
+	vgui::ipanel()->GetPos(clientDllPanel, x, y);
+	vgui::ipanel()->GetSize(clientDllPanel, wide, tall);
+	staticPanel->SetBounds(x, y, wide, tall);
+#else
 	vgui2::surface()->GetScreenSize(wide, tall);
-	staticPanel->SetSize(wide,tall);
+
+	GetUiBaseModPanelClass().SetSize(wide, tall);
+#endif
 
 	// Run frames
 	g_VModuleLoader.RunFrame();
+	GetUiBaseModPanelClass().RunFrame();
+//	GetUiBaseModPanelClass().RunFrame();
 
-	/*	if( m_pMaster )
-	{
-		m_pMaster->Frame();
-	}
-	*/
+//	GameConsole().RunFrame();
 
-	if( vgui2::surface()->GetModalPanel() )
-	{
-		vgui2::surface()->PaintTraverse( staticPanel->GetVPanel());
-	}
+//	if (IsPC() && m_bTryingToLoadFriends && m_iFriendsLoadPauseFrames-- < 1 && g_hMutex && g_hWaitMutex)
+//	{
+		// try and load Steam platform files
+//		unsigned int waitResult = Sys_WaitForSingleObject(g_hMutex, 0);
+//		if (waitResult == SYS_WAIT_OBJECT_0 || waitResult == SYS_WAIT_ABANDONED)
+//		{
+//			// we got the mutex, so load Friends/Serverbrowser
+//			// clear the loading flag
+//			m_bTryingToLoadFriends = false;
+//			g_VModuleLoader.LoadPlatformModules(&s_pFactory, 1, false);
+//
+//			// release the wait mutex
+//			Sys_ReleaseMutex(g_hWaitMutex);
+//
+//			// notify the game of our game name
+//			const char *fullGamePath = engine->GetGameDirectory();
+//			const char *pathSep = strrchr(fullGamePath, '/');
+//			if (!pathSep)
+//			{
+//				pathSep = strrchr(fullGamePath, '\\');
+//			}
+//			if (pathSep)
+//			{
+//				KeyValues *pKV = new KeyValues("ActiveGameName");
+//				pKV->SetString("name", pathSep + 1);
+//				pKV->SetInt("appid", engine->GetAppID());
+//				KeyValues *modinfo = new KeyValues("ModInfo");
+//				if (modinfo->LoadFromFile(g_pFullFileSystem, "gameinfo.txt"))
+//				{
+//					pKV->SetString("game", modinfo->GetString("game", ""));
+//				}
+//				modinfo->deleteThis();
+//
+//				g_VModuleLoader.PostMessageToAllModules(pKV);
+//			}
+//
+//			// notify the ui of a game connect if we're already in a game
+//			if (m_iGameIP)
+//			{
+//				SendConnectedToGameMessage();
+//			}
+//		}
+//	}
 }
 void CGameUI::ConnectToServer(const char *game, int IP, int port)
 {

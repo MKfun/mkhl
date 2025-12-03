@@ -82,6 +82,8 @@ private:
 	void OnDisconnectFromServer(int eSteamLoginFailure, const char *username);
 	void SetIsRunningOnSteamDeck(bool bIsRunningOnDeck);
 	bool IsRunningOnSteamDeck() const;
+	void InternalInitialize();
+	void InternalStart();
 };
 
 // Purpose: singleton accessor
