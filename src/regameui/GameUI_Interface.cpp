@@ -66,7 +66,6 @@ cl_enginefunc_t gEngfuncs;
 cl_enginefunc_t *engine = NULL;
 ICvar *cvar = NULL;
 
-static CBasePanel *staticPanel = NULL;
 
 class CGameUI;
 CGameUI *g_pGameUI = NULL;
@@ -179,18 +178,19 @@ void CGameUI::InternalInitialize()
 	vgui2::VGui_InitInterfacesList("GameUI", &s_pFactory, 1);
 
 	// load localization file
-	g_pVGuiLocalize->AddFile(g_pFullFileSystem, "Resource/gameui_%language%.txt");
+	g_pVGuiLocalize->AddFile(g_pFullFileSystem, "resource/gameui_%language%.txt");
 
 	// load mod info
 	ModInfo().LoadCurrentGameInfo();
 
 	// load localization file for kb_act.lst
-	g_pVGuiLocalize->AddFile(g_pFullFileSystem, "Resource/valve_%language%.txt");
+	g_pVGuiLocalize->AddFile(g_pFullFileSystem, "resource/valve_%language%.txt");
 
 	bool bFailed = false;
 	enginevguifuncs = (IEngineVGui *)s_pFactory(VENGINE_VGUI_VERSION, NULL);
 	enginesurfacefuncs = g_pVGuiSurface;
 	gameuifuncs = (IGameUIFuncs *)s_pFactory(IGAMEUIFUNCS_NAME, NULL);
+	baseuifuncs = (IBaseUI *)s_pFactory(IBASEUI_NAME, NULL);
 //	xboxsystem = (IXboxSystem *)s_pFactory(XBOXSYSTEM_INTERFACE_VERSION, NULL);
 	bFailed = !enginesurfacefuncs || !gameuifuncs || !enginevguifuncs;
 	if (bFailed)
@@ -206,6 +206,7 @@ void CGameUI::InternalInitialize()
 	factoryBasePanel->SetPaintBackgroundEnabled(true);
 	factoryBasePanel->SetPaintEnabled(true);
 	factoryBasePanel->SetVisible(true);
+	factoryBasePanel->	SetScheme(vgui2::scheme()->LoadSchemeFromFile("resource/ClientSourceScheme.res", "ClientSourceScheme"));
 
 	factoryBasePanel->SetMouseInputEnabled(IsPC());
 	// factoryBasePanel.SetKeyBoardInputEnabled( IsPC() );
@@ -348,7 +349,7 @@ bool CGameUI::IsGameUIActive()
 {
 	if ( m_bActivatedUI )
 	{
-		return staticPanel->IsVisible();
+		return GetUiBaseModPanelClass().IsVisible();
 	}
 	else
 		return false;
@@ -365,7 +366,7 @@ int CGameUI::ActivateGameUI()
 	//	TRACE_FUNCTION("CGameUI::ActivateGameUI");
 
 	// hide/show the main panel to Activate all game ui
-	staticPanel->SetVisible(true);
+	GetUiBaseModPanelClass().SetVisible(true);
 	// pause the game
 	gEngfuncs.pfnClientCmd("setpause");
 
@@ -382,7 +383,7 @@ void CGameUI::HideGameUI()
 	if (levelName && levelName[0])
 	{
 		//show both the background panel and the taskbar
-		staticPanel->SetVisible(false);
+		GetUiBaseModPanelClass().SetVisible(false);
 
 		// unpause the game
 		gEngfuncs.pfnClientCmd("unpause");
@@ -403,7 +404,7 @@ void CGameUI::RunFrame(void)
 	int x, y;
 	vgui::ipanel()->GetPos(clientDllPanel, x, y);
 	vgui::ipanel()->GetSize(clientDllPanel, wide, tall);
-	staticPanel->SetBounds(x, y, wide, tall);
+	GetUiBaseModPanelClass().SetBounds(x, y, wide, tall);
 #else
 	vgui2::surface()->GetScreenSize(wide, tall);
 
@@ -467,7 +468,7 @@ void CGameUI::ConnectToServer(const char *game, int IP, int port)
 	//engine->pfnClientCmd("mp3 stop\n");
 	// SRC version
 	//	engine->ClientCmd("stop\n");
-	baseuifuncs->HideGameUI();
+//	baseuifuncs->HideGameUI();
 
 	// start running our version query if we are not running steam
 	/*	if( !engine->CheckParm("-steam", NULL) )
@@ -500,11 +501,11 @@ void CGameUI::LoadingStarted(const char *resourceType, const char *resourceName)
 	if (!stricmp(resourceType, "transition"))
 	{
 		// activate the loading image
-		staticPanel->SetBackgroundRenderState(CBasePanel::BACKGROUND_LOADINGTRANSITION);
+		GetUiBaseModPanelClass().SetBackgroundRenderState(CBasePanel::BACKGROUND_BLACK);
 	}
 	else
 	{
-		staticPanel->SetBackgroundRenderState(CBasePanel::BACKGROUND_LOADING);
+		GetUiBaseModPanelClass().SetBackgroundRenderState(CBasePanel::BACKGROUND_BLACK);
 	}
 }
 
@@ -514,10 +515,10 @@ void CGameUI::LoadingFinished(const char *resourceType, const char *resourceName
 	g_VModuleLoader.PostMessageToAllModules(new KeyValues("LoadingFinished", "type", resourceType, "name", resourceName));
 
 	// stop drawing loading screen
-	staticPanel->SetBackgroundRenderState(CBasePanel::BACKGROUND_DESKTOPIMAGE);
+	GetUiBaseModPanelClass().SetBackgroundRenderState(CBasePanel::BACKGROUND_BLACK);
 
 	// hide the UI
-	baseuifuncs->HideGameUI();
+//	baseuifuncs->HideGameUI();
 }
 
 void CGameUI::StartProgressBar(const char *progressType, int progressSteps)
@@ -530,7 +531,7 @@ void CGameUI::StartProgressBar(const char *progressType, int progressSteps)
 	}
 
 	// close the start menu
-//	staticPanel->SetBackgroundRenderState(CBasePanel::BACKGROUND_LOADING);
+//	GetUiBaseModPanelClass().SetBackgroundRenderState(CBasePanel::BACKGROUND_LOADING);
 	m_pszCurrentProgressType = progressType;
 	if (m_flProgressStartTime < 0.001f)
 	{
@@ -581,7 +582,7 @@ void CGameUI::StopProgressBar(bool bError, const char *failureReason, const char
 	}
 
 	// stop drawing loading screen
-	staticPanel->SetBackgroundRenderState(CBasePanel::BACKGROUND_DESKTOPIMAGE);
+	GetUiBaseModPanelClass().SetBackgroundRenderState(CBasePanel::BACKGROUND_BLACK);
 }
 
 //-----------------------------------------------------------------------------

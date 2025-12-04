@@ -147,6 +147,7 @@ void CHistoryItem::SetText( const char *text, const char *extra )
 //-----------------------------------------------------------------------------
 CGameConsoleDialog::CGameConsoleDialog() : CTaskFrame(NULL, "GameConsole")
 {
+	SetScheme( vgui2::scheme()->LoadSchemeFromFile("resource/ClientSourceScheme.res", "ClientSourceScheme"));
 	// initialize dialog
 	MakePopup();
 	SetVisible(false);

@@ -9,11 +9,13 @@
 #endif
 
 #include <vgui_controls/Panel.h>
+#include <vgui_controls/EditablePanel.h>
+#include "vgui_controls/Button.h"
 
 //-----------------------------------------------------------------------------
 // Purpose: The panel at the top of the vgui panel hierarchy
 //-----------------------------------------------------------------------------
-class CBasePanel : public vgui2::Panel
+class CBasePanel : public vgui2::EditablePanel
 {
 public:
 	CBasePanel();
@@ -48,6 +50,7 @@ private:
 	};
 	bimage_t m_ImageID[BACKGROUND_ROWS][BACKGROUND_COLUMNS];
 	typedef vgui2::Panel BaseClass;
+	vgui2::Button *m_pButton;
 };
 
 //-----------------------------------------------------------------------------

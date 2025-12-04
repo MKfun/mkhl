@@ -22,11 +22,16 @@ CBasePanel *BasePanel()
 }
 
 //-----------------------------------------------------------------------------
-CBasePanel::CBasePanel() : Panel(NULL, "BaseGameUIPanel")
+CBasePanel::CBasePanel() : EditablePanel(NULL, "BaseGameUIPanel")
 {
+	SetProportional( true );
 	g_pBasePanel = this;
 	m_eBackgroundState = BACKGROUND_NONE;
-
+	m_pButton = new Button(this, "button", "button1");
+	m_pButton->SetArmed(true);
+	m_pButton->SetVisible(true);
+	m_pButton->SetPos(200, 200);
+	LoadControlSettings("resource/mainmenu.res");
 }
 
 void CBasePanel::OnChildAdded(VPANEL child)
@@ -36,16 +41,16 @@ void CBasePanel::OnChildAdded(VPANEL child)
 
 void CBasePanel::PaintBackground()
 {
-	const char *levelName = engine->pfnGetLevelName();
-	if (levelName && levelName[0])
-	{
+//	const char *levelName = engine->pfnGetLevelName();
+//	if (levelName && levelName[0])
+//	{
 		// render filled background in game
-		int swide, stall;
-		surface()->GetScreenSize(swide, stall);
-		surface()->DrawSetColor(0, 0, 0, 128);
-		surface()->DrawFilledRect(0, 0, swide, stall);
-		return;
-	}
+//		int swide, stall;
+//		surface()->GetScreenSize(swide, stall);
+//		surface()->DrawSetColor(0, 0, 0, 128);
+//		surface()->DrawFilledRect(0, 0, swide, stall);
+//		return;
+//	}
 
 	switch (m_eBackgroundState)
 	{
@@ -94,7 +99,6 @@ void CBasePanel::ApplySchemeSettings(IScheme *pScheme)
 //	surface()->DrawSetTextureFile(bimage.imageID, filename, hardwareFilter, false);
 //	surface()->DrawGetTextureSize(bimage.imageID, bimage.width, bimage.height);
 
-	/*
 	for (int y = 0; y < BACKGROUND_ROWS; y++)
 	{
 		for (int x = 0; x < BACKGROUND_COLUMNS; x++)
@@ -108,7 +112,6 @@ void CBasePanel::ApplySchemeSettings(IScheme *pScheme)
 			surface()->DrawGetTextureSize(bimage.imageID, bimage.width, bimage.height);
 		}
 	}
-	*/
 }
 
 void CBasePanel::SetBackgroundRenderState(EBackgroundState state)
@@ -118,7 +121,7 @@ void CBasePanel::SetBackgroundRenderState(EBackgroundState state)
 
 void CBasePanel::DrawBackgroundImage()
 {
-	//	int xpos, ypos;
+		int xpos, ypos;
 	int wide, tall;
 	GetSize(wide, tall);
 
@@ -126,11 +129,11 @@ void CBasePanel::DrawBackgroundImage()
 	int swide, stall;
 	surface()->GetScreenSize(swide, stall);
 	float xScale, yScale;
-	//	xScale = swide / 800.0f;
-	//	yScale = stall / 600.0f;
+		xScale = swide / 800.0f;
+		yScale = stall / 600.0f;
 	xScale = 1.0f;
 	yScale = 1.0f;
-	/*
+
 	// iterate and draw all the background pieces
 	ypos = 0;
 	for (int y = 0; y < BACKGROUND_ROWS; y++)
@@ -154,18 +157,17 @@ void CBasePanel::DrawBackgroundImage()
 				dy = 0;
 			}
 
-  */
 //	bimage_t &bimage = m_ImageID[0][0];
 	// draw the color image only if the mono image isn't yet fully opaque
 //	surface()->DrawSetColor(255, 255, 255, 255);
 //	surface()->DrawSetTexture(bimage.imageID);
 //	surface()->DrawTexturedRect(0, 0, wide, tall);
 
-	/*	xpos += bimage.width;
+		xpos += bimage.width;
 		}
 		ypos += m_ImageID[y][0].height;
 	}
-	*/
+
 }
 void CBasePanel::RunFrame()
 {
