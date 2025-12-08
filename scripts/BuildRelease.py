@@ -134,7 +134,6 @@ class TargetClient:
         files.append(FileToCopy('gamedir/ui', 'valve_addon/ui'))
         files.append(FileToCopy('gamedir/commandmenu_default.txt', 'valve_addon/commandmenu_default.txt'))
         files.append(FileToCopy('gamedir/models', 'valve_addon/models'))
-        files.append(FileToCopy('gamedir/sound', 'valve_addon/sound'))
         files.append(FileToCopy('gamedir/events', 'valve_addon/events'))
 
         if get_platform_type() == 'windows':
