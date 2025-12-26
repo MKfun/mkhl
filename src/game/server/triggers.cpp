@@ -2388,3 +2388,89 @@ void CClientFog::Spawn()
 	pev->renderamt = 0; // The engine won't draw this model if this is set to 0 and blending is on
 	pev->rendermode = kRenderTransTexture;
 }
+#define SF_ENVSTATIC_START_INVISIBLE		0x0001
+
+class CEnvStatic : public CBaseAnimating
+{
+public:
+	virtual void Spawn(void);
+	virtual void Precache(void);
+	//	virtual void Think(void);
+	virtual void Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+	virtual void SendClientData(CBasePlayer *pClient, int msgtype);
+
+	virtual BOOL IsAlive( void ) { return FALSE; }
+};
+
+
+//=================================================================
+// CEnvStatic - static mesh
+// pev->impulse 1 - animating, def. - 0
+//=================================================================
+LINK_ENTITY_TO_CLASS(env_static, CEnvStatic);
+
+void CEnvStatic::Precache(void)
+{
+	pev->modelindex = PRECACHE_MODEL((char *)STRING(pev->model));
+}
+
+void CEnvStatic::Spawn(void)
+{
+	Precache();
+	pev->deadflag		= DEAD_NO;
+	pev->solid			= SOLID_NOT;
+	pev->movetype		= MOVETYPE_NONE;
+	pev->takedamage		= DAMAGE_NO;
+	pev->effects		= EF_NOINTERP;
+	//	pev->flags			|= FL_DORMANT;// test?
+	pev->health			= 1.0;
+	SET_MODEL(ENT(pev),	(char *)STRING(pev->model));
+
+	m_flFrameRate = 0.0;
+	m_flGroundSpeed = 0.0;
+
+	if (pev->spawnflags & SF_ENVSTATIC_START_INVISIBLE)
+		pev->effects |= EF_NODRAW;
+
+	pev->sequence = 0;
+	pev->frame = 0;
+	pev->framerate = 0;
+	SetThink(NULL);
+	pev->nextthink = 0.0;
+	pev->animtime = gpGlobals->time + 0.1;
+}
+
+void CEnvStatic::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
+{
+	//	if (!ShouldToggle(useType, pev->impulse > 0))
+	if (!ShouldToggle(useType, (pev->effects & EF_NODRAW)?FALSE:TRUE))
+		return;
+
+	if (pev->effects & EF_NODRAW)
+	{
+		pev->effects &= ~EF_NODRAW;
+		pev->animtime = gpGlobals->time;
+		pev->framerate = 1.0;
+	}
+	else
+	{
+		pev->effects |= EF_NODRAW;
+		pev->animtime = 0.0;
+		pev->framerate = 0.0;
+	}
+}
+
+// TODO: make non-updating persistant entities on a client side
+void CEnvStatic::SendClientData(CBasePlayer *pClient, int msgtype)
+{
+	/*	MESSAGE_BEGIN(msgtype, gmsgSetStaticEnt, pev->origin, (pClient == NULL)?NULL : ENT(pClient->pev));
+		WRITE_SHORT(entindex());
+		WRITE_SHORT(pev->modelindex);
+		WRITE_BYTE(pev->rendercolor.x);
+		WRITE_BYTE(pev->rendercolor.y);
+		WRITE_BYTE(pev->rendercolor.z);
+		WRITE_BYTE(pev->renderamt);
+		WRITE_BYTE(pev->renderfx);
+		WRITE_BYTE(pev->effects);
+	MESSAGE_END();*/
+}

@@ -58,7 +58,7 @@ float g_flIntermissionStartTime = 0;
 #define MAX_INTERMISSION_TIME 120
 
 extern cvar_t timeleft, fragsleft, sv_busters;
-extern ConVar sv_flyingshots;
+extern ConVar sv_flyingshots, sv_hazardz;
 extern cvar_t mp_chattime;
 
 CVoiceGameMgr g_VoiceGameMgr;
@@ -1312,7 +1312,6 @@ void CHalfLifeMultiplay ::GoToIntermission(void)
 
 	MESSAGE_BEGIN(MSG_ALL, SVC_INTERMISSION);
 	MESSAGE_END();
-
 	// bounds check
 	int time = (int)CVAR_GET_FLOAT("mp_chattime");
 	if (time < 1)

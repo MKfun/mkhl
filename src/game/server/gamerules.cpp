@@ -35,7 +35,7 @@ extern int gmsgMOTD;
 
 int g_teamplay = 0;
 extern cvar_t sv_busters;
-extern ConVar sv_flyingshots;
+extern ConVar sv_flyingshots, sv_hazardz;
 ConVar mp_useslowdown("mp_useslowdown", "1", 0, "Slowdown behavior on +USE. 0 - Old. 1 - New");
 
 //=========================================================
@@ -347,6 +347,10 @@ CGameRules *InstallGameRules(void)
 		else if (sv_flyingshots.GetBool()){
 			g_teamplay = 0;
 			return new CFlyingShots;
+		}
+		else if (sv_hazardz.GetBool()) {
+			g_teamplay = 0;
+			return new CHazardZone;
 		}
 		else if ((int)gpGlobals->deathmatch == 1)
 		{

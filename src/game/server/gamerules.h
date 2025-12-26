@@ -456,4 +456,39 @@ private:
 	void CheckForMines();
 	BOOL CanHavePlayerItem(CBasePlayer *pPlayer, CBasePlayerItem *pItem);
 };
+class CHazardZone : public CHalfLifeMultiplay
+{
+public:
+	CHazardZone();
+	virtual ~CHazardZone();
+	virtual void Think(void);
+	virtual void PlayerSpawn(CBasePlayer *pPlayer);
+	virtual int WeaponShouldRespawn(CBasePlayerItem *pWeapon) { return FALSE; }
+	virtual BOOL FPlayerCanRespawn(CBasePlayer *pPlayer) { return FALSE; }
+	virtual void PlayerKilled(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor);
+	virtual int ItemShouldRespawn(CItem *pItem) {return FALSE;}
+	virtual int AmmoShouldRespawn(CBasePlayerAmmo *pAmmo) { return FALSE; }
+	virtual int DeadPlayerWeapons(CBasePlayer *pPlayer) { return GR_PLR_DROP_GUN_ALL; }
+	virtual int DeadPlayerAmmo(CBasePlayer *pPlayer) { return GR_PLR_DROP_AMMO_ALL; }
+	virtual void GoToIntermission(void);
+	virtual float FlHealthChargerRechargeTime(void) { return -1;}
+	virtual float FlHEVChargerRechargeTime(void) { return -1; }
+	virtual void ClientDisconnected(edict_t *pClient);
+	void CheckWinConditions();
+
+	void DelayedMVP(float tmDelay);
+	void StartWarmup();
+	void EndWarmup();
+	int   g_iGameState;
+
+protected:
+	float m_flWarmupEndTime;
+	enum GameState
+	{
+		GAME_WARMUP = 0,
+		GAME_LIVE
+	};
+	BOOL ClientConnected(edict_t *pEntity, const char *pszName, const char *pszAddress, char *szRejectReason);
+	void InitHUD(CBasePlayer *pl);
+};
 extern DLL_GLOBAL CGameRules *g_pGameRules;

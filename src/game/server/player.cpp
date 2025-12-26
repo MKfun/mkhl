@@ -1549,7 +1549,6 @@ void CBasePlayer::PlayerDeathThink(void)
 		// go to dead camera.
 		StartDeathCam();
 	}
-
 	// return if player is spectating
 	if (pev->iuser1)
 		return;

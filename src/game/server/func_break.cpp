@@ -57,6 +57,9 @@ const char *CBreakable::pSpawnObjects[] = {
 	"weapon_satchel", // 19
 	"weapon_snark", // 20
 	"weapon_hornetgun", // 21
+	"weapon_bumpmine", // 22
+	"item_longjump", // 23
+	"monster_sentry", // 24 now set as random !!!ALWAYS LAST IN ARRAY!!!
 };
 
 void CBreakable::KeyValue(KeyValueData *pkvd)
@@ -104,7 +107,14 @@ void CBreakable::KeyValue(KeyValueData *pkvd)
 	{
 		int object = atoi(pkvd->szValue);
 		if (object > 0 && object < ARRAYSIZE(pSpawnObjects))
-			m_iszSpawnObject = MAKE_STRING(pSpawnObjects[object]);
+			if (object == 24) {
+				int rand_number = (rand() % (ARRAYSIZE(pSpawnObjects))) + 1;
+				m_iszSpawnObject = MAKE_STRING(pSpawnObjects[rand_number]);
+			}
+			else
+			{
+				m_iszSpawnObject = MAKE_STRING(pSpawnObjects[object]);
+			}
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "explodemagnitude"))

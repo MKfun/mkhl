@@ -72,6 +72,7 @@ add_sources(
 	hornet.h
 	hornetgun.cpp
 	houndeye.cpp
+	hazardz_gamerules.cpp
 	ichthyosaur.cpp
 	islave.cpp
 	items.cpp

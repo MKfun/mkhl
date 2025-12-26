@@ -30,7 +30,7 @@ extern int gmsgCurWeapon;
 extern int gmsgSetFOV;
 extern int gmsgTeamInfo;
 extern int gmsgSpectator;
-
+extern bool IsHazardZ();
 extern int g_teamplay;
 
 //=========================================================
@@ -119,6 +119,9 @@ void CBasePlayer::StartObserver(void)
 //=========================================================
 void CBasePlayer::StopObserver(void)
 {
+	if (IsHazardZ()) {
+		return;
+	}
 	// Turn off spectator
 	pev->iuser1 = pev->iuser2 = 0;
 	m_iHideHUD = 0;

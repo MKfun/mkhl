@@ -477,6 +477,7 @@ cvar_t sv_pushable_fixed_tick_fudge = { "sv_pushable_fixed_tick_fudge", "15" };
 
 cvar_t sv_busters = { "sv_busters", "0" };
 ConVar sv_flyingshots("sv_flyingshots", "0", FCVAR_SERVER);
+ConVar sv_hazardz("sv_hazardz", "0", FCVAR_SERVER);
 // Register your console variables here
 // This gets called one time when the game is initialied
 void GameDLLInit(void)
