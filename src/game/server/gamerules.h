@@ -480,7 +480,8 @@ public:
 	void StartWarmup();
 	void EndWarmup();
 	int   g_iGameState;
-
+private:
+	CBaseEntity *hazzone;
 protected:
 	float m_flWarmupEndTime;
 	enum GameState

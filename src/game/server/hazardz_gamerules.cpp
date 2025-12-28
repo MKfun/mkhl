@@ -53,7 +53,7 @@ void CHazardZone::EndWarmup()
 			pPlayer->GiveNamedItem("weapon_crowbar");
 		}
 	}
-	CBaseEntity *hazzone = CBaseEntity::Create("hazard_zone", Vector(0, 0, 0), Vector(0, 0, 0), NULL);
+	hazzone = CBaseEntity::Create("hazard_zone", Vector(0, 0, 0), Vector(0, 0, 0), NULL);
 }
 
 void CHazardZone::PlayerSpawn(CBasePlayer *pPlayer)
@@ -127,6 +127,7 @@ void CHazardZone::CheckWinConditions() {
 		}
 	}
 	if (alive_people <= 1) {
+		UTIL_Remove(hazzone);
 		GoToIntermission();
 	}
 }
