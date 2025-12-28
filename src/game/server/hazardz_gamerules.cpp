@@ -9,6 +9,7 @@
 #include "edict.h"
 #include "convar.h"
 #include "utlvector.h"
+#include "hazard_zone.h"
 extern DLL_GLOBAL CGameRules *g_pGameRules;
 extern ConVar sv_hazardz;
 char last_alive[256];
@@ -49,13 +50,16 @@ void CHazardZone::EndWarmup()
 		if (pPlayer)
 		{
 			pPlayer->Spawn();
+			pPlayer->GiveNamedItem("weapon_crowbar");
 		}
 	}
+	CBaseEntity *hazzone = CBaseEntity::Create("hazard_zone", Vector(0, 0, 0), Vector(0, 0, 0), NULL);
 }
 
 void CHazardZone::PlayerSpawn(CBasePlayer *pPlayer)
 {
 	pPlayer->pev->weapons |= (1 << WEAPON_SUIT);
+
 }
 void CHazardZone::PlayerKilled(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor) {
 	// TODO: move player to observers like in regamedll_cs
@@ -123,7 +127,7 @@ void CHazardZone::CheckWinConditions() {
 		}
 	}
 	if (alive_people <= 1) {
-//		GoToIntermission();
+		GoToIntermission();
 	}
 }
 void CHazardZone::Think(void)
