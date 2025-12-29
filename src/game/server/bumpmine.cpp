@@ -28,27 +28,18 @@
 
 enum bump_state
 {
-	SATCHEL_IDLE = 0,
-	SATCHEL_READY,
-	SATCHEL_RELOAD,
+	BUMP_IDLE = 0,
+	BUMP_READY,
+	BUMP_RELOAD,
 };
 
 enum bump_e
 {
-	SATCHEL_IDLE1 = 0,
-	SATCHEL_FIDGET1,
-	SATCHEL_DRAW,
-	SATCHEL_DROP
+	BUMP_IDLE1 = 0,
+	BUMP_FIDGET1,
+	BUMP_DRAW,
+	BUMP_DROP
 };
-
-//enum bump_radio_e
-//{
-//	SATCHEL_RADIO_IDLE1 = 0,
-//	SATCHEL_RADIO_FIDGET1,
-//	SATCHEL_RADIO_DRAW,
-//	SATCHEL_RADIO_FIRE,
-//	SATCHEL_RADIO_HOLSTER
-//};
 
 class CBumpMine : public CGrenade
 {
@@ -57,8 +48,8 @@ class CBumpMine : public CGrenade
 	void Precache(void);
 	void BounceSound(void);
 
-	void EXPORT SatchelSlide(CBaseEntity *pOther);
-	void EXPORT SatchelThink(void);
+	void EXPORT BumpmineSetup(CBaseEntity *pOther);
+	void EXPORT BumpThink(void);
 
 public:
 	void Deactivate(CBasePlayer *pOwner);
@@ -67,7 +58,7 @@ LINK_ENTITY_TO_CLASS(monster_bump, CBumpMine);
 
 //=========================================================
 // Deactivate - do whatever it is we do to an orphaned
-// satchel when we don't want it in the world anymore.
+// bumps when we don't want it in the world anymore.
 //=========================================================
 void CBumpMine::Deactivate(CBasePlayer *pOwner)
 {
@@ -83,29 +74,23 @@ void CBumpMine::Spawn(void)
 	pev->solid = SOLID_TRIGGER;
 
 	SET_MODEL(ENT(pev), "models/w_bumpmine.mdl");
-	//UTIL_SetSize(pev, Vector( -16, -16, -4), Vector(16, 16, 32));	// Old box -- size of headcrab monsters/players get blocked by this
 	UTIL_SetSize(pev, Vector(-4, -4, -4), Vector(4, 4, 4)); // Uses point-sized, and can be stepped over
 	UTIL_SetOrigin(pev, pev->origin);
 
-	SetTouch(&CBumpMine::SatchelSlide);
-//	SetUse(&CBumpMine::DetonateUse);
-	SetThink(&CBumpMine::SatchelThink);
+	SetTouch(&CBumpMine::BumpmineSetup);
+	SetThink(&CBumpMine::BumpThink);
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	pev->gravity = 0.5;
 	pev->friction = 0;
 
-	pev->dmg = gSkillData.plrDmgSatchel;
-	// ResetSequenceInfo( );
+	pev->dmg = 0;
 	pev->sequence = 1;
 }
 
-void CBumpMine::SatchelSlide(CBaseEntity *pOther)
+void CBumpMine::BumpmineSetup(CBaseEntity *pOther)
 {
 	entvars_t *pevOther = pOther->pev;
-	// don't hit the guy that launched this grenade
-
-	// pev->avelocity = Vector (300, 300, 300);
 	pev->gravity = 1; // normal gravity now
 
 	// HACKHACK - On ground isn't always set, so look for ground underneath
@@ -118,14 +103,6 @@ void CBumpMine::SatchelSlide(CBaseEntity *pOther)
 		pev->velocity = pev->velocity*0;
 		pev->avelocity = pev->avelocity*0;
 		// play sliding sound, volume based on velocity
-	}
-	if (!(pev->flags & FL_ONGROUND) && pev->velocity.Length2D() > 10)
-	{
-		// Fix for a bug in engine: when object isn't moving, but its speed isn't 0 and on ground isn't set
-		if (pev->origin != m_lastBounceOrigin)
-		{
-			BounceSound();
-		}
 	}
 	if (pOther->IsPlayer())
 	{
@@ -145,10 +122,8 @@ void CBumpMine::SatchelSlide(CBaseEntity *pOther)
 	m_lastBounceOrigin = pev->origin;
 }
 
-void CBumpMine ::SatchelThink(void)
+void CBumpMine ::BumpThink(void)
 {
-	// There is no model animation so commented this out to prevent net traffic
-	//StudioFrameAdvance( );
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	if (!IsInWorld())
@@ -184,18 +159,7 @@ void CBumpMine ::Precache(void)
 
 void CBumpMine ::BounceSound(void)
 {
-	switch (RANDOM_LONG(0, 2))
-	{
-	case 0:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/g_bounce1.wav", 1, ATTN_NORM);
-		break;
-	case 1:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/g_bounce2.wav", 1, ATTN_NORM);
-		break;
-	case 2:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/g_bounce3.wav", 1, ATTN_NORM);
-		break;
-	}
+	return;
 }
 
 LINK_ENTITY_TO_CLASS(weapon_bumpmine, CHandBump);
@@ -205,7 +169,7 @@ LINK_ENTITY_TO_CLASS(weapon_bumpmine, CHandBump);
 //=========================================================
 int CHandBump::AddDuplicate(CBasePlayerItem *pOriginal)
 {
-	CHandBump *pSatchel;
+	CHandBump *pBump;
 
 #ifdef CLIENT_DLL
 	if (bIsMultiplayer())
@@ -213,29 +177,29 @@ int CHandBump::AddDuplicate(CBasePlayerItem *pOriginal)
 	if (g_pGameRules->IsMultiplayer())
 #endif
 	{
-		pSatchel = (CHandBump *)pOriginal;
+		pBump = (CHandBump *)pOriginal;
 
 		if (!pOriginal->m_pPlayer)
 			return TRUE;
 
-		int nSatchelsInPocket = pSatchel->m_pPlayer->m_rgAmmo[pSatchel->PrimaryAmmoIndex()];
-		int nNumSatchels = 0;
-		CBaseEntity *pLiveSatchel = NULL;
+		int nBumpsInPocket = pBump->m_pPlayer->m_rgAmmo[pBump->PrimaryAmmoIndex()];
+		int nNumBumps = 0;
+		CBaseEntity *pLiveBump = NULL;
 
-		while ((pLiveSatchel = UTIL_FindEntityInSphere(pLiveSatchel, pOriginal->m_pPlayer->pev->origin, 4096)) != NULL)
+		while ((pLiveBump = UTIL_FindEntityInSphere(pLiveBump, pOriginal->m_pPlayer->pev->origin, 4096)) != NULL)
 		{
-			if (FClassnameIs(pLiveSatchel->pev, "monster_bump"))
+			if (FClassnameIs(pLiveBump->pev, "monster_bump"))
 			{
-				if (pLiveSatchel->pev->owner == pOriginal->m_pPlayer->edict())
+				if (pLiveBump->pev->owner == pOriginal->m_pPlayer->edict())
 				{
-					nNumSatchels++;
+					nNumBumps++;
 				}
 			}
 		}
 
-		if (pSatchel->m_chargeReady != SATCHEL_IDLE && (nSatchelsInPocket + nNumSatchels) >= SATCHEL_MAX_CARRY)
+		if (pBump->m_chargeReady != BUMP_IDLE && (nBumpsInPocket + nNumBumps) >= BUMPMINE_MAX_CARRY)
 		{
-			// player has some satchels deployed. Refuse to add more.
+			// player has some bumps deployed. Refuse to add more.
 			return FALSE;
 		}
 	}
@@ -248,10 +212,6 @@ int CHandBump::AddDuplicate(CBasePlayerItem *pOriginal)
 int CHandBump::AddToPlayer(CBasePlayer *pPlayer)
 {
 	int bResult = CBasePlayerItem::AddToPlayer(pPlayer);
-
-//	pPlayer->pev->weapons |= (1 << m_iId);
-//	m_chargeReady = SATCHEL_IDLE; // this satchel charge weapon now forgets that any satchels are deployed by it.
-
 	if (bResult)
 	{
 		return AddWeapon();
@@ -273,10 +233,8 @@ void CHandBump::Spawn()
 void CHandBump::Precache(void)
 {
 	PRECACHE_MODEL("models/v_bumpmine.mdl");
-	PRECACHE_MODEL("models/v_satchel_radio.mdl");
 	PRECACHE_MODEL("models/w_bumpmine.mdl");
 	PRECACHE_MODEL("models/p_satchel.mdl");
-	PRECACHE_MODEL("models/p_satchel_radio.mdl");
 
 	UTIL_PrecacheOther("monster_bump");
 }
@@ -314,11 +272,7 @@ BOOL CHandBump::Deploy()
 {
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
-
-//	if (m_chargeReady)
-//		return DefaultDeploy("models/v_satchel_radio.mdl", "models/p_satchel_radio.mdl", SATCHEL_RADIO_DRAW, "hive");
-//	else
-		return DefaultDeploy("models/v_bumpmine.mdl", "models/p_satchel.mdl", SATCHEL_DRAW, "trip");
+		return DefaultDeploy("models/v_bumpmine.mdl", "models/p_satchel.mdl", BUMP_DRAW, "trip");
 
 	return TRUE;
 }
@@ -331,7 +285,7 @@ void CHandBump::Holster(int skiplocal /* = 0 */)
 
 	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] >= 0)
 	{
-		SendWeaponAnim(SATCHEL_DROP);
+		SendWeaponAnim(BUMP_DROP);
 	}
 	else
 	{
@@ -341,7 +295,7 @@ void CHandBump::Holster(int skiplocal /* = 0 */)
 
 void CHandBump::PrimaryAttack(void)
 {
-	if (m_chargeReady != SATCHEL_RELOAD)
+	if (m_chargeReady != BUMP_RELOAD)
 	{
 		Throw();
 	}
@@ -361,18 +315,15 @@ void CHandBump::Throw(void)
 
 		Vector vecThrow = gpGlobals->v_forward * 274 + m_pPlayer->pev->velocity;
 
-		CBaseEntity *pSatchel = Create("monster_bump", vecSrc, Vector(0,0,0), m_pPlayer->edict());
-		pSatchel->pev->velocity = vecThrow;
-		pSatchel->pev->avelocity.y = 400;
+		CBaseEntity *pBump = Create("monster_bump", vecSrc, Vector(0,0,0), m_pPlayer->edict());
+		pBump->pev->velocity = vecThrow;
+		pBump->pev->avelocity.y = 400;
 		UTIL_MakeVectors(m_pPlayer->pev->v_angle);
-
-#else
-//		LoadVModel("models/v_satchel_radio.mdl", m_pPlayer);
 #endif
 		// player "shoot" animation
 		m_pPlayer->SetAnimation(PLAYER_ATTACK1);
 
-		m_chargeReady = SATCHEL_READY;
+		m_chargeReady = BUMP_READY;
 
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 
@@ -392,16 +343,16 @@ void CHandBump::WeaponIdle(void)
 
 	switch (m_chargeReady)
 	{
-	case SATCHEL_IDLE:
-		SendWeaponAnim(SATCHEL_FIDGET1);
+	case BUMP_IDLE:
+		SendWeaponAnim(BUMP_FIDGET1);
 		// use tripmine animations
 		UTIL_strcpy(m_pPlayer->m_szAnimExtention, "trip");
 		break;
-	case SATCHEL_READY:
+	case BUMP_READY:
 		// use hivehand animations
 		UTIL_strcpy(m_pPlayer->m_szAnimExtention, "hive");
 		break;
-	case SATCHEL_RELOAD:
+	case BUMP_RELOAD:
 		if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
 		{
 			Holster();
@@ -409,27 +360,27 @@ void CHandBump::WeaponIdle(void)
 		}
 
 #ifndef CLIENT_DLL
-		m_pPlayer->pev->viewmodel = MAKE_STRING("models/v_satchel.mdl");
+		m_pPlayer->pev->viewmodel = MAKE_STRING("models/v_bumpmine.mdl");
 		m_pPlayer->pev->weaponmodel = MAKE_STRING("models/p_satchel.mdl");
 #else
 		LoadVModel("models/v_bumpmine.mdl", m_pPlayer);
 #endif
 
-		SendWeaponAnim(SATCHEL_DRAW);
+		SendWeaponAnim(BUMP_DRAW);
 
 		// use tripmine animations
 		UTIL_strcpy(m_pPlayer->m_szAnimExtention, "trip");
 
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
-		m_chargeReady = SATCHEL_IDLE;
+		m_chargeReady = BUMP_IDLE;
 		break;
 	}
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15); // how long till we do this again.
 }
 
 //=========================================================
-// DeactivateSatchels - removes all satchels owned by
+// DeactivateBumps - removes all bumps owned by
 // the provided player. Should only be used upon death.
 //
 // Made this global on purpose.
@@ -443,13 +394,13 @@ void DeactivateBumps(CBasePlayer *pOwner)
 	while (!FNullEnt(pFind))
 	{
 		CBaseEntity *pEnt = CBaseEntity::Instance(pFind);
-		CBumpMine *pSatchel = (CBumpMine *)pEnt;
+		CBumpMine *pBump = (CBumpMine *)pEnt;
 
-		if (pSatchel)
+		if (pBump)
 		{
-			if (pSatchel->pev->owner == pOwner->edict())
+			if (pBump->pev->owner == pOwner->edict())
 			{
-				pSatchel->Deactivate(pOwner);
+				pBump->Deactivate(pOwner);
 			}
 		}
 

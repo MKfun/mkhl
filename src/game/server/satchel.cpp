@@ -25,17 +25,17 @@
 
 enum satchel_state
 {
-	SATCHEL_IDLE = 0,
+	BUMP_IDLE = 0,
 	SATCHEL_READY,
-	SATCHEL_RELOAD,
+	BUMP_RELOAD,
 };
 
 enum satchel_e
 {
-	SATCHEL_IDLE1 = 0,
-	SATCHEL_FIDGET1,
-	SATCHEL_DRAW,
-	SATCHEL_DROP
+	BUMP_IDLE1 = 0,
+	BUMP_FIDGET1,
+	BUMP_DRAW,
+	BUMP_DROP
 };
 
 enum satchel_radio_e
@@ -221,7 +221,7 @@ int CSatchel::AddDuplicate(CBasePlayerItem *pOriginal)
 			}
 		}
 
-		if (pSatchel->m_chargeReady != SATCHEL_IDLE && (nSatchelsInPocket + nNumSatchels) >= SATCHEL_MAX_CARRY)
+		if (pSatchel->m_chargeReady != BUMP_IDLE && (nSatchelsInPocket + nNumSatchels) >= SATCHEL_MAX_CARRY)
 		{
 			// player has some satchels deployed. Refuse to add more.
 			return FALSE;
@@ -238,7 +238,7 @@ int CSatchel::AddToPlayer(CBasePlayer *pPlayer)
 	int bResult = CBasePlayerItem::AddToPlayer(pPlayer);
 
 	pPlayer->pev->weapons |= (1 << m_iId);
-	m_chargeReady = SATCHEL_IDLE; // this satchel charge weapon now forgets that any satchels are deployed by it.
+	m_chargeReady = BUMP_IDLE; // this satchel charge weapon now forgets that any satchels are deployed by it.
 
 	if (bResult)
 	{
@@ -301,7 +301,7 @@ BOOL CSatchel::CanDeploy(void)
 		return TRUE;
 	}
 
-	if (m_chargeReady != SATCHEL_IDLE)
+	if (m_chargeReady != BUMP_IDLE)
 	{
 		// player isn't carrying any satchels, but has some out
 		return TRUE;
@@ -318,7 +318,7 @@ BOOL CSatchel::Deploy()
 	if (m_chargeReady)
 		return DefaultDeploy("models/v_satchel_radio.mdl", "models/p_satchel_radio.mdl", SATCHEL_RADIO_DRAW, "hive");
 	else
-		return DefaultDeploy("models/v_satchel.mdl", "models/p_satchel.mdl", SATCHEL_DRAW, "trip");
+		return DefaultDeploy("models/v_satchel.mdl", "models/p_satchel.mdl", BUMP_DRAW, "trip");
 
 	return TRUE;
 }
@@ -335,7 +335,7 @@ void CSatchel::Holster(int skiplocal /* = 0 */)
 	}
 	else
 	{
-		SendWeaponAnim(SATCHEL_DROP);
+		SendWeaponAnim(BUMP_DROP);
 	}
 
 	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 && m_chargeReady != SATCHEL_READY)
@@ -346,7 +346,7 @@ void CSatchel::Holster(int skiplocal /* = 0 */)
 
 void CSatchel::PrimaryAttack(void)
 {
-	if (m_chargeReady != SATCHEL_RELOAD)
+	if (m_chargeReady != BUMP_RELOAD)
 	{
 		Throw();
 	}
@@ -356,7 +356,7 @@ void CSatchel::SecondaryAttack()
 {
 	switch (m_chargeReady)
 	{
-	case SATCHEL_IDLE:
+	case BUMP_IDLE:
 	{
 		Throw();
 	}
@@ -380,14 +380,14 @@ void CSatchel::SecondaryAttack()
 			}
 		}
 
-		m_chargeReady = SATCHEL_RELOAD;
+		m_chargeReady = BUMP_RELOAD;
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
 		break;
 	}
 
-	case SATCHEL_RELOAD:
+	case BUMP_RELOAD:
 		// we're reloading, don't allow fire
 		{
 		}
@@ -435,8 +435,8 @@ void CSatchel::WeaponIdle(void)
 
 	switch (m_chargeReady)
 	{
-	case SATCHEL_IDLE:
-		SendWeaponAnim(SATCHEL_FIDGET1);
+	case BUMP_IDLE:
+		SendWeaponAnim(BUMP_FIDGET1);
 		// use tripmine animations
 		UTIL_strcpy(m_pPlayer->m_szAnimExtention, "trip");
 		break;
@@ -445,11 +445,11 @@ void CSatchel::WeaponIdle(void)
 		// use hivehand animations
 		UTIL_strcpy(m_pPlayer->m_szAnimExtention, "hive");
 		break;
-	case SATCHEL_RELOAD:
+	case BUMP_RELOAD:
 		if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
 		{
 			RetireWeapon();
-			m_chargeReady = SATCHEL_IDLE;
+			m_chargeReady = BUMP_IDLE;
 			return;
 		}
 
@@ -460,14 +460,14 @@ void CSatchel::WeaponIdle(void)
 		LoadVModel("models/v_satchel.mdl", m_pPlayer);
 #endif
 
-		SendWeaponAnim(SATCHEL_DRAW);
+		SendWeaponAnim(BUMP_DRAW);
 
 		// use tripmine animations
 		UTIL_strcpy(m_pPlayer->m_szAnimExtention, "trip");
 
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
-		m_chargeReady = SATCHEL_IDLE;
+		m_chargeReady = BUMP_IDLE;
 		break;
 	}
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15); // how long till we do this again.

@@ -394,6 +394,7 @@ public:
 	bool m_bPlayerDominated[MAX_PLAYERS]; // [0-31] array of state per other player whether player is dominating other playersAdd commentMore actions
 	CWeaponBox *CreateWeaponBox(CBasePlayerItem *pItem, CBasePlayer *pPlayerOwner, const char *modelName, Vector &origin, Vector &angles, Vector &velocity, float lifeTime, bool packAmmo);
 	void PickupObject(CBasePlayerWeapon *pWeapon);
+	void EventOnDeath(CBasePlayer *peAttacker);
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

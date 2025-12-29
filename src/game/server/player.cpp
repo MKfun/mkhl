@@ -991,18 +991,8 @@ void CBasePlayer::RemoveAllItems(BOOL removeSuit)
  */
 entvars_t *g_pevLastInflictor; // Set in combat.cpp.  Used to pass the damage inflictor for death messages.
     // Better solution:  Add as parameter to all Killed() functions.
-void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
-{
-	CSound *pSound;
-
-	// Holster weapon immediately, to allow it to cleanup
-	if (m_pActiveItem)
-		m_pActiveItem->Holster();
-	m_NumEnemiesKilledThisSpawn = 0;
+void CBasePlayer::EventOnDeath(CBasePlayer *peAttacker) {
 	CHandGrenade *pGrenade = (CHandGrenade *)m_pActiveItem;
-	CBasePlayer *peKiller = (pevAttacker->flags & FL_CLIENT) ? (CBasePlayer *)CBasePlayer::Instance(pevAttacker) : nullptr;
-	if (peKiller)
-		peKiller->m_NumEnemiesKilledThisSpawn++;
 	if (pGrenade && mp_eventondeath.GetBool() && pGrenade->pszName() != NULL)
 	{
 		if (strcmp(pGrenade->pszName(), "weapon_handgrenade") == 0 && pGrenade->m_flStartThrow > 0)
@@ -1042,6 +1032,20 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 				}
 			}
 		}
+	}
+}
+void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
+{
+	CSound *pSound;
+
+	// Holster weapon immediately, to allow it to cleanup
+	if (m_pActiveItem)
+		m_pActiveItem->Holster();
+	m_NumEnemiesKilledThisSpawn = 0;
+	CBasePlayer *peKiller = (pevAttacker->flags & FL_CLIENT) ? (CBasePlayer *)CBasePlayer::Instance(pevAttacker) : nullptr;
+	if (peKiller) {
+		peKiller->m_NumEnemiesKilledThisSpawn++;
+		EventOnDeath(peKiller);
 	}
 	if (m_LastHitGroup == HITGROUP_HEAD)
 		m_bHeadshotKilled = true;
