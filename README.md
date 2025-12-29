@@ -9,19 +9,19 @@ Based on [BugfixedHL-Rebased](https://github.com/tmp64/BugfixedHL-Rebased)
 Features
 --------
  ### Gameplay
-  - Event on death:
+  - Event on death: ```mp_eventondeath```
     - Grenades: when victim was killed while holding grenade, it will drop and explode\
     - Gauss: when victim was killed while holding SecondaryAttack, there will be final shot like victim shoot with PrimaryAttack
     - Satchel: explode victim's currently dropped satchels
   - New weapons:
-    - Bumpmine: like in csgo DZ gamemode, but wont damage you on launch
+    - Bumpmine: like in csgo DZ gamemode, but wont damage you on launch ```weapon_bumpmine```
   - New gamemodes:
-    - Flying shotguns: only shotguns and bumpmines. Nothing else. Every 20 seconds players earn new bumpmine
-    - Hazardous zone™: Danger zone, but if it was in Half-Life.
+    - Flying shotguns: only shotguns and bumpmines. Nothing else. Every 20 seconds players earn new bumpmine ```sv_flyingshots 1```
+    - Hazardous zone™: Danger zone, but if it was in Half-Life. ```sv_hazardz 1```
   - Powerups: classic Quake (DMC) powerups.
  ### ClientSide
  - Same as BHL-Rebased but with some spicy extras
- - Custom vgui2 csgo-like hud from [this pr](https://github.com/tmp64/BugfixedHL-Rebased/pull/280)
+ - Custom vgui2 csgo-like hud from [this pr](https://github.com/tmp64/BugfixedHL-Rebased/pull/280) ```hud_custom 1```
  - With above: There are headshots, and killstreaks in hud like in csgo.
  - Viewmodel extras: QuakeGun™ and sway (weaponlag, like source games vm) ```cl_quakeguns 1``` and ```cl_weaponlag_enable 1```
  - SOON - custom gameui (big thanks to ScriptedSnark)
