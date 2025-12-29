@@ -1,7 +1,7 @@
 [submodule "source_sdk"]
 	path = source_sdk
 	url = https://github.com/denz8028/hl1_source_sdk.git
-	branch = regameui
+	branch = master
 [submodule "external/metamod"]
 	path = external/metamod
 	url = https://github.com/alliedmodders/metamod-hl1.git
