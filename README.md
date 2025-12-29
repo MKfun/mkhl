@@ -1,75 +1,31 @@
-Bugfixed and improved Half-Life
+MK: Half-life
 ===============================
+<img src='logo.png'></img>
 
-Bugfixed and Improved Half-Life Release (*BugfixedHL* for short) is a Half-Life modification that aims
-to improve DM experience for players and fix server bugs for server owners while being completely
-backwards-compatible with vanilla clients and servers.
 
-*BugfixedHL-Rebased* is port of [Lev's BugfixedHL](https://github.com/LevShisterov/BugfixedHL) on
-new [Half-Life SDK](https://github.com/ValveSoftware/halflife).
-It features improved UI using VGUI2 library, Linux support and refactored source code for better maintainablity.
-
-- [Screenshots](https://github.com/tmp64/BugfixedHL-Rebased/wiki/Screenshots)
-- [How to install](https://github.com/tmp64/BugfixedHL-Rebased/wiki/Installation)
-- [Commands](https://github.com/tmp64/BugfixedHL-Rebased/wiki/Client-command-reference)
+Based on [BugfixedHL-Rebased](https://github.com/tmp64/BugfixedHL-Rebased)
 
 
 Features
 --------
+ ### Gameplay
+  - Event on death:
+    - Grenades: when victim was killed while holding grenade, it will drop and explode\
+    - Gauss: when victim was killed while holding SecondaryAttack, there will be final shot like victim shoot with PrimaryAttack
+    - Satchel: explode victim's currently dropped satchels
+  - New weapons:
+    - Bumpmine: like in csgo DZ gamemode, but wont damage you on launch
+  - New gamemodes:
+    - Flying shotguns: only shotguns and bumpmines. Nothing else. Every 20 seconds players earn new bumpmine
+    - Hazardous zone™: Danger zone, but if it was in Half-Life.
+  - Powerups: classic Quake (DMC) powerups.
+ ### ClientSide
+ - Same as BHL-Rebased but with some spicy extras
+ - Custom vgui2 csgo-like hud from [this pr](https://github.com/tmp64/BugfixedHL-Rebased/pull/280)
+ - With above: There are headshots, and killstreaks in hud like in csgo.
+ - Viewmodel extras: QuakeGun™ and sway (weaponlag, like source games vm) ```cl_quakeguns 1``` and ```cl_weaponlag_enable 1```
+ - SOON - custom gameui (big thanks to ScriptedSnark)
 
-The mod features a number of improvements over stock client and server.
-
-Client:
-- Bunnyhopping (for servers that have it enabled)
-- Colored HUD
-- Raw mouse input via DirectInput
-- Customizable crosshairs (like in CS:GO)
-- Improved user interface
-  - Scoreboard
-  - Unicode and HTML MOTD (requires server support)
-  - Chat with history, input editing and automatic splitting of long messages
-  - Spectator UI
-  - Team selection (used by some servers)
-  - Command menu
-  - Options dialog
-- Automatic demo recording
-- HUD support for WeaponMod
-- Slowhacking protection (for old engine versions)
-- Ability to disable custom player models completely
-
-
-Server:
-- Bugfixes and crash fixes
-- Selfgauss can be disabled
-- Welcome camera mode - after connecting, player is put into semi-spectator mode and can spawn with MOUSE1
-- HTML and Unicode MOTD for clients that support them
-- Fixed spectator mode
-- Invisible model fix
-- UTF-8 support
-
-
-SDK changes
------------
-
-BugfixedHL has been integrated into Valve's latest HLSDK and has been refactored:
-
-- CMake as build system (instead of Makefiles and VS projects).
-- Source code formatted to one style with clang-format.
-- Organized source code files:
-  - HLSDK sources moved to */src/*.
-  - */cl_dll*, */dlls* and */game_shared* moved to */src/game/*.
-  - */game_shared* cleaned up from unused code.
-  - Removed */utils* completely (used to contain utilities like map and sprite compilers).
-- Client sources refactoring:
-  - VGUI1 replaced by VGUI2 (like in CS1.6).
-  - Moved all VGUI code to *client/vgui*.
-  - Moved all HUD elements to *client/hud*, each of them now has its own *.h* file.
-  - Replaced HUD messages and commands macros with templates.
-  - HUD elements are no longer referenced in *hud.h* (improves compilation times when changing *hud/\*.h*.
-  - Added `ConVar` class for easier convar creating with description support (like in Source SDK).
-  - Removed unused code.
-- Fixed include guards in common header files.
-- Documented engine APIs (thanks to [Solokiller](https://github.com/Solokiller)).
 
 
 Supported game versions
@@ -91,29 +47,6 @@ Exe build: 15:17:55 Jul 24 2019 (8308)
 | 3xxx           | Not supported   |
 | 4554           | Supported       |
 | 8xxx+          | Supported       |
-
-
-Reporting Issues
-----------------
-
-If you encounter an issue while using BugfixedHL, first search the [issue list](https://github.com/tmp64/BugfixedHL-Rebased/issues)
-to see if it has already been reported. Include closed issues in your search.
-
-If it has not been reported, create a new issue with at least the following information:
-
-- a short, descriptive title;
-- a detailed description of the issue, including any output from the command line or game console;
-- steps for reproducing the issue;
-- your system information\*;
-- the `version` output from the in-game console;
-- the `about` output from the in-game console.
-
-Please place logs either in a code block (press `M` in your browser for a GFM cheat sheet) or a [gist](https://gist.github.com).
-
-\* The preferred and easiest way to get this information is from Steam's Hardware Information viewer from the
-menu (`Help -> System Information`). Once your information appears: right-click within the dialog, choose `Select All`,
-right-click again, and then choose `Copy`. Paste this information into your report, preferably in a code block.
-
 
 Conduct
 -------
@@ -140,3 +73,12 @@ Thanks
 - Solokiller for [Half-Life Enhanced](https://github.com/Solokiller/HLEnhanced) and GoldSrc engine research.
 - AGHL.RU community for bug reporting and suggestions.
 - YaLTeR and contributors for [OpenAG](https://github.com/YaLTeR/OpenAG) features
+
+###### for MK:HL
+- tmp64 and all contributors for this nice HLSDK base.
+- ReHLDS for [ReGameDLL_CS](https://github.com/rehlds/ReGameDLL_CS), i really inspired by their code.
+- As well as CS server code, thanks to [Velaron](https://github.com/velaron) for his [CS16Client](https://github.com/Velaron/cs16-client) where i got the client code for headshots.
+- ScriptedSnark for help in [ReGameUI project](https://github.com/MKfun/mkhl/tree/regameui).
+- [Nillerusr](https://github.com/nillerusr) for the [source-engine](https://github.com/nillerusr/source-engine) repo, where i got some code from sdk part (killstreak).
+- [FWGS community](https://github.com/FWGS), for help in some moments.
+- MK Community, that im working for. They're just my friends.
