@@ -44,7 +44,10 @@
 #include "opengl.h"
 #include "engfuncs.h"
 #include "engine_builds.h"
-
+#ifdef USE_LIBBT
+#include "crashhandler.h"
+#endif
+#include <signal.h>
 CHud gHUD;
 
 void InitInput(void);
@@ -218,6 +221,16 @@ void CL_DLLEXPORT HUD_PlayerMove(struct playermove_s *ppmove, int server)
 	PM_Move(ppmove, server);
 }
 
+static void hl_sigsegv(int sig)
+{
+#ifdef USE_LIBBT
+
+	fprintf(stderr, "\n=== HLSDK CRASH (%d) ===\n", sig);
+	HL_DumpBacktrace();
+#endif
+	_exit(sig);
+}
+
 int CL_DLLEXPORT Initialize(cl_enginefunc_t *pEnginefuncs, int iVersion)
 {
 	// Initialize must only be called once, another call requires the DLL to be reloaded.
@@ -250,7 +263,8 @@ int CL_DLLEXPORT Initialize(cl_enginefunc_t *pEnginefuncs, int iVersion)
 	EV_HookEvents();
 	GetSDL()->Init();
 	CheckWorkingDirectory();
-
+	signal(SIGSEGV, hl_sigsegv);
+	signal(SIGABRT, hl_sigsegv);
 	// Note 10.07.2020
 	// There is something odd with IParticleMan on Linux.
 	// SetVariables in the interface takes `Vector vViewAngles` (as a copy).
@@ -326,7 +340,6 @@ int CL_DLLEXPORT HUD_Redraw(float time, int intermission)
 	//	RecClHudRedraw(time, intermission);
 
 	gHUD.Redraw(time, intermission);
-
 	return 1;
 }
 

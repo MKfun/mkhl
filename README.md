@@ -25,7 +25,8 @@ Features
  - With above: There are headshots, and killstreaks in hud like in csgo.
  - Viewmodel extras: QuakeGun™ and sway (weaponlag, like source games vm) ```cl_quakeguns 1``` and ```cl_weaponlag_enable 1```
  - SOON - custom gameui (big thanks to ScriptedSnark)
-
+ ### SDK Features
+ - Crash handler with libbacktrace (libbacktrace-dev package needed) ```-DWITH_LIBBT_CLIENT=1``` or ```WITH_LIBBT_SERVER=1```
 
 
 Supported game versions

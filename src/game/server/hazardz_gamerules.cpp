@@ -1,5 +1,5 @@
 /*
-Copyright (C) 1995-2024 Jean-loup Gailly and Mark Adler
+Copyright (C) 2025 den4iklovelinux
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -17,8 +17,7 @@ freely, subject to the following restrictions:
 		  misrepresented as being the original software.
 	  3. This notice may not be removed or altered from any source distribution.
 
-	  Jean-loup Gailly        Mark Adler
-	  jloup@gzip.org          madler@alumni.caltech.edu
+	  den4iklovelinux			denzel8028@hotmail.com
 
 */
 //

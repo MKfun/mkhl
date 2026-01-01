@@ -3,6 +3,7 @@ add_sources(
 	bhlcfg.cpp
 	bhlcfg.h
 	camera.h
+
 	cdll_int.cpp
 	cl_dll.h
 	cl_util.cpp
@@ -77,6 +78,7 @@ add_sources(
 	voice_banmgr.cpp
 	voice_banmgr.h
 	wrect.h
+
 	
 	# Weapons
 	../server/crossbow.cpp
@@ -96,7 +98,11 @@ add_sources(
 	../server/bumpmine.cpp
 	../server/util_shared.cpp
 )
-
+if (WITH_LIBBT_CLIENT AND NOT WIN32)
+	add_sources(
+			crashhandler.cpp
+	)
+endif ()
 if( PLATFORM_WINDOWS )
 	add_sources(
 		engine_patches_windows.cpp

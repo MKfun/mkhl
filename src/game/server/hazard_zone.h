@@ -17,8 +17,7 @@ freely, subject to the following restrictions:
 		misrepresented as being the original software.
 	3. This notice may not be removed or altered from any source distribution.
 
-        Jean-loup Gailly        Mark Adler
-		jloup@gzip.org          madler@alumni.caltech.edu
+	den4iklovelinux			denzel8028@hotmail.com
 
 */
 //

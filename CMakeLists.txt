@@ -485,7 +485,7 @@ add_sources( "${SDL2_INCLUDE_FILES}" )
 add_subdirectory( src/game/client )
 
 preprocess_sources()
-add_library( client SHARED ${PREP_SRCS} )
+add_library( client SHARED ${PREP_SRCS})
 check_winxp_support( client )
 add_auto_deploy( client PublishPathClient.txt )
 bhl_version_info( client "client.dll" "BugfixedHL-Rebased Client" )
@@ -496,6 +496,9 @@ target_include_directories( client PRIVATE
 	${SOURCE_SDK_INCLUDE_PATHS}
 	${UPDATER_INCLUDE_PATHS}
 )
+if (WITH_LIBBT_CLIENT AND NOT WIN32)
+	list(APPEND GAME_COMMON_DEFINES USE_LIBBT)
+endif()
 
 target_compile_definitions( client PRIVATE
 	${GAME_COMMON_DEFINES}
@@ -532,7 +535,11 @@ else()
 	set( CLIENT_PLAT_LIBS
 		dl
 		SDL2
+
 	)
+if (WITH_LIBBT_CLIENT)
+list(APPEND CLIENT_PLAT_LIBS backtrace)
+endif()
 endif()
 
 # Link with dependencies
