@@ -154,7 +154,11 @@ add_sources(
 	zombie.cpp
 	quake_items.cpp
 )
-
+if (WITH_LIBBT_SERVER AND NOT WIN32)
+	add_sources(
+			crashhandler.cpp
+	)
+endif ()
 if( PLATFORM_WINDOWS )
 	add_sources(
 		hl.def

@@ -590,7 +590,9 @@ target_include_directories( hl PRIVATE
 	${GAME_COMMON_INCLUDE_PATHS}
 	${SOURCE_SDK_INCLUDE_PATHS} # For mathlib
 )
-
+if (WITH_LIBBT_SERVER AND NOT WIN32)
+	list(APPEND GAME_COMMON_DEFINES USE_LIBBT)
+endif ()
 target_compile_definitions( hl PRIVATE
 	${GAME_COMMON_DEFINES}
 	${SOURCE_SDK_DEFINES}
@@ -609,7 +611,9 @@ else()
 		dl
 	)
 endif()
-
+if (WITH_LIBBT_SERVER AND NOT WIN32)
+	list(APPEND SERVER_PLAT_LIBS backtrace)
+endif ()
 # Link with dependencies
 target_link_libraries( hl 
 	${SERVER_PLAT_LIBS}

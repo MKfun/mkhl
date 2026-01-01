@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#include <csignal>
 #include "extdll.h"
 #include "eiface.h"
 #include "util.h"
@@ -20,6 +21,9 @@
 
 #include "appversion.h"
 #include "CBugfixedServer.h"
+#ifdef USE_LIBBT
+#include "crashhandler.h"
+#endif
 
 // Version cvar
 // You can remove it, but remember that this will lower amount of people getting knowing about that HLSDK release.
@@ -480,6 +484,15 @@ ConVar sv_flyingshots("sv_flyingshots", "0", FCVAR_SERVER);
 ConVar sv_hazardz("sv_hazardz", "0", FCVAR_SERVER);
 // Register your console variables here
 // This gets called one time when the game is initialied
+static void hl_sigsegv(int sig)
+{
+#ifdef USE_LIBBT
+
+	fprintf(stderr, "\n=== HLSDK CRASH (%d) ===\n", sig);
+	HL_DumpBacktrace();
+#endif
+	_exit(sig);
+}
 void GameDLLInit(void)
 {
 	// Get cvars here:
@@ -490,7 +503,8 @@ void GameDLLInit(void)
 	g_footsteps = CVAR_GET_POINTER("mp_footsteps");
 
 	g_amxmodx_version = CVAR_GET_POINTER("amxmodx_version");
-
+	signal(SIGSEGV, hl_sigsegv);
+	signal(SIGABRT, hl_sigsegv);
 	// Register cvars here:
 	CVAR_REGISTER(&hlds_version);
 
