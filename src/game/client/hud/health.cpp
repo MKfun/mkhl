@@ -31,7 +31,7 @@
 
 #define PAIN_NAME   "sprites/%d_pain.spr"
 #define DAMAGE_NAME "sprites/%d_dmg.spr"
-
+extern ConVar hud_custom;
 int giDmgHeight, giDmgWidth;
 
 int giDmgFlags[NUM_DMG_TYPES] = {
@@ -224,6 +224,8 @@ void CHudHealth::Draw(float flTime)
 			if (m_pHudCustom.GetBool())
 			{
 				g_pViewport->ShowHealthPanel();
+				DrawDamage(flTime);
+				DrawPain(flTime);
 				return;
 			}
 			else
@@ -267,9 +269,6 @@ void CHudHealth::Draw(float flTime)
 			g_pViewport->HideHealthPanel();
 		}
 	}
-
-	DrawDamage(flTime);
-	DrawPain(flTime);
 }
 
 void CHudHealth::CalcDamageDirection(Vector vecFrom)
@@ -487,8 +486,7 @@ void CHudHealth::UpdateTiles(float flTime, long bitsDamage)
 		{
 			// put this one at the bottom
 			pdmg->x = giDmgWidth / 8;
-			pdmg->y = ScreenHeight - giDmgHeight * 2;
-			pdmg->fExpire = flTime + DMG_IMAGE_LIFE;
+			pdmg->y = (hud_custom.GetBool() ? g_pViewport->GetDamageYPos() : ScreenHeight) -  giDmgHeight * 2;			pdmg->fExpire = flTime + DMG_IMAGE_LIFE;
 
 			// move everyone else up
 			for (int j = 0; j < NUM_DMG_TYPES; j++)

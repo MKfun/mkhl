@@ -147,6 +147,7 @@ void CClientViewport::ReloadLayout()
 		{
 			const char* szStatusBarY = vanillaKV->GetString("statusbar_ypos", "0");
 			const char* szAmmoHistoryY = vanillaKV->GetString("ammohistory_ypos", "0");
+			const char* szDamageY = vanillaKV->GetString("damage_ypos", "0");
 
 			ComputePos(szStatusBarY, m_iStatusBarYPos, 0, GetTall(), true);
 			ComputePos(szAmmoHistoryY, m_iAmmoHistoryYPos, 0, GetTall(), true);
@@ -466,6 +467,10 @@ int CClientViewport::GetStatusBarYPos()
 	return m_iStatusBarYPos;
 }
 
+int CClientViewport::GetDamageYPos()
+{
+	return m_iDamageYPos;
+}
 void CClientViewport::UpdateSpectatorPanel()
 {
 	m_iUser1 = g_iUser1;
