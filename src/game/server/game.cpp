@@ -21,7 +21,7 @@
 
 #include "appversion.h"
 #include "CBugfixedServer.h"
-#ifdef USE_LIBBT
+#ifdef USE_LIBBT_SERVER
 #include "crashhandler.h"
 #endif
 
