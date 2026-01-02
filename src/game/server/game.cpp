@@ -486,8 +486,7 @@ ConVar sv_hazardz("sv_hazardz", "0", FCVAR_SERVER);
 // This gets called one time when the game is initialied
 static void hl_sigsegv(int sig)
 {
-#ifdef USE_LIBBT
-
+#ifdef USE_LIBBT_SERVER
 	fprintf(stderr, "\n=== HLSDK CRASH (%d) ===\n", sig);
 	HL_DumpBacktrace();
 #endif

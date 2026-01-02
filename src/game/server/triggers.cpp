@@ -2429,8 +2429,8 @@ void CEnvStatic::Spawn(void)
 	m_flFrameRate = 0.0;
 	m_flGroundSpeed = 0.0;
 
-	if (pev->spawnflags & SF_ENVSTATIC_START_INVISIBLE)
-		pev->effects |= EF_NODRAW;
+//	if (pev->spawnflags & SF_ENVSTATIC_START_INVISIBLE)
+//		pev->effects |= EF_NODRAW;
 
 	pev->sequence = 0;
 	pev->frame = 0;

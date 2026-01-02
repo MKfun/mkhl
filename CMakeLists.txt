@@ -591,7 +591,7 @@ target_include_directories( hl PRIVATE
 	${SOURCE_SDK_INCLUDE_PATHS} # For mathlib
 )
 if (WITH_LIBBT_SERVER AND NOT WIN32)
-	list(APPEND GAME_COMMON_DEFINES USE_LIBBT)
+	list(APPEND GAME_COMMON_DEFINES USE_LIBBT_SERVER)
 endif ()
 target_compile_definitions( hl PRIVATE
 	${GAME_COMMON_DEFINES}
