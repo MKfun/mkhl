@@ -8,6 +8,7 @@
 #include "GameConsole.h"
 #include "GameConsoleDialog.h"
 #include "IEngineVGui.h"
+#include "BasePanel.h"
 #include <vgui/ISurface.h>
 
 #include <KeyValues.h>
@@ -21,7 +22,7 @@
 #ifndef min
 #define min(a,b)  (((a) < (b)) ? (a) : (b))
 #endif
-
+extern CBasePanel *factoryBasePanel;
 static CGameConsole g_GameConsole;
 //-----------------------------------------------------------------------------
 // Purpose: singleton accessor
@@ -46,7 +47,7 @@ CGameConsole::CGameConsole()
 //-----------------------------------------------------------------------------
 CGameConsole::~CGameConsole()
 {
-//	m_bInitialized = false;
+	m_bInitialized = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -54,15 +55,18 @@ CGameConsole::~CGameConsole()
 //-----------------------------------------------------------------------------
 void CGameConsole::Initialize()
 {
-//m_pConsole =  new CGameConsoleDialog(); // we add text before displaying this so set it up now!
-//	int swide, stall;
-//m_pConsole->SetParent(g_pEngineVGui->GetPanel(PANEL_GAMEUIDLL));
 
-//	vgui2::surface()->GetScreenSize(swide, stall);
-//	int offset = 40;
-//m_pConsole->SetBounds(
-//	    offset, offset,
-//	    min( swide - 2 * offset, 560 ), min( stall - 2 * offset, 400 ) );
+	m_pConsole = vgui2::SETUP_PANEL( new CGameConsoleDialog() ); // we add text before displaying this so set it up now!
+	int swide, stall;
+
+	m_pConsole->SetParent(factoryBasePanel->GetVPanel());
+
+	vgui2::surface()->GetScreenSize(swide, stall);
+	int offset = 40;
+	m_pConsole->SetBounds(
+	    offset, offset,
+	    min( swide - 2 * offset, 560 ), min( stall - 2 * offset, 400 )
+	);
 	m_bInitialized = true;
 }
 
@@ -71,11 +75,11 @@ void CGameConsole::Initialize()
 //-----------------------------------------------------------------------------
 void CGameConsole::Activate()
 {
-//	if (!m_bInitialized)
-//		return;
+	if (!m_bInitialized)
+		return;
 
-//	vgui2::surface()->RestrictPaintToSinglePanel(NULL);
-//m_pConsole->Activate();
+	vgui2::surface()->RestrictPaintToSinglePanel(NULL);
+m_pConsole->Activate();
 }
 
 //-----------------------------------------------------------------------------
@@ -83,10 +87,10 @@ void CGameConsole::Activate()
 //-----------------------------------------------------------------------------
 void CGameConsole::Hide()
 {
-//	if (!m_bInitialized)
-//		return;
+	if (!m_bInitialized)
+		return;
 
-//m_pConsole->Hide();
+m_pConsole->Hide();
 }
 
 //-----------------------------------------------------------------------------
@@ -94,10 +98,10 @@ void CGameConsole::Hide()
 //-----------------------------------------------------------------------------
 void CGameConsole::Clear()
 {
-//	if (!m_bInitialized)
-//		return;
+	if (!m_bInitialized)
+		return;
 
-//m_pConsole->Clear();
+m_pConsole->Clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -105,10 +109,10 @@ void CGameConsole::Clear()
 //-----------------------------------------------------------------------------
 void CGameConsole::Printf(const char *format, ...)
 {
-//	if (!m_bInitialized)
-//		return;
+	if (!m_bInitialized)
+		return;
 
-//m_pConsole->Print(format);
+	m_pConsole->Print(format);
 }
 
 //-----------------------------------------------------------------------------
@@ -116,10 +120,16 @@ void CGameConsole::Printf(const char *format, ...)
 //-----------------------------------------------------------------------------
 void CGameConsole::DPrintf(const char *format, ...)
 {
-//	if (!m_bInitialized)
-//		return;
-
-//m_pConsole->DPrint(format);
+	if (!m_bInitialized)
+		return;
+	char msg[MAX_CANON];
+	va_list args;
+	va_start(args, format);
+//	int int_arg = va_arg(args, int);
+//	double double_arg = va_arg(args, double);
+	snprintf(msg, MAX_CANON, format, args);
+	va_end(args);
+	m_pConsole->DPrint(msg);
 }
 
 //-----------------------------------------------------------------------------
@@ -130,10 +140,10 @@ void CGameConsole::DPrintf(const char *format, ...)
 //-----------------------------------------------------------------------------
 void CGameConsole::ColorPrintf( Color& clr, const char *format, ...)
 {
-//	if (!m_bInitialized)
-//		return;
+	if (!m_bInitialized)
+		return;
 
-//m_pConsole->ColorPrintf( clr, format );
+m_pConsole->ColorPrintf( clr, format );
 }
 
 //-----------------------------------------------------------------------------
@@ -141,10 +151,10 @@ void CGameConsole::ColorPrintf( Color& clr, const char *format, ...)
 //-----------------------------------------------------------------------------
 bool CGameConsole::IsConsoleVisible()
 {
-//	if (!m_bInitialized)
-//		return false;
+	if (!m_bInitialized)
+		return false;
 
-//	return m_pConsole->IsVisible();
+	return m_pConsole->IsVisible();
 	return true;
 }
 
@@ -153,16 +163,16 @@ bool CGameConsole::IsConsoleVisible()
 //-----------------------------------------------------------------------------
 void CGameConsole::ActivateDelayed(float time)
 {
-//	if (!m_bInitialized)
-//		return;
+	if (!m_bInitialized)
+		return;
 
-//m_pConsole->PostMessage(m_pConsole, new KeyValues("Activate"), time);
+m_pConsole->PostMessage(m_pConsole, new KeyValues("Activate"), time);
 }
 
 void CGameConsole::SetParent( int parent )
 {
-//	if (!m_bInitialized)
-//		return;
+	if (!m_bInitialized)
+		return;
 
-//m_pConsole->SetParent( static_cast<vgui2::VPANEL>( parent ));
+m_pConsole->SetParent( static_cast<vgui2::VPANEL>( parent ));
 }

@@ -68,7 +68,7 @@ ICvar *cvar = NULL;
 
 
 class CGameUI;
-CGameUI *g_pGameUI = NULL;
+extern CGameUI *g_pGameUI;
 
 
 class CLoadingDialog;
@@ -87,6 +87,16 @@ inline UI_BASEMOD_PANEL_CLASS &ConstructUiBaseModPanelClass()
 		new CBasePanel();
 	return *BasePanel();
 }
+namespace vgui2
+{
+
+HScheme VGui_GetDefaultScheme()
+{
+	return 0;
+}
+
+}
+CBasePanel *factoryBasePanel = NULL;
 vgui2::VPANEL GetGameUIBasePanel()
 {
 	return GetUiBaseModPanelClass().GetVPanel();
@@ -200,7 +210,7 @@ void CGameUI::InternalInitialize()
 
 	// setup base panel
 //	CBasePanel *factoryBasePanel = new CBasePanel(); // explicit singleton instantiation
-	CBasePanel *factoryBasePanel = new CBasePanel();
+	factoryBasePanel = new CBasePanel();
 	factoryBasePanel->SetBounds(0, 0, 640, 480);
 	factoryBasePanel->SetPaintBorderEnabled(false);
 	factoryBasePanel->SetPaintBackgroundEnabled(true);
@@ -631,4 +641,8 @@ bool CGameUI::IsRunningOnSteamDeck() const {return false;
 }
 void CGameUI::ValidateCDKey(bool force, bool inConnect) {
 
+}
+bool CGameUI::IsInLevel() {
+	const char *levelName = gEngfuncs.pfnGetLevelName();
+	return levelName && levelName[0];
 }

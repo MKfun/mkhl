@@ -57,7 +57,7 @@ public:
 
 	// prompts user for new key if the current key is invalid, force = true means force it to prompt
 	virtual void ValidateCDKey(bool force = false, bool inConnect = false);
-
+	bool IsInLevel();
 private:
 	bool FindPlatformDirectory(char *platformDir, int bufferSize);
 	void GetUpdateVersion( char *pszProd, char *pszVer);
@@ -84,6 +84,7 @@ private:
 	bool IsRunningOnSteamDeck() const;
 	void InternalInitialize();
 	void InternalStart();
+
 };
 
 // Purpose: singleton accessor

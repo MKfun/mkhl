@@ -23,7 +23,7 @@
 #include "cvardef.h"
 
 // engine interface singleton accessor
-extern cl_enginefunc_t *engine;
+extern cl_enginefunc_t gEngfuncs;
 
 extern class IGameUIFuncs *gameuifuncs;
 extern class IEngineSound *enginesound;

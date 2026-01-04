@@ -579,6 +579,10 @@ add_library(gameui SHARED ${PREP_SRCS}
 		src/regameui/GameConsole.h
 		src/regameui/GameConsoleDialog.cpp
 		src/regameui/GameConsoleDialog.h
+		src/regameui/GameMenu.cpp
+		src/regameui/GameMenu.h
+		src/regameui/BackgroundMenuButon.cpp
+		src/regameui/BackgroundMenuButon.h
 
 )
 target_include_directories( gameui PRIVATE

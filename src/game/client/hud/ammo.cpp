@@ -116,7 +116,7 @@ void WeaponsResource::LoadWeaponSprites(WEAPON *pWeapon)
 	{
 		snprintf(sz, sizeof(sz), "sprites/%s.spr", p->szSprite);
 		pWeapon->hCrosshair = SPR_Load(sz);
-		pWeapon->rcCrosshair = p->rc;
+//		pWeapon->rcCrosshair = p->rc;
 	}
 
 	p = GetSpriteFromList(pList, "autoaim", iRes, i);

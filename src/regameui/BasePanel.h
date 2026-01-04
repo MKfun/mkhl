@@ -11,7 +11,9 @@
 #include <vgui_controls/Panel.h>
 #include <vgui_controls/EditablePanel.h>
 #include "vgui_controls/Button.h"
-
+#include "GameMenu.h"
+class CBackgroundMenuButton;
+typedef struct {int x; int y;} coord;
 //-----------------------------------------------------------------------------
 // Purpose: The panel at the top of the vgui panel hierarchy
 //-----------------------------------------------------------------------------
@@ -35,7 +37,8 @@ public:
 
 	void SetBackgroundRenderState(EBackgroundState state);
 
-	void RunFrame();
+	virtual void RunFrame();
+	virtual void PerformLayout();
 
 private:
 	void DrawBackgroundImage();
@@ -51,6 +54,15 @@ private:
 	bimage_t m_ImageID[BACKGROUND_ROWS][BACKGROUND_COLUMNS];
 	typedef vgui2::Panel BaseClass;
 	vgui2::Button *m_pButton;
+	CGameMenu *RecursiveLoadGameMenu(KeyValues *datafile);
+	void CreateGameMenu();
+	CUtlVector< coord > m_iGameTitlePos;
+//	CUtlVector< CBackgroundMenuButton * >m_pGameMenuButtons;
+	CUtlVector< CBackgroundMenuButton * >m_pGameMenuButtons;
+	CGameMenu *m_pGameMenu;
+	int m_iGameMenuInset;
+	coord m_iGameMenuPos;
+	void UpdateGameMenus();
 };
 
 //-----------------------------------------------------------------------------

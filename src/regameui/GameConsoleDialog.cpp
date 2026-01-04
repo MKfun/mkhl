@@ -23,6 +23,7 @@
 #include "IGameUIFuncs.h"
 #include "keydefs.h"
 #include "icvar.h"
+extern cl_enginefunc_t gEngfuncs;
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
@@ -147,13 +148,13 @@ void CHistoryItem::SetText( const char *text, const char *extra )
 //-----------------------------------------------------------------------------
 CGameConsoleDialog::CGameConsoleDialog() : CTaskFrame(NULL, "GameConsole")
 {
-	SetScheme( vgui2::scheme()->LoadSchemeFromFile("resource/ClientSourceScheme.res", "ClientSourceScheme"));
 	// initialize dialog
 	MakePopup();
 	SetVisible(false);
 	SetMinimumSize(100,100);
 
 //	g_pTaskbar->AddTask(GetVPanel());
+	SetScheme(vgui2::scheme()->LoadSchemeFromFile("resource/ClientSourceScheme.res", "ClientSourceScheme"));
 
 	SetTitle("#GameUI_Console", true);
 
@@ -181,6 +182,7 @@ CGameConsoleDialog::CGameConsoleDialog() : CTaskFrame(NULL, "GameConsole")
 	m_szPartialText[0] = 0;
 	m_szPreviousPartialText[0]=0;
 }
+
 
 //-----------------------------------------------------------------------------
 // Purpose: Destructor
@@ -294,10 +296,10 @@ void CGameConsoleDialog::RebuildCompletionList(const char *text)
 	}
 
 	/*	// look through the command list for all matches
-	unsigned int cmd = engine->GetFirstCmdFunctionHandle();
+	unsigned int cmd = gEngfuncs.GetFirstCmdFunctionHandle();
 	while (cmd)
 	{
-		if (!strnicmp(text, engine->GetCmdFunctionName(cmd), len))
+		if (!strnicmp(text, gEngfuncs.GetCmdFunctionName(cmd), len))
 		{
 			// match found, add to list
 			int node = m_CompletionList.AddToTail();
@@ -305,14 +307,14 @@ void CGameConsoleDialog::RebuildCompletionList(const char *text)
 			item->iscommand = true;
 			item->cmd.cmd = cmd;
 			item->cmd.cvar = NULL;
-			item->m_text = new CHistoryItem( engine->GetCmdFunctionName(cmd) );
+			item->m_text = new CHistoryItem( gEngfuncs.GetCmdFunctionName(cmd) );
 		}
 
-		cmd = engine->GetNextCmdFunctionHandle(cmd);
+		cmd = gEngfuncs.GetNextCmdFunctionHandle(cmd);
 	}
 
 	// walk the cvarlist looking for all the matches
-	cvar_t *cvar = engine->GetFirstCvarPtr();
+	cvar_t *cvar = gEngfuncs.GetFirstCvarPtr();
 	while (cvar)
 	{
 		if (!_strnicmp(text, cvar->name, len))
@@ -586,7 +588,7 @@ void CGameConsoleDialog::OnCommand(const char *command)
 		// submit the entry as a console commmand
 		char szCommand[256];
 		m_pEntry->GetText(szCommand, sizeof(szCommand));
-		engine->pfnClientCmd(szCommand);
+		gEngfuncs.pfnClientCmd(szCommand);
 
 		// add to the history
 		Print("] ");
@@ -668,7 +670,7 @@ void CGameConsoleDialog::OnKeyCodeTyped(KeyCode code)
 				// submit the entry as a console commmand
 				char szCommand[256];
 				Q_strncpy( szCommand, binding, sizeof( szCommand ) );
-				engine->pfnClientCmd( szCommand );
+				gEngfuncs.pfnClientCmd( szCommand );
 			}
 		}
 	}
