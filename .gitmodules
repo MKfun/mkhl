@@ -1,6 +1,6 @@
 [submodule "source_sdk"]
 	path = source_sdk
-	url = https://github.com/denz8028/hl1_source_sdk.git
+	url = https://github.com/mkfun/hl1_source_sdk.git
 	branch = master
 [submodule "external/metamod"]
 	path = external/metamod
