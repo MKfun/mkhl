@@ -42,7 +42,7 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt update || true
-          sudo apt install -y libc6:i386 ninja-build gcc-9-multilib g++-9-multilib libssl-dev:i386 zlib1g-dev:i386
+          sudo apt install -y libc6:i386 cmake ninja-build gcc-9-multilib g++-9-multilib libssl-dev:i386 zlib1g-dev:i386
 
       - name: Build release
         id: build
@@ -55,7 +55,7 @@ jobs:
           ctest -R ${{ matrix.target }} --build-config RelWithDebInfo --output-on-failure
 
       - name: Upload build result
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.build.outputs.artifact_name }}
           path: ./_build_out/BugfixedHL-*.zip
