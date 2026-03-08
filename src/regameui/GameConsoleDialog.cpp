@@ -11,6 +11,7 @@
 #include <vgui/IInput.h>
 #include <vgui/IScheme.h>
 #include <vgui/IVGui.h>
+#include <vgui/ILocalize.h>
 #include "vgui/IInputInternal.h"
 #include <KeyValues.h>
 
@@ -19,7 +20,7 @@
 #include <vgui_controls/Menu.h>
 #include <vgui_controls/TextEntry.h>
 #include <vgui_controls/RichText.h>
-
+#include <vgui/ISurface.h>
 #include "IGameUIFuncs.h"
 #include "keydefs.h"
 #include "icvar.h"
@@ -226,6 +227,97 @@ void CGameConsoleDialog::DPrint(const char *msg)
 	m_pHistory->InsertString(msg);
 }
 
+int DrawTextLen( vgui2::HFont font, char *fmt, ... )
+{
+    va_list argptr;
+    char data[ 1024 ];
+    int len;
+
+    va_start(argptr, fmt);
+#ifdef _WIN32
+    len = _vsnprintf(data, 1024, fmt, argptr);
+#else
+    len = vsprintf(data, fmt, argptr);
+#endif
+    va_end(argptr);
+
+    int i;
+    int x = 0;
+
+    vgui2::surface()->DrawSetTextFont( font );
+
+    for ( i = 0 ; i < len; i++ )
+    {
+        int a, b, c;
+        vgui2::surface()->GetCharABCwide( font, data[i], a, b, c );
+        // Ignore a
+        if ( i != 0 )
+            x += a;
+        x += b;
+        if ( i != len - 1 )
+            x += c;
+    }
+
+    return x;
+}
+int DrawColoredText( vgui2::HFont font, int x, int y, int r, int g, int b, int a, char *fmt, va_list argptr )
+{
+    static int count = 0;
+
+    int len;
+    char data[ 1024 ];
+
+    vgui2::surface()->DrawSetTextPos( x, y );
+    vgui2::surface()->DrawSetTextColor( r, g, b, a );
+
+#ifdef _WIN32
+    len = _vsnprintf(data, 1024, fmt, argptr);
+#else
+    len = vsprintf(data, fmt, argptr);
+#endif
+
+    if ( len == -1 )
+        return x;
+
+    vgui2::surface()->DrawSetTextFont( font );
+
+    wchar_t unicodeString[1024];
+    g_pVGuiLocalize->ConvertANSIToUnicode(data, unicodeString, sizeof(unicodeString)  );
+
+    int pixels = DrawTextLen( font, data );
+
+    vgui2::surface()->DrawPrintText( unicodeString, len );
+
+    return x + pixels;
+}
+
+int DrawText( vgui2::HFont font, int x, int y, char *fmt, ... )
+{
+    va_list argptr;
+    char data[ 1024 ];
+    int len;
+
+    va_start(argptr, fmt);
+#ifdef _WIN32
+    len = _vsnprintf(data, 1024, fmt, argptr);
+#else
+    len = Q_vsnprintf(data, sizeof( data ), fmt, argptr);
+#endif
+    va_end(argptr);
+
+    len = DrawColoredText(
+        font,
+        x,
+        y,
+        255,
+        255,
+        255,
+        255,
+        data,
+        0);
+
+    return len;
+}
 //-----------------------------------------------------------------------------
 // Purpose: debug text print
 //-----------------------------------------------------------------------------
@@ -233,6 +325,20 @@ void CGameConsoleDialog::ColorPrintf(Color& clr, const char *msg)
 {
 	m_pHistory->InsertColorChange(clr);
 	m_pHistory->InsertString(msg);
+}
+void CGameConsoleDialog::PaintBackground()
+{
+    BaseClass::PaintBackground();
+    if ( !IsVisible() )
+        return;
+
+    int wide = GetWide();
+    char ver[ 100 ];
+    Q_snprintf(ver, sizeof( ver ), "GoldSource Engine %i/%s (build %d - days until 9/30/03)", 48, "1.1.2.2", 0 );
+    HScheme pScheme = GetScheme();
+    vgui2::surface()->DrawSetTextColor( Color( 255, 255, 255, 255 ) );
+    int x = wide - DrawTextLen( m_hFont, ver ) - 2;
+    DrawText( m_hFont, x, 0, ver );
 }
 
 static ConCommand *FindNamedCommand( char const *name )
@@ -748,6 +854,7 @@ void CGameConsoleDialog::ApplySchemeSettings(IScheme *pScheme)
 	m_PrintColor = GetFgColor();
 	m_DPrintColor = GetSchemeColor("BrightControlText", pScheme);
 	m_pHistory->SetFont( pScheme->GetFont( "ConsoleText", IsProportional() ) );
+    m_hFont = pScheme->GetFont( "DefaultSmall", false );
 	InvalidateLayout();
 }
 

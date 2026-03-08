@@ -22,6 +22,7 @@
 #ifndef min
 #define min(a,b)  (((a) < (b)) ? (a) : (b))
 #endif
+#define	MAXPRINTMSG	4096
 extern CBasePanel *factoryBasePanel;
 static CGameConsole g_GameConsole;
 //-----------------------------------------------------------------------------
@@ -111,8 +112,17 @@ void CGameConsole::Printf(const char *format, ...)
 {
 	if (!m_bInitialized)
 		return;
+    va_list		argptr;
+    char		msg[MAXPRINTMSG];
+    static qboolean	inupdate;
 
-	m_pConsole->Print(format);
+    va_start (argptr,format);
+    Q_vsnprintf (msg,sizeof( msg ), format, argptr);
+    va_end (argptr);
+
+    Color clr(255, 255, 255, 255 );
+    m_pConsole->ColorPrintf( clr, msg );
+
 }
 
 //-----------------------------------------------------------------------------
@@ -122,14 +132,16 @@ void CGameConsole::DPrintf(const char *format, ...)
 {
 	if (!m_bInitialized)
 		return;
-	char msg[MAX_CANON];
-	va_list args;
-	va_start(args, format);
-//	int int_arg = va_arg(args, int);
-//	double double_arg = va_arg(args, double);
-	snprintf(msg, MAX_CANON, format, args);
-	va_end(args);
-	m_pConsole->DPrint(msg);
+    va_list		argptr;
+    char		msg[MAXPRINTMSG];
+
+    va_start (argptr,format);
+    Q_vsnprintf(msg,sizeof( msg ), format,argptr);
+    va_end (argptr);
+
+    Color clr( 196, 181, 80, 255 );
+    m_pConsole->ColorPrintf( clr, msg );
+
 }
 
 //-----------------------------------------------------------------------------
@@ -142,8 +154,15 @@ void CGameConsole::ColorPrintf( Color& clr, const char *format, ...)
 {
 	if (!m_bInitialized)
 		return;
+    va_list		argptr;
+    char		msg[MAXPRINTMSG];
+    static qboolean	inupdate;
 
-m_pConsole->ColorPrintf( clr, format );
+    va_start (argptr,format);
+    Q_vsnprintf (msg,sizeof( msg ), format,argptr);
+    va_end (argptr);
+
+    m_pConsole->ColorPrintf( clr, msg );
 }
 
 //-----------------------------------------------------------------------------

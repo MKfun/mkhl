@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -95,32 +95,32 @@
 
 struct HudScaleInfo
 {
-	//! The sprite resolution.
-	int iRes = 0;
+    //! The sprite resolution.
+    int iRes = 0;
 
-	//! The minimum height for this scale to be selected automatically.
-	int iHeight = 0;
+    //! The minimum height for this scale to be selected automatically.
+    int iHeight = 0;
 
-	//! Enum value.
-	EHudScale nScale = EHudScale::Auto;
+    //! Enum value.
+    EHudScale nScale = EHudScale::Auto;
 
-	//! The file to test for support.
-	const char *szTestFile = nullptr;
+    //! The file to test for support.
+    const char *szTestFile = nullptr;
 
-	//! @returns Whether this scale is supported by the given max scale.
-	bool IsSupported(EHudScale maxScale) const
-	{
-		return nScale <= maxScale;
-	}
+    //! @returns Whether this scale is supported by the given max scale.
+    bool IsSupported(EHudScale maxScale) const
+    {
+        return nScale <= maxScale;
+    }
 };
 
 //! The list of allowed HUD sizes.
 static constexpr HudScaleInfo HUD_SCALE_INFO[] = {
-	HudScaleInfo { 320,  240,  EHudScale::X05, "sprites/320hud1.spr" },
-	HudScaleInfo { 640,  480,  EHudScale::X1,  "sprites/640hud1.spr" },
-	HudScaleInfo { 1280, 960,  EHudScale::X2,  "sprites/1280/hud_bucket0.spr" },
-	HudScaleInfo { 2560, 1920, EHudScale::X4,  "sprites/2560/hud_bucket0.spr" },
-};
+    HudScaleInfo { 320,  240,  EHudScale::X05, "sprites/320hud1.spr" },
+    HudScaleInfo { 640,  480,  EHudScale::X1,  "sprites/640hud1.spr" },
+    HudScaleInfo { 1280, 960,  EHudScale::X2,  "sprites/1280/hud_bucket0.spr" },
+    HudScaleInfo { 2560, 1920, EHudScale::X4,  "sprites/2560/hud_bucket0.spr" },
+    };
 
 extern cvar_t *cl_lw;
 
@@ -148,19 +148,18 @@ ConVar aghl_supports("aghl_supports", "0", 0, "Bitfield of features supported by
 ConVar cl_enable_html_motd("cl_enable_html_motd", "1", FCVAR_BHL_ARCHIVE, "Enables/disables support for HTML MOTDs");
 
 ConVar zoom_sensitivity_ratio("zoom_sensitivity_ratio", "1.2", FCVAR_ARCHIVE | FCVAR_BHL_ARCHIVE);
-hud_player_info_t	 g_PlayerInfoList[MAX_PLAYERS+1];	   // player info from the engine
 
 static Color s_DefaultColorCodeColors[10] = {
-	Color(0xFF, 0xAA, 0x00, 0xFF), // ^0 orange/reset
-	Color(0xFF, 0x00, 0x00, 0xFF), // ^1 red
-	Color(0x00, 0xFF, 0x00, 0xFF), // ^2 green
-	Color(0xFF, 0xFF, 0x00, 0xFF), // ^3 yellow
-	Color(0x00, 0x00, 0xFF, 0xFF), // ^4 blue
-	Color(0x00, 0xFF, 0xFF, 0xFF), // ^5 cyan
-	Color(0xFF, 0x00, 0xFF, 0xFF), // ^6 magenta
-	Color(0x88, 0x88, 0x88, 0xFF), // ^7 grey
-	Color(0xFF, 0xFF, 0xFF, 0xFF), // ^8 white
-	Color(0xFF, 0xAA, 0x00, 0xFF), // ^9 orange/reset
+    Color(0xFF, 0xAA, 0x00, 0xFF), // ^0 orange/reset
+    Color(0xFF, 0x00, 0x00, 0xFF), // ^1 red
+    Color(0x00, 0xFF, 0x00, 0xFF), // ^2 green
+    Color(0xFF, 0xFF, 0x00, 0xFF), // ^3 yellow
+    Color(0x00, 0x00, 0xFF, 0xFF), // ^4 blue
+    Color(0x00, 0xFF, 0xFF, 0xFF), // ^5 cyan
+    Color(0xFF, 0x00, 0xFF, 0xFF), // ^6 magenta
+    Color(0x88, 0x88, 0x88, 0xFF), // ^7 grey
+    Color(0xFF, 0xFF, 0xFF, 0xFF), // ^8 white
+    Color(0xFF, 0xAA, 0x00, 0xFF), // ^9 orange/reset
 };
 
 const Color NoTeamColor::Orange = Color(255, 178, 0, 255);
@@ -168,9 +167,9 @@ const Color NoTeamColor::White = Color(216, 216, 216, 255);
 
 CON_COMMAND(pm_reset, "Resets player movement settings if they were detected incorrectly")
 {
-	PM_ResetBHopDetection();
-	PM_ResetUseSlowDownDetection();
-	ConPrintf("Player movement settings reset.\n");
+    PM_ResetBHopDetection();
+    PM_ResetUseSlowDownDetection();
+    ConPrintf("Player movement settings reset.\n");
 }
 
 // inputw32.cpp
@@ -179,86 +178,86 @@ void IN_RunFrame();
 template <void (CClientViewport::*FUNC)(const char *, int, void *)>
 void HookViewportMessage(const char *name)
 {
-	gEngfuncs.pfnHookUserMsg((char *)name, [](const char *pszName, int iSize, void *pbuf) -> int {
-		if (g_pViewport)
-			(g_pViewport->*FUNC)(pszName, iSize, pbuf);
-		return 1;
-	});
+    gEngfuncs.pfnHookUserMsg((char *)name, [](const char *pszName, int iSize, void *pbuf) -> int {
+        if (g_pViewport)
+            (g_pViewport->*FUNC)(pszName, iSize, pbuf);
+        return 1;
+    });
 }
 
 template <int (CHud::*FUNC)(const char *, int, void *)>
 void HookHudMessage(const char *name)
 {
-	gEngfuncs.pfnHookUserMsg((char *)name, [](const char *pszName, int iSize, void *pbuf) -> int {
-		return (gHUD.*FUNC)(pszName, iSize, pbuf);
-	});
+    gEngfuncs.pfnHookUserMsg((char *)name, [](const char *pszName, int iSize, void *pbuf) -> int {
+        return (gHUD.*FUNC)(pszName, iSize, pbuf);
+    });
 }
 
 static void AboutCommand(void)
 {
-	ConPrintf("BugfixedHL-Rebased\n");
-	ConPrintf("Bugfixed and improved Half-Life Client\n");
-	ConPrintf("Version: " APP_VERSION "%s\n", IsDebug() ? " [Debug Build]" : "");
-	ConPrintf("Engine: %s\n", gHUD.GetEngineVersion());
-	ConPrintf("\n");
-	ConPrintf("Github: " BHL_GITHUB_URL "\n");
-	ConPrintf("Discussion forum: " BHL_FORUM_URL "\n");
+    ConPrintf("BugfixedHL-Rebased\n");
+    ConPrintf("Bugfixed and improved Half-Life Client\n");
+    ConPrintf("Version: " APP_VERSION "%s\n", IsDebug() ? " [Debug Build]" : "");
+    ConPrintf("Engine: %s\n", gHUD.GetEngineVersion());
+    ConPrintf("\n");
+    ConPrintf("Github: " BHL_GITHUB_URL "\n");
+    ConPrintf("Discussion forum: " BHL_FORUM_URL "\n");
 }
 
 //! Gets the current HUD size (either user-selected or auto-detected).
 //! @returns iRes.
 static int GetHudSize(const SCREENINFO &screenInfo, EHudScale maxScale)
 {
-	EHudScale userScale = hud_scale.GetEnumClamped<EHudScale>();
+    EHudScale userScale = hud_scale.GetEnumClamped<EHudScale>();
 
-	if (userScale != EHudScale::Auto)
-	{
-		// Use user override
-		userScale = clamp(userScale, EHudScale::X05, maxScale);
-		const HudScaleInfo &info = *std::find_if(std::begin(HUD_SCALE_INFO), std::end(HUD_SCALE_INFO), [&](const HudScaleInfo &x)
-		    { return x.nScale == userScale; });
+    if (userScale != EHudScale::Auto)
+    {
+        // Use user override
+        userScale = clamp(userScale, EHudScale::X05, maxScale);
+        const HudScaleInfo &info = *std::find_if(std::begin(HUD_SCALE_INFO), std::end(HUD_SCALE_INFO), [&](const HudScaleInfo &x)
+            { return x.nScale == userScale; });
 
-		gEngfuncs.Con_DPrintf("HUD Size Override: %dx%d\n", info.iRes, info.iHeight);
-		return info.iRes;
-	}
+        gEngfuncs.Con_DPrintf("HUD Size Override: %dx%d\n", info.iRes, info.iHeight);
+        return info.iRes;
+    }
 
-	// Auto-detect
-	for (auto it = std::rbegin(HUD_SCALE_INFO); it != std::rend(HUD_SCALE_INFO); ++it)
-	{
-		if (!it->IsSupported(maxScale))
-			continue;
+    // Auto-detect
+    for (auto it = std::rbegin(HUD_SCALE_INFO); it != std::rend(HUD_SCALE_INFO); ++it)
+    {
+        if (!it->IsSupported(maxScale))
+            continue;
 
-		if (screenInfo.iHeight >= it->iHeight)
-		{
-			// Found the largest one.
-			gEngfuncs.Con_DPrintf(
-				"HUD Size Auto-detect: %dx%d for screen %dx%d\n",
-				it->iRes, it->iHeight,
-			    screenInfo.iWidth, screenInfo.iHeight);
-			return it->iRes;
-		}
-	}
+        if (screenInfo.iHeight >= it->iHeight)
+        {
+            // Found the largest one.
+            gEngfuncs.Con_DPrintf(
+                "HUD Size Auto-detect: %dx%d for screen %dx%d\n",
+                it->iRes, it->iHeight,
+                screenInfo.iWidth, screenInfo.iHeight);
+            return it->iRes;
+        }
+    }
 
-	// Too low resolution. Fall back to the smallest one.
-	const HudScaleInfo &fallbackInfo = HUD_SCALE_INFO[0];
-	gEngfuncs.Con_DPrintf(
-	    "HUD Size Auto-detect: fallback %dx%d for too small screen %dx%d\n",
-	    fallbackInfo.iRes, fallbackInfo.iHeight,
-	    screenInfo.iWidth, screenInfo.iHeight);
-	return fallbackInfo.iRes;
+    // Too low resolution. Fall back to the smallest one.
+    const HudScaleInfo &fallbackInfo = HUD_SCALE_INFO[0];
+    gEngfuncs.Con_DPrintf(
+        "HUD Size Auto-detect: fallback %dx%d for too small screen %dx%d\n",
+        fallbackInfo.iRes, fallbackInfo.iHeight,
+        screenInfo.iWidth, screenInfo.iHeight);
+    return fallbackInfo.iRes;
 }
 
 static int CountSpritesOfRes(const client_sprite_t* pSpriteList, int nTotalCount, int iRes)
 {
-	int count = 0;
+    int count = 0;
 
-	for (int i = 0; i < nTotalCount; i++)
-	{
-		if (pSpriteList[i].iRes == iRes)
-			count++;
-	}
+    for (int i = 0; i < nTotalCount; i++)
+    {
+        if (pSpriteList[i].iRes == iRes)
+            count++;
+    }
 
-	return count;
+    return count;
 }
 
 CHud::CHud()
@@ -272,371 +271,371 @@ CHud::~CHud()
 // This is called every time the DLL is loaded
 void CHud::Init(void)
 {
-	// Check that elem list is empty
-	Assert(m_HudList.empty());
+    // Check that elem list is empty
+    Assert(m_HudList.empty());
 
-	// Fill color code colors with default ones
-	memcpy(m_ColorCodeColors, s_DefaultColorCodeColors, sizeof(s_DefaultColorCodeColors));
+    // Fill color code colors with default ones
+    memcpy(m_ColorCodeColors, s_DefaultColorCodeColors, sizeof(s_DefaultColorCodeColors));
 
-	// Set player info IDs
-	for (int i = 1; i < MAX_PLAYERS; i++)
-		CPlayerInfo::m_sPlayerInfo[i].m_iIndex = i;
+    // Set player info IDs
+    for (int i = 1; i < MAX_PLAYERS; i++)
+        CPlayerInfo::m_sPlayerInfo[i].m_iIndex = i;
 
-	// Check for AG
-	m_bIsAg = !strcmp(gEngfuncs.pfnGetGameDirectory(), "ag");
-	PM_SetIsAG(m_bIsAg);
+    // Check for AG
+    m_bIsAg = !strcmp(gEngfuncs.pfnGetGameDirectory(), "ag");
+    PM_SetIsAG(m_bIsAg);
 
-	m_MaxHudScale = DetectMaxHudScale();
+    m_MaxHudScale = DetectMaxHudScale();
 
-	HookHudMessage<&CHud::MsgFunc_Logo>("Logo");
-	HookHudMessage<&CHud::MsgFunc_ResetHUD>("ResetHUD");
-	HookHudMessage<&CHud::MsgFunc_GameMode>("GameMode");
-	HookHudMessage<&CHud::MsgFunc_InitHUD>("InitHUD");
-	HookHudMessage<&CHud::MsgFunc_ViewMode>("ViewMode");
-	HookHudMessage<&CHud::MsgFunc_SetFOV>("SetFOV");
-	HookHudMessage<&CHud::MsgFunc_Concuss>("Concuss");
-	HookHudMessage<&CHud::MsgFunc_Logo>("Logo");
-	HookHudMessage<&CHud::MsgFunc_Fog>("Fog");
+    HookHudMessage<&CHud::MsgFunc_Logo>("Logo");
+    HookHudMessage<&CHud::MsgFunc_ResetHUD>("ResetHUD");
+    HookHudMessage<&CHud::MsgFunc_GameMode>("GameMode");
+    HookHudMessage<&CHud::MsgFunc_InitHUD>("InitHUD");
+    HookHudMessage<&CHud::MsgFunc_ViewMode>("ViewMode");
+    HookHudMessage<&CHud::MsgFunc_SetFOV>("SetFOV");
+    HookHudMessage<&CHud::MsgFunc_Concuss>("Concuss");
+    HookHudMessage<&CHud::MsgFunc_Logo>("Logo");
+    HookHudMessage<&CHud::MsgFunc_Fog>("Fog");
 
-	// TFFree CommandMenu
-	HookCommand("+commandmenu", [] {
-		if (g_pViewport)
-			g_pViewport->ShowCommandMenu();
-	});
+    // TFFree CommandMenu
+    HookCommand("+commandmenu", [] {
+        if (g_pViewport)
+            g_pViewport->ShowCommandMenu();
+    });
 
-	HookCommand("-commandmenu", [] {
-		if (g_pViewport)
-			g_pViewport->InputSignalHideCommandMenu();
-	});
+    HookCommand("-commandmenu", [] {
+        if (g_pViewport)
+            g_pViewport->InputSignalHideCommandMenu();
+    });
 
-	HookCommand("ForceCloseCommandMenu", [] {
-		if (g_pViewport)
-			g_pViewport->HideCommandMenu();
-	});
+    HookCommand("ForceCloseCommandMenu", [] {
+        if (g_pViewport)
+            g_pViewport->HideCommandMenu();
+    });
 
-	HookCommand("special", [] {
-		if (g_pViewport)
-			g_pViewport->InputPlayerSpecial();
-	});
+    HookCommand("special", [] {
+        if (g_pViewport)
+            g_pViewport->InputPlayerSpecial();
+    });
 
-	HookCommand("about", AboutCommand);
+    HookCommand("about", AboutCommand);
 
-	EngineClientCmd("alias zpecial \"append _zpecial\"");
+    EngineClientCmd("alias zpecial \"append _zpecial\"");
 
-	HookViewportMessage<&CClientViewport::MsgFunc_ValClass>("ValClass");
-	HookViewportMessage<&CClientViewport::MsgFunc_TeamNames>("TeamNames");
-	HookViewportMessage<&CClientViewport::MsgFunc_Feign>("Feign");
-	HookViewportMessage<&CClientViewport::MsgFunc_Detpack>("Detpack");
-	HookViewportMessage<&CClientViewport::MsgFunc_MOTD>("MOTD");
-	HookViewportMessage<&CClientViewport::MsgFunc_HtmlMOTD>("HtmlMOTD");
-	HookViewportMessage<&CClientViewport::MsgFunc_BuildSt>("BuildSt");
-	HookViewportMessage<&CClientViewport::MsgFunc_RandomPC>("RandomPC");
-	HookViewportMessage<&CClientViewport::MsgFunc_ServerName>("ServerName");
-	HookViewportMessage<&CClientViewport::MsgFunc_ScoreInfo>("ScoreInfo");
-	HookViewportMessage<&CClientViewport::MsgFunc_TeamScore>("TeamScore");
-	HookViewportMessage<&CClientViewport::MsgFunc_TeamInfo>("TeamInfo");
+    HookViewportMessage<&CClientViewport::MsgFunc_ValClass>("ValClass");
+    HookViewportMessage<&CClientViewport::MsgFunc_TeamNames>("TeamNames");
+    HookViewportMessage<&CClientViewport::MsgFunc_Feign>("Feign");
+    HookViewportMessage<&CClientViewport::MsgFunc_Detpack>("Detpack");
+    HookViewportMessage<&CClientViewport::MsgFunc_MOTD>("MOTD");
+    HookViewportMessage<&CClientViewport::MsgFunc_HtmlMOTD>("HtmlMOTD");
+    HookViewportMessage<&CClientViewport::MsgFunc_BuildSt>("BuildSt");
+    HookViewportMessage<&CClientViewport::MsgFunc_RandomPC>("RandomPC");
+    HookViewportMessage<&CClientViewport::MsgFunc_ServerName>("ServerName");
+    HookViewportMessage<&CClientViewport::MsgFunc_ScoreInfo>("ScoreInfo");
+    HookViewportMessage<&CClientViewport::MsgFunc_TeamScore>("TeamScore");
+    HookViewportMessage<&CClientViewport::MsgFunc_TeamInfo>("TeamInfo");
 
-	HookViewportMessage<&CClientViewport::MsgFunc_Spectator>("Spectator");
-	HookViewportMessage<&CClientViewport::MsgFunc_AllowSpec>("AllowSpec");
+    HookViewportMessage<&CClientViewport::MsgFunc_Spectator>("Spectator");
+    HookViewportMessage<&CClientViewport::MsgFunc_AllowSpec>("AllowSpec");
 
-	// VGUI Menus
-	HookViewportMessage<&CClientViewport::MsgFunc_VGUIMenu>("VGUIMenu");
+    // VGUI Menus
+    HookViewportMessage<&CClientViewport::MsgFunc_VGUIMenu>("VGUIMenu");
 
-	m_iLogo = 0;
-	m_iFOV = 0;
+    m_iLogo = 0;
+    m_iFOV = 0;
 
-	cl_lw = gEngfuncs.pfnGetCvarPointer("cl_lw");
+    cl_lw = gEngfuncs.pfnGetCvarPointer("cl_lw");
 
-	m_pSpriteList = NULL;
+    m_pSpriteList = NULL;
 
-	// In case we get messages before the first update -- time will be valid
-	m_flTime = 1.0;
+    // In case we get messages before the first update -- time will be valid
+    m_flTime = 1.0;
 
-	// Load default HUD colors into m_HudColor*.
-	UpdateHudColors();
+    // Load default HUD colors into m_HudColor*.
+    UpdateHudColors();
 
-	// Create HUD elements
-	RegisterHudElem<CHudAmmo>();
-	RegisterHudElem<CHudHealth>();
-	RegisterHudElem<CHudChat>();
-	RegisterHudElem<CHudCrosshair>();
-	RegisterHudElem<CHudSpectator>();
-	RegisterHudElem<CHudGeiger>();
-	RegisterHudElem<CHudTrain>();
-	RegisterHudElem<CHudBattery>();
-	RegisterHudElem<CHudFlashlight>();
-	RegisterHudElem<CHudMessage>();
-	RegisterHudElem<CHudScores>();
-	RegisterHudElem<CHudStatusBar>();
-	RegisterHudElem<CHudDeathNotice>();
-	RegisterHudElem<CHudAmmoSecondary>();
-	RegisterHudElem<CHudTextMessage>();
-	RegisterHudElem<CHudStatusIcons>();
-	RegisterHudElem<CHudMenu>();
-	RegisterHudElem<CHudVoiceStatus>();
-	RegisterHudElem<CHudVoiceStatusSelf>();
-	RegisterHudElem<CHudSpeedometer>();
-	RegisterHudElem<CHudJumpspeed>();
-	RegisterHudElem<CHudTimer>();
-	RegisterHudElem<CHudStrafeGuide>();
+    // Create HUD elements
+    RegisterHudElem<CHudAmmo>();
+    RegisterHudElem<CHudHealth>();
+    RegisterHudElem<CHudChat>();
+    RegisterHudElem<CHudCrosshair>();
+    RegisterHudElem<CHudSpectator>();
+    RegisterHudElem<CHudGeiger>();
+    RegisterHudElem<CHudTrain>();
+    RegisterHudElem<CHudBattery>();
+    RegisterHudElem<CHudFlashlight>();
+    RegisterHudElem<CHudMessage>();
+    RegisterHudElem<CHudScores>();
+    RegisterHudElem<CHudStatusBar>();
+    RegisterHudElem<CHudDeathNotice>();
+    RegisterHudElem<CHudAmmoSecondary>();
+    RegisterHudElem<CHudTextMessage>();
+    RegisterHudElem<CHudStatusIcons>();
+    RegisterHudElem<CHudMenu>();
+    RegisterHudElem<CHudVoiceStatus>();
+    RegisterHudElem<CHudVoiceStatusSelf>();
+    RegisterHudElem<CHudSpeedometer>();
+    RegisterHudElem<CHudJumpspeed>();
+    RegisterHudElem<CHudTimer>();
+    RegisterHudElem<CHudStrafeGuide>();
 
-	if (CHudRenderer::Get().IsAvailable())
-	{
-		RegisterHudElem<CHudDeathNoticePanel>();
-	}
+    if (CHudRenderer::Get().IsAvailable())
+    {
+        RegisterHudElem<CHudDeathNoticePanel>();
+    }
 
-	ClientVoiceMgr_Init();
+    ClientVoiceMgr_Init();
 
-	// Create AG HUD elements
-	RegisterHudElem<AgHudGlobal>();
-	RegisterHudElem<AgHudCountdown>();
-	RegisterHudElem<AgHudCTF>();
-	RegisterHudElem<AgHudLocation>();
-	RegisterHudElem<AgHudLongjump>();
-	RegisterHudElem<AgHudNextmap>();
-	RegisterHudElem<AgHudPlayerId>();
-	RegisterHudElem<AgHudSettings>();
-	RegisterHudElem<AgHudSuddenDeath>();
-	RegisterHudElem<AgHudTimeout>();
-	RegisterHudElem<AgHudVote>();
+    // Create AG HUD elements
+    RegisterHudElem<AgHudGlobal>();
+    RegisterHudElem<AgHudCountdown>();
+    RegisterHudElem<AgHudCTF>();
+    RegisterHudElem<AgHudLocation>();
+    RegisterHudElem<AgHudLongjump>();
+    RegisterHudElem<AgHudNextmap>();
+    RegisterHudElem<AgHudPlayerId>();
+    RegisterHudElem<AgHudSettings>();
+    RegisterHudElem<AgHudSuddenDeath>();
+    RegisterHudElem<AgHudTimeout>();
+    RegisterHudElem<AgHudVote>();
 
-	// Init HUD elements
-	for (CHudElem *i : m_HudList)
-		i->Init();
+    // Init HUD elements
+    for (CHudElem *i : m_HudList)
+        i->Init();
 
-	m_HudList.shrink_to_fit();
-	MsgFunc_ResetHUD(0, 0, NULL);
-	colorpicker::gTexMgr.Init();
+    m_HudList.shrink_to_fit();
+    MsgFunc_ResetHUD(0, 0, NULL);
+    colorpicker::gTexMgr.Init();
 
-	g_pViewport->ReloadLayout();
+    g_pViewport->ReloadLayout();
 
-	bhlcfg::Init();
-	CResults::Get().Init();
+    bhlcfg::Init();
+    CResults::Get().Init();
 
 #if USE_UPDATER
-	CHttpClient::Get();
-	CUpdateChecker::Get().Init();
+    CHttpClient::Get();
+    CUpdateChecker::Get().Init();
 #endif
 
-	UpdateSupportsCvar();
+    UpdateSupportsCvar();
 
-	if (GetEngineBuild() >= ENGINE_BUILD_ANNIVERSARY_FIRST)
-	{
-		gEngfuncs.pfnClientCmd("richpresence_gamemode\n"); // reset
-		gEngfuncs.pfnClientCmd("richpresence_update\n");
-	}
+    if (GetEngineBuild() >= ENGINE_BUILD_ANNIVERSARY_FIRST)
+    {
+        gEngfuncs.pfnClientCmd("richpresence_gamemode\n"); // reset
+        gEngfuncs.pfnClientCmd("richpresence_update\n");
+    }
 }
 
 void CHud::VidInit(void)
 {
-	m_scrinfo.iSize = sizeof(m_scrinfo);
-	GetScreenInfo(&m_scrinfo);
+    m_scrinfo.iSize = sizeof(m_scrinfo);
+    GetScreenInfo(&m_scrinfo);
 
-	// Reset all player info
-	for (int i = 1; i <= MAX_PLAYERS; i++)
-	{
-		GetPlayerInfo(i)->Reset();
-	}
+    // Reset all player info
+    for (int i = 1; i <= MAX_PLAYERS; i++)
+    {
+        GetPlayerInfo(i)->Reset();
+    }
 
-	// Reset all team info
-	for (int i = 0; i <= MAX_TEAMS; i++)
-	{
-		GetTeamInfo(i)->Reset(i);
-	}
+    // Reset all team info
+    for (int i = 0; i <= MAX_TEAMS; i++)
+    {
+        GetTeamInfo(i)->Reset(i);
+    }
 
-	CSvcMessages::Get().VidInit();
+    CSvcMessages::Get().VidInit();
 
-	// ----------
-	// Load Sprites
-	// ---------
-	//	m_hsprFont = LoadSprite("sprites/%d_font.spr");
+    // ----------
+    // Load Sprites
+    // ---------
+    //	m_hsprFont = LoadSprite("sprites/%d_font.spr");
 
-	m_hsprLogo = 0;
+    m_hsprLogo = 0;
 
-	// Only update the scale once - otherwise sprites break
-	if (m_iRes == -1)
-		m_iRes = GetHudSize(m_scrinfo, GetMaxHudScale());
+    // Only update the scale once - otherwise sprites break
+    if (m_iRes == -1)
+        m_iRes = GetHudSize(m_scrinfo, GetMaxHudScale());
 
-	// Only load this once
-	if (!m_pSpriteList)
-	{
-		// we need to load the hud.txt, and all sprites within
-		m_pSpriteList = SPR_GetList("sprites/hud.txt", &m_iSpriteCountAllRes);
+    // Only load this once
+    if (!m_pSpriteList)
+    {
+        // we need to load the hud.txt, and all sprites within
+        m_pSpriteList = SPR_GetList("sprites/hud.txt", &m_iSpriteCountAllRes);
 
-		if (!m_pSpriteList)
-			HUD_FatalError("Failed to load sprites/hud.txt.\nYour game is corrupted.");
+        if (!m_pSpriteList)
+            HUD_FatalError("Failed to load sprites/hud.txt.\nYour game is corrupted.");
 
-		// count the number of sprites of the appropriate res
-		m_iSpriteCount = CountSpritesOfRes(m_pSpriteList, m_iSpriteCountAllRes, m_iRes);
+        // count the number of sprites of the appropriate res
+        m_iSpriteCount = CountSpritesOfRes(m_pSpriteList, m_iSpriteCountAllRes, m_iRes);
 
-		if (m_iSpriteCount == 0)
-		{
-			Warning("Found no sprites with resolution of %d. Defaulting to %d.\n", m_iRes, HUD_FALLBACK_RES);
-			m_iRes = HUD_FALLBACK_RES;
-			m_iSpriteCount = CountSpritesOfRes(m_pSpriteList, m_iSpriteCountAllRes, m_iRes);
-		}
+        if (m_iSpriteCount == 0)
+        {
+            Warning("Found no sprites with resolution of %d. Defaulting to %d.\n", m_iRes, HUD_FALLBACK_RES);
+            m_iRes = HUD_FALLBACK_RES;
+            m_iSpriteCount = CountSpritesOfRes(m_pSpriteList, m_iSpriteCountAllRes, m_iRes);
+        }
 
-		if (m_iSpriteCount == 0)
-			HUD_FatalError("Failed to find sprites with resolution of %d in sprites/hud.txt.\nYour game is corrupted.", m_iRes);
+        if (m_iSpriteCount == 0)
+            HUD_FatalError("Failed to find sprites with resolution of %d in sprites/hud.txt.\nYour game is corrupted.", m_iRes);
 
-		// allocated memory for sprite handle arrays
-		m_rghSprites.resize(m_iSpriteCount);
-		m_rgrcRects.resize(m_iSpriteCount);
-		m_rgszSpriteNames.resize(m_iSpriteCount);
-		m_rgSpritePaths.resize(m_iSpriteCount);
+        // allocated memory for sprite handle arrays
+        m_rghSprites.resize(m_iSpriteCount);
+        m_rgrcRects.resize(m_iSpriteCount);
+        m_rgszSpriteNames.resize(m_iSpriteCount);
+        m_rgSpritePaths.resize(m_iSpriteCount);
 
-		client_sprite_t *p = m_pSpriteList;
-		int index = 0;
-		for (int j = 0; j < m_iSpriteCountAllRes; j++)
-		{
-			if (p->iRes == m_iRes)
-			{
-				char sz[256];
-				sprintf(sz, "sprites/%s.spr", p->szSprite);
-				m_rghSprites[index] = SPR_Load(sz);
-				m_rgrcRects[index] = p->rc;
-				Q_strncpy(m_rgszSpriteNames[index].name, p->szName, MAX_SPRITE_NAME_LENGTH);
-				m_rgSpritePaths[index] = sz;
+        client_sprite_t *p = m_pSpriteList;
+        int index = 0;
+        for (int j = 0; j < m_iSpriteCountAllRes; j++)
+        {
+            if (p->iRes == m_iRes)
+            {
+                char sz[256];
+                sprintf(sz, "sprites/%s.spr", p->szSprite);
+                m_rghSprites[index] = SPR_Load(sz);
+                m_rgrcRects[index] = p->rc;
+                Q_strncpy(m_rgszSpriteNames[index].name, p->szName, MAX_SPRITE_NAME_LENGTH);
+                m_rgSpritePaths[index] = sz;
 
-				index++;
-			}
+                index++;
+            }
 
-			p++;
-		}
+            p++;
+        }
 
-		// Add AG CTF sprites on non-AG clients
-		// AG has them in hud.txt
-		if (!IsAG())
-		{
-			AddSprite(client_sprite_t { "item_flag_team1", "ag_ctf", 0, 640, wrect_t { 120, 160, 0, 40 } });
-			AddSprite(client_sprite_t { "item_flag_team2", "ag_ctf", 0, 640, wrect_t { 120, 160, 0, 40 } });
-			AddSprite(client_sprite_t { "icon_ctf_home", "ag_ctf", 0, 640, wrect_t { 0, 40, 0, 40 } });
-			AddSprite(client_sprite_t { "icon_ctf_stolen", "ag_ctf", 0, 640, wrect_t { 40, 80, 0, 40 } });
-			AddSprite(client_sprite_t { "icon_ctf_lost", "ag_ctf", 0, 640, wrect_t { 80, 120, 0, 40 } });
-			AddSprite(client_sprite_t { "icon_ctf_carry", "ag_ctf", 0, 640, wrect_t { 120, 160, 0, 40 } });
-			AddSprite(client_sprite_t { "icon_ctf_score", "ag_ctf_score", 0, 640, wrect_t { 0, 16, 0, 16 } });
-		}
-	}
-	else
-	{
-		// we have already have loaded the sprite reference from hud.txt, but
-		// we need to make sure all the sprites have been loaded (we've gone through a transition, or loaded a save game)
-		Assert(m_rghSprites.size() == m_iSpriteCount);
-		Assert(m_rgrcRects.size() == m_iSpriteCount);
-		Assert(m_rgszSpriteNames.size() == m_iSpriteCount);
-		Assert(m_rgSpritePaths.size() == m_iSpriteCount);
+        // Add AG CTF sprites on non-AG clients
+        // AG has them in hud.txt
+        if (!IsAG())
+        {
+            AddSprite(client_sprite_t { "item_flag_team1", "ag_ctf", 0, 640, wrect_t { 120, 160, 0, 40 } });
+            AddSprite(client_sprite_t { "item_flag_team2", "ag_ctf", 0, 640, wrect_t { 120, 160, 0, 40 } });
+            AddSprite(client_sprite_t { "icon_ctf_home", "ag_ctf", 0, 640, wrect_t { 0, 40, 0, 40 } });
+            AddSprite(client_sprite_t { "icon_ctf_stolen", "ag_ctf", 0, 640, wrect_t { 40, 80, 0, 40 } });
+            AddSprite(client_sprite_t { "icon_ctf_lost", "ag_ctf", 0, 640, wrect_t { 80, 120, 0, 40 } });
+            AddSprite(client_sprite_t { "icon_ctf_carry", "ag_ctf", 0, 640, wrect_t { 120, 160, 0, 40 } });
+            AddSprite(client_sprite_t { "icon_ctf_score", "ag_ctf_score", 0, 640, wrect_t { 0, 16, 0, 16 } });
+        }
+    }
+    else
+    {
+        // we have already have loaded the sprite reference from hud.txt, but
+        // we need to make sure all the sprites have been loaded (we've gone through a transition, or loaded a save game)
+        Assert(m_rghSprites.size() == m_iSpriteCount);
+        Assert(m_rgrcRects.size() == m_iSpriteCount);
+        Assert(m_rgszSpriteNames.size() == m_iSpriteCount);
+        Assert(m_rgSpritePaths.size() == m_iSpriteCount);
 
-		for (int i = 0; i < m_iSpriteCount; i++)
-		{
-			m_rghSprites[i] = SPR_Load(m_rgSpritePaths[i].c_str());
-		}
-	}
+        for (int i = 0; i < m_iSpriteCount; i++)
+        {
+            m_rghSprites[i] = SPR_Load(m_rgSpritePaths[i].c_str());
+        }
+    }
 
-	// assumption: number_1, number_2, etc, are all listed and loaded sequentially
-	m_HUD_number_0 = GetSpriteIndex("number_0");
+    // assumption: number_1, number_2, etc, are all listed and loaded sequentially
+    m_HUD_number_0 = GetSpriteIndex("number_0");
 
-	if (m_HUD_number_0 == -1)
-		HUD_FatalError("Failed to find sprite 'number_0' in the sprite list.\nYour game is corrupted.");
+    if (m_HUD_number_0 == -1)
+        HUD_FatalError("Failed to find sprite 'number_0' in the sprite list.\nYour game is corrupted.");
 
-	m_iFontHeight = m_rgrcRects[m_HUD_number_0].bottom - m_rgrcRects[m_HUD_number_0].top;
+    m_iFontHeight = m_rgrcRects[m_HUD_number_0].bottom - m_rgrcRects[m_HUD_number_0].top;
 
-	gFog.ClearFog();
+    gFog.ClearFog();
 
-	for (CHudElem *i : m_HudList)
-		i->VidInit();
+    for (CHudElem *i : m_HudList)
+        i->VidInit();
 }
 
 void CHud::Frame(double time)
 {
-	m_iFrameCount++;
+    m_iFrameCount++;
 
-	vgui2::GetAnimationController()->UpdateAnimations(gEngfuncs.GetClientTime());
-	colorpicker::gTexMgr.RunFrame();
+    vgui2::GetAnimationController()->UpdateAnimations(gEngfuncs.GetClientTime());
+    colorpicker::gTexMgr.RunFrame();
 
-	IN_RunFrame();
+    IN_RunFrame();
 
-	CHudVoiceStatus::Get()->RunFrame(time);
-	CResults::Get().Frame();
+    CHudVoiceStatus::Get()->RunFrame(time);
+    CResults::Get().Frame();
 
 #if USE_UPDATER
-	CHttpClient::Get().RunFrame();
-	CUpdateChecker::Get().RunFrame();
-	CUpdateInstaller::Get().RunFrame();
+    CHttpClient::Get().RunFrame();
+    CUpdateChecker::Get().RunFrame();
+    CUpdateInstaller::Get().RunFrame();
 #endif
 
-	// Update aghl_supports
-	if (cl_enable_html_motd.GetBool() != m_bIsHTMLEnabled)
-	{
-		m_bIsHTMLEnabled = cl_enable_html_motd.GetBool();
-		UpdateSupportsCvar();
-	}
+    // Update aghl_supports
+    if (cl_enable_html_motd.GetBool() != m_bIsHTMLEnabled)
+    {
+        m_bIsHTMLEnabled = cl_enable_html_motd.GetBool();
+        UpdateSupportsCvar();
+    }
 
-	while (m_NextFrameQueue.size())
-	{
-		auto &i = m_NextFrameQueue.front();
-		i();
-		m_NextFrameQueue.pop();
-	}
+    while (m_NextFrameQueue.size())
+    {
+        auto &i = m_NextFrameQueue.front();
+        i();
+        m_NextFrameQueue.pop();
+    }
 }
 
 void CHud::Shutdown()
 {
 #if USE_UPDATER
-	CUpdateInstaller::Get().Shutdown();
-	CHttpClient::Get().Shutdown();
+    CUpdateInstaller::Get().Shutdown();
+    CHttpClient::Get().Shutdown();
 #endif
-	bhlcfg::Shutdown();
-	ClientVoiceMgr_Shutdown();
-	colorpicker::gTexMgr.Shutdown();
+    bhlcfg::Shutdown();
+    ClientVoiceMgr_Shutdown();
+    colorpicker::gTexMgr.Shutdown();
 
-	for (CHudElem *i : m_HudList)
-	{
-		// VGUI2 is shut down before HUD_Shutdown is called.
-		// vgui2::~Panel calls VGUI2 interfaces which are not available.
-		if (!dynamic_cast<vgui2::Panel *>(i))
-			delete i;
-	}
+    for (CHudElem *i : m_HudList)
+    {
+        // VGUI2 is shut down before HUD_Shutdown is called.
+        // vgui2::~Panel calls VGUI2 interfaces which are not available.
+        if (!dynamic_cast<vgui2::Panel *>(i))
+            delete i;
+    }
 }
 
 void CHud::ApplyViewportSchemeSettings(vgui2::IScheme *pScheme)
 {
-	char buf[64];
-	for (int i = 0; i <= 9; i++)
-	{
-		snprintf(buf, sizeof(buf), "ColorCode%d", i);
-		m_ColorCodeColors[i] = pScheme->GetColor(buf, s_DefaultColorCodeColors[i]);
-	}
+    char buf[64];
+    for (int i = 0; i <= 9; i++)
+    {
+        snprintf(buf, sizeof(buf), "ColorCode%d", i);
+        m_ColorCodeColors[i] = pScheme->GetColor(buf, s_DefaultColorCodeColors[i]);
+    }
 
-	vgui2::Label::SetDefaultColorCodeArray(m_ColorCodeColors);
+    vgui2::Label::SetDefaultColorCodeArray(m_ColorCodeColors);
 }
 
 void CHud::SaveEngineVersion()
 {
-	cvar_t *sv_version = sv_version = gEngfuncs.pfnGetCvarPointer("sv_version");
-	if (sv_version)
-	{
-		Q_strncpy(m_szEngineVersion, sv_version->string, sizeof(m_szEngineVersion));
+    cvar_t *sv_version = sv_version = gEngfuncs.pfnGetCvarPointer("sv_version");
+    if (sv_version)
+    {
+        Q_strncpy(m_szEngineVersion, sv_version->string, sizeof(m_szEngineVersion));
 
-		// Parse build number
-		std::string_view version = m_szEngineVersion;
-		size_t lastComma = version.rfind(',');
+        // Parse build number
+        std::string_view version = m_szEngineVersion;
+        size_t lastComma = version.rfind(',');
 
-		if (lastComma != std::string::npos)
-		{
-			const char *buildStr = m_szEngineVersion + lastComma + 1;
-			m_iEngineBuildNumber = atoi(buildStr);
-		}
-	}
-	else
-	{
-		Q_strncpy(m_szEngineVersion, "< sv_version not found >", sizeof(m_szEngineVersion));
-		m_iEngineBuildNumber = -1;
-	}
+        if (lastComma != std::string::npos)
+        {
+            const char *buildStr = m_szEngineVersion + lastComma + 1;
+            m_iEngineBuildNumber = atoi(buildStr);
+        }
+    }
+    else
+    {
+        Q_strncpy(m_szEngineVersion, "< sv_version not found >", sizeof(m_szEngineVersion));
+        m_iEngineBuildNumber = -1;
+    }
 }
 
 bool CHud::IsAG()
 {
-	return m_bIsAg;
+    return m_bIsAg;
 }
 
 // GetSpriteIndex()
@@ -645,44 +644,44 @@ bool CHud::IsAG()
 // returns 0 if sprite not found
 int CHud::GetSpriteIndex(const char *SpriteName)
 {
-	// look through the loaded sprite name list for SpriteName
-	for (int i = 0; i < m_iSpriteCount; i++)
-	{
-		if (Q_stricmp(SpriteName, m_rgszSpriteNames[i].name) == 0)
-			return i;
-	}
+    // look through the loaded sprite name list for SpriteName
+    for (int i = 0; i < m_iSpriteCount; i++)
+    {
+        if (Q_stricmp(SpriteName, m_rgszSpriteNames[i].name) == 0)
+            return i;
+    }
 
-	return -1; // invalid sprite
+    return -1; // invalid sprite
 }
 
 void CHud::AddSprite(const client_sprite_t &p)
 {
-	// Search for existing sprite
-	int i = 0;
-	for (i = 0; i < m_iSpriteCount; i++)
-	{
-		if (!Q_stricmp(m_rgszSpriteNames[i].name, p.szName))
-			return;
-	}
+    // Search for existing sprite
+    int i = 0;
+    for (i = 0; i < m_iSpriteCount; i++)
+    {
+        if (!Q_stricmp(m_rgszSpriteNames[i].name, p.szName))
+            return;
+    }
 
-	char sz[256];
-	snprintf(sz, sizeof(sz), "sprites/%s.spr", p.szSprite);
+    char sz[256];
+    snprintf(sz, sizeof(sz), "sprites/%s.spr", p.szSprite);
 
-	m_rghSprites.push_back(SPR_Load(sz));
-	m_rgrcRects.push_back(p.rc);
+    m_rghSprites.push_back(SPR_Load(sz));
+    m_rgrcRects.push_back(p.rc);
 
-	// Copy sprite name
-	m_rgszSpriteNames.push_back({});
-	Q_strncpy(m_rgszSpriteNames[m_iSpriteCount].name, p.szName, MAX_SPRITE_NAME_LENGTH);
+    // Copy sprite name
+    m_rgszSpriteNames.push_back({});
+    Q_strncpy(m_rgszSpriteNames[m_iSpriteCount].name, p.szName, MAX_SPRITE_NAME_LENGTH);
 
-	m_rgSpritePaths.emplace_back(sz);
+    m_rgSpritePaths.emplace_back(sz);
 
-	m_iSpriteCount++;
+    m_iSpriteCount++;
 
-	Assert(m_rghSprites.size() == m_iSpriteCount);
-	Assert(m_rgrcRects.size() == m_iSpriteCount);
-	Assert(m_rgszSpriteNames.size() == m_iSpriteCount);
-	Assert(m_rgSpritePaths.size() == m_iSpriteCount);
+    Assert(m_rghSprites.size() == m_iSpriteCount);
+    Assert(m_rgrcRects.size() == m_iSpriteCount);
+    Assert(m_rgszSpriteNames.size() == m_iSpriteCount);
+    Assert(m_rgSpritePaths.size() == m_iSpriteCount);
 }
 
 float g_lastFOV = 0.0;
@@ -696,51 +695,51 @@ Returns last FOV
 */
 float HUD_GetFOV(void)
 {
-	if (gEngfuncs.pDemoAPI->IsRecording())
-	{
-		// Write it
-		int i = 0;
-		unsigned char buf[100];
+    if (gEngfuncs.pDemoAPI->IsRecording())
+    {
+        // Write it
+        int i = 0;
+        unsigned char buf[100];
 
-		// Active
-		*(float *)&buf[i] = g_lastFOV;
-		i += sizeof(float);
+        // Active
+        *(float *)&buf[i] = g_lastFOV;
+        i += sizeof(float);
 
-		Demo_WriteBuffer(TYPE_ZOOM, i, buf);
-	}
+        Demo_WriteBuffer(TYPE_ZOOM, i, buf);
+    }
 
-	if (gEngfuncs.pDemoAPI->IsPlayingback())
-	{
-		g_lastFOV = g_demozoom;
-	}
-	return g_lastFOV;
+    if (gEngfuncs.pDemoAPI->IsPlayingback())
+    {
+        g_lastFOV = g_demozoom;
+    }
+    return g_lastFOV;
 }
 
 float CHud::GetSensitivity(void)
 {
-	return m_flMouseSensitivity;
+    return m_flMouseSensitivity;
 }
 
 EBHopCap CHud::GetBHopCapState()
 {
-	return cl_bhopcap.GetEnumClamped<EBHopCap>();
+    return cl_bhopcap.GetEnumClamped<EBHopCap>();
 }
 
 bool CHud::IsHTMLEnabled()
 {
-	return m_bIsHTMLEnabled;
+    return m_bIsHTMLEnabled;
 }
 
 void CHud::CallOnNextFrame(std::function<void()> f)
 {
-	Assert(f);
-	m_NextFrameQueue.push(f);
+    Assert(f);
+    m_NextFrameQueue.push(f);
 }
 
 Color CHud::GetHudColor(HudPart hudPart, int value)
 {
-	if (hudPart == HudPart::Common)
-		return m_HudColor;
+    if (hudPart == HudPart::Common)
+        return m_HudColor;
 
     if (value <= 25 && hudPart != HudPart::Armor)
         return m_HudColor4;
@@ -748,225 +747,225 @@ Color CHud::GetHudColor(HudPart hudPart, int value)
     if (hud_color_override.GetBool())
         return m_HudColor;
 
-	if (value >= 90)
-		return m_HudColor1;
+    if (value >= 90)
+        return m_HudColor1;
 
-	if (value >= 50)
-		return m_HudColor2;
+    if (value >= 50)
+        return m_HudColor2;
 
-	if (value > 25 || hudPart == HudPart::Armor)
-		return m_HudColor3;
+    if (value > 25 || hudPart == HudPart::Armor)
+        return m_HudColor3;
 
-	return m_HudColor4;
+    return m_HudColor4;
 }
 
 void CHud::GetHudColor(HudPart hudPart, int value, int &r, int &g, int &b)
 {
-	Color c = GetHudColor(hudPart, value);
-	r = c.r();
-	g = c.g();
-	b = c.b();
+    Color c = GetHudColor(hudPart, value);
+    r = c.r();
+    g = c.g();
+    b = c.b();
 }
 
 void CHud::GetHudAmmoColor(int value, int maxvalue, int &r, int &g, int &b)
 {
-	Color c;
+    Color c;
 
-	if (maxvalue == -1 || maxvalue == 0 || hud_color_override.GetBool())
-	{
-		// Custom weapons will use default colors
-		c = m_HudColor;
-	}
-	else if ((value * 100) / maxvalue > 90)
-	{
-		c = m_HudColor1;
-	}
-	else if ((value * 100) / maxvalue > 50)
-	{
-		c = m_HudColor2;
-	}
-	else if ((value * 100) / maxvalue > 20)
-	{
-		c = m_HudColor3;
-	}
-	else
-	{
-		c = m_HudColor4;
-	}
+    if (maxvalue == -1 || maxvalue == 0 || hud_color_override.GetBool())
+    {
+        // Custom weapons will use default colors
+        c = m_HudColor;
+    }
+    else if ((value * 100) / maxvalue > 90)
+    {
+        c = m_HudColor1;
+    }
+    else if ((value * 100) / maxvalue > 50)
+    {
+        c = m_HudColor2;
+    }
+    else if ((value * 100) / maxvalue > 20)
+    {
+        c = m_HudColor3;
+    }
+    else
+    {
+        c = m_HudColor4;
+    }
 
-	r = c.r();
-	g = c.g();
-	b = c.b();
+    r = c.r();
+    g = c.g();
+    b = c.b();
 }
 
 
 std::pair<int, int> CHud::GetHudDimAlphas(bool dimEnabled, float &fade, float timeDelta)
 {
-	const float MIN_ALPHA1 = 0.0f; // We want glow effect to hide when not dimmed
-	const float MIN_ALPHA2 = 200.0f; // We want normal text to be visible even when dimmed
+    const float MIN_ALPHA1 = 0.0f; // We want glow effect to hide when not dimmed
+    const float MIN_ALPHA2 = 200.0f; // We want normal text to be visible even when dimmed
 
-	int a1 = 255;
-	int a2 = 255;
+    int a1 = 255;
+    int a2 = 255;
 
-	if (!dimEnabled)
-	{
-		a1 = MIN_ALPHA1;
-		a2 = MIN_ALPHA + ALPHA_POINTS_MAX;
-		fade = FADE_TIME;
-	}
-	else if (fade > 0)
-	{
-		fade -= (timeDelta * 20.0f);
-		if (fade <= 0)
-			fade = 0;
-		float fadeProgress = fade / FADE_TIME;
-		a1 = MIN_ALPHA1 + fadeProgress * (255.0f - MIN_ALPHA1);
-		a2 = MIN_ALPHA2 + fadeProgress * (255.0f - MIN_ALPHA2);
-	}
-	else
-	{
-		a1 = MIN_ALPHA1;
-		a2 = MIN_ALPHA2;
-	}
-	return {a1, a2};
+    if (!dimEnabled)
+    {
+        a1 = MIN_ALPHA1;
+        a2 = MIN_ALPHA + ALPHA_POINTS_MAX;
+        fade = FADE_TIME;
+    }
+    else if (fade > 0)
+    {
+        fade -= (timeDelta * 20.0f);
+        if (fade <= 0)
+            fade = 0;
+        float fadeProgress = fade / FADE_TIME;
+        a1 = MIN_ALPHA1 + fadeProgress * (255.0f - MIN_ALPHA1);
+        a2 = MIN_ALPHA2 + fadeProgress * (255.0f - MIN_ALPHA2);
+    }
+    else
+    {
+        a1 = MIN_ALPHA1;
+        a2 = MIN_ALPHA2;
+    }
+    return {a1, a2};
 }
 
 float CHud::GetHudTransparency()
 {
-	return clamp(hud_draw.GetFloat(), 0.f, 1.f);
+    return clamp(hud_draw.GetFloat(), 0.f, 1.f);
 }
 
 Color CHud::GetClientColor(int idx, Color noTeamColor)
 {
-	int team = GetPlayerInfo(idx)->Update()->GetTeamNumber();
+    int team = GetPlayerInfo(idx)->Update()->GetTeamNumber();
 
-	if (team == 0)
-		return noTeamColor;
-	else
-		return g_pViewport->GetTeamColor(team);
+    if (team == 0)
+        return noTeamColor;
+    else
+        return g_pViewport->GetTeamColor(team);
 }
 
 void CHud::GetClientColorAsFloat(int idx, float out[3], Color noTeamColor)
 {
-	Color c = GetClientColor(idx, noTeamColor);
-	out[0] = c[0] / 255.f;
-	out[1] = c[1] / 255.f;
-	out[2] = c[2] / 255.f;
+    Color c = GetClientColor(idx, noTeamColor);
+    out[0] = c[0] / 255.f;
+    out[1] = c[1] / 255.f;
+    out[2] = c[2] / 255.f;
 }
 
 void CHud::UpdateHudColors()
 {
-	ParseColor(hud_color.GetString(), m_HudColor);
-	ParseColor(hud_color1.GetString(), m_HudColor1);
-	ParseColor(hud_color2.GetString(), m_HudColor2);
-	ParseColor(hud_color3.GetString(), m_HudColor3);
-	ParseColor(hud_color4.GetString(), m_HudColor4);
+    ParseColor(hud_color.GetString(), m_HudColor);
+    ParseColor(hud_color1.GetString(), m_HudColor1);
+    ParseColor(hud_color2.GetString(), m_HudColor2);
+    ParseColor(hud_color3.GetString(), m_HudColor3);
+    ParseColor(hud_color4.GetString(), m_HudColor4);
 }
 
 void CHud::UpdateSupportsCvar()
 {
-	bhl::E_ClientSupports supports = bhl::E_ClientSupports::UnicodeMotd;
+    bhl::E_ClientSupports supports = bhl::E_ClientSupports::UnicodeMotd;
 
-	if (IsHTMLEnabled())
-		SetEnumFlag(supports, bhl::E_ClientSupports::HtmlMotd);
+    if (IsHTMLEnabled())
+        SetEnumFlag(supports, bhl::E_ClientSupports::HtmlMotd);
 
-	char buf[64];
-	snprintf(buf, sizeof(buf), "aghl_supports %u", static_cast<unsigned int>(supports));
-	gEngfuncs.pfnClientCmd(buf);
+    char buf[64];
+    snprintf(buf, sizeof(buf), "aghl_supports %u", static_cast<unsigned int>(supports));
+    gEngfuncs.pfnClientCmd(buf);
 }
 
 EHudScale CHud::DetectMaxHudScale()
 {
-	const HudScaleInfo *pMaxScaleInfo = nullptr;
+    const HudScaleInfo *pMaxScaleInfo = nullptr;
 
-	for (const HudScaleInfo& i : HUD_SCALE_INFO)
-	{
-		if (g_pFullFileSystem->FileExists(i.szTestFile))
-		{
-			pMaxScaleInfo = &i;
-		}
-		else
-		{
-			// If i is not supported, then i + 1 isn't supported as well.
-			// Limited by the use of "x <= maxScale" check.
-			break;
-		}
-	}
+    for (const HudScaleInfo& i : HUD_SCALE_INFO)
+    {
+        if (g_pFullFileSystem->FileExists(i.szTestFile))
+        {
+            pMaxScaleInfo = &i;
+        }
+        else
+        {
+            // If i is not supported, then i + 1 isn't supported as well.
+            // Limited by the use of "x <= maxScale" check.
+            break;
+        }
+    }
 
-	if (!pMaxScaleInfo)
-	{
-		GetSDL()->ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "BugfixedHL Error", "HUD sprites are missing. Verify game files.");
-		std::abort();
-	}
+    if (!pMaxScaleInfo)
+    {
+        GetSDL()->ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "BugfixedHL Error", "HUD sprites are missing. Verify game files.");
+        std::abort();
+    }
 
-	gEngfuncs.Con_DPrintf("Maximum HUD scale: %dx%d\n", pMaxScaleInfo->iRes, pMaxScaleInfo->iHeight);
-	return pMaxScaleInfo->nScale;
+    gEngfuncs.Con_DPrintf("Maximum HUD scale: %dx%d\n", pMaxScaleInfo->iRes, pMaxScaleInfo->iHeight);
+    return pMaxScaleInfo->nScale;
 }
 
 CON_COMMAND(append, "Puts a command into the end of the command buffer")
 {
-	if (gEngfuncs.Cmd_Argc() != 2)
-	{
-		if (!gEngfuncs.pDemoAPI->IsPlayingback())
-			gEngfuncs.Con_Printf("append <command> - put the command into the end of the command buffer.\n");
+    if (gEngfuncs.Cmd_Argc() != 2)
+    {
+        if (!gEngfuncs.pDemoAPI->IsPlayingback())
+            gEngfuncs.Con_Printf("append <command> - put the command into the end of the command buffer.\n");
 
-		return;
-	}
+        return;
+    }
 
-	EngineClientCmd(gEngfuncs.Cmd_Argv(1));
+    EngineClientCmd(gEngfuncs.Cmd_Argv(1));
 }
 
 CON_COMMAND(_toggle, "Switches cvar values from arguments.")
 {
-	int argc = gEngfuncs.Cmd_Argc();
-	if (argc <= 1 || argc == 3)
-	{
-		gEngfuncs.Con_Printf("usage: _toggle <cvar> or _toggle <cvar> <val1> <val2> [val3] ... [valN]\n");
-		return;
-	}
+    int argc = gEngfuncs.Cmd_Argc();
+    if (argc <= 1 || argc == 3)
+    {
+        gEngfuncs.Con_Printf("usage: _toggle <cvar> or _toggle <cvar> <val1> <val2> [val3] ... [valN]\n");
+        return;
+    }
 
-	ConVarRef cvar(gEngfuncs.Cmd_Argv(1));
+    ConVarRef cvar(gEngfuncs.Cmd_Argv(1));
 
-	if (!cvar.IsValid())
-	{
-		gEngfuncs.Con_Printf("_toggle failed: cvar '%s' not found.\n", gEngfuncs.Cmd_Argv(1));
-		return;
-	}
+    if (!cvar.IsValid())
+    {
+        gEngfuncs.Con_Printf("_toggle failed: cvar '%s' not found.\n", gEngfuncs.Cmd_Argv(1));
+        return;
+    }
 
-	char cmd[256];
+    char cmd[256];
 
-	if (argc == 2)
-	{
-		// Toggle between 0 and 1
-		sprintf(cmd, "%s %d", gEngfuncs.Cmd_Argv(1), (int)(!cvar.GetBool()));
-		EngineClientCmd(cmd);
-		return;
-	}
-	else
-	{
-		for (int i = 2; i < argc; i++)
-		{
-			if (!strcmp(cvar.GetString(), gEngfuncs.Cmd_Argv(i)))
-			{
-				if (i + 1 < argc)
-				{
-					// switch cvar value to the next one
-					sprintf(cmd, "%s \"%s\"", gEngfuncs.Cmd_Argv(1), gEngfuncs.Cmd_Argv(i + 1));
-					EngineClientCmd(cmd);
-					return;
-				}
-				else
-				{
-					// if we have get to the top of _toggle values list, then start from the beginning
-					sprintf(cmd, "%s \"%s\"", gEngfuncs.Cmd_Argv(1), gEngfuncs.Cmd_Argv(2));
-					EngineClientCmd(cmd);
-					return;
-				}
-			}
-		}
+    if (argc == 2)
+    {
+        // Toggle between 0 and 1
+        sprintf(cmd, "%s %d", gEngfuncs.Cmd_Argv(1), (int)(!cvar.GetBool()));
+        EngineClientCmd(cmd);
+        return;
+    }
+    else
+    {
+        for (int i = 2; i < argc; i++)
+        {
+            if (!strcmp(cvar.GetString(), gEngfuncs.Cmd_Argv(i)))
+            {
+                if (i + 1 < argc)
+                {
+                    // switch cvar value to the next one
+                    sprintf(cmd, "%s \"%s\"", gEngfuncs.Cmd_Argv(1), gEngfuncs.Cmd_Argv(i + 1));
+                    EngineClientCmd(cmd);
+                    return;
+                }
+                else
+                {
+                    // if we have get to the top of _toggle values list, then start from the beginning
+                    sprintf(cmd, "%s \"%s\"", gEngfuncs.Cmd_Argv(1), gEngfuncs.Cmd_Argv(2));
+                    EngineClientCmd(cmd);
+                    return;
+                }
+            }
+        }
 
-		// if cvar value isn't equal to any values from _toggle, then set it to the first value of _toggle
-		cvar.SetValue(gEngfuncs.Cmd_Argv(2));
-		return;
-	}
+        // if cvar value isn't equal to any values from _toggle, then set it to the first value of _toggle
+        cvar.SetValue(gEngfuncs.Cmd_Argv(2));
+        return;
+    }
 }

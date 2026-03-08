@@ -59,7 +59,7 @@ public:
 
 	// debug text print
 	void ColorPrintf(Color& clr, const char *msg);
-
+    virtual void PaintBackground();
 	// clears the console
 	void Clear();
 
@@ -99,7 +99,7 @@ private:
 	int m_iNextCompletion;		// the completion that we'll next go to
 	char m_szPartialText[256];
 	char m_szPreviousPartialText[256];
-
+    vgui2::HFont m_hFont;
 	struct cmdnode_t
 	{
 		// pointer to commands (only one will be non-null)
