@@ -500,7 +500,7 @@ const char *GetModelName(int item_id)
 		case WEAPON_CROWBAR:         modelName = "models/w_crowbar.mdl"; break;
 		case WEAPON_GLOCK:        modelName = "models/w_9mmhandgun.mdl"; break;
 		case WEAPON_PYTHON:    modelName = "models/w_357.mdl"; break;
-		case WEAPON_MP5:       modelName = "models/w_9mmar.mdl"; break;
+        case WEAPON_MP5:       modelName = "models/w_antidote.mdl"; break;
 		case WEAPON_SHOTGUN:           modelName = "models/w_shotgun.mdl"; break;
 		case WEAPON_CROSSBOW:        modelName = "models/w_crossbow.mdl"; break;
 		case WEAPON_RPG:          modelName = "models/w_rpg.mdl"; break;
@@ -3816,7 +3816,6 @@ void CBasePlayer ::Precache(void)
 	LinkUserMessages();
 
 	m_iUpdateTime = 5; // won't update for 1/2 a second
-
 	if (gInitHUD)
 		m_fInitHUD = TRUE;
 }
