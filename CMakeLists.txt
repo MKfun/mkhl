@@ -492,7 +492,6 @@ bhl_version_info( client "client.dll" "BugfixedHL-Rebased Client" )
 
 target_include_directories( client PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/game/client
-	${CMAKE_SOURCE_DIR}/external/imgui
 	${GAME_COMMON_INCLUDE_PATHS}
 	${SOURCE_SDK_INCLUDE_PATHS}
 	${UPDATER_INCLUDE_PATHS}
@@ -527,7 +526,6 @@ if( WIN32 )
 
 	target_include_directories( client PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/external/SDL2/include
-		${CMAKE_SOURCE_DIR}/external/imgui
 	)
 else()
 	# Only link with SDL2 on Linux. Windows will conditionally link in runtime.
@@ -587,7 +585,6 @@ add_library(gameui SHARED ${PREP_SRCS}
 )
 target_include_directories( gameui PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/src/game/client
-		${CMAKE_SOURCE_DIR}/external/imgui
 		${GAME_COMMON_INCLUDE_PATHS}
 		${SOURCE_SDK_INCLUDE_PATHS}
 		${UPDATER_INCLUDE_PATHS}
@@ -601,7 +598,6 @@ target_compile_definitions( gameui PRIVATE
 )
 target_link_libraries(gameui
 		${SOURCE_SDK_LIBS}
-		GL
 		SDL2
 )
 set_target_properties( gameui PROPERTIES PREFIX "" )
@@ -684,10 +680,6 @@ add_subdirectory( src/bugfixedapi_amxx )
 preprocess_sources()
 add_library( bugfixedapi_amxx SHARED ${PREP_SRCS}
 		src/common/rgb_color.h
-		src/regameui/GameUI_Interface.cpp
-		src/regameui/GameUI_Interface.h
-		src/common/IVGuiModuleLoader.h
-		src/common/IVguiModule.h
 )
 check_winxp_support( bugfixedapi_amxx )
 add_auto_deploy( bugfixedapi_amxx PublishPathAMXX.txt )

@@ -4,6 +4,4 @@
 [submodule "external/metamod"]
 	path = external/metamod
 	url = https://github.com/alliedmodders/metamod-hl1.git
-[submodule "external/imgui"]
-	path = external/imgui
-	url = https://github.com/ocornut/imgui
+

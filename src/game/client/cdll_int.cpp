@@ -27,8 +27,6 @@
 #include <tier1/interface.h>
 #include <cl_dll/IGameClientExports.h>
 #include <pm_shared.h>
-#include <gameui/imgui_viewport.h>
-#include "gameui/imgui_manager.h"
 #include "hud.h"
 #include "cl_util.h"
 #include "tri.h"
@@ -48,7 +46,6 @@
 #include "engine_builds.h"
 
 CHud gHUD;
-int g_ImGuiMouse = 0;
 void InitInput(void);
 void ShutdownInput();
 void EV_HookEvents(void);
@@ -281,7 +278,6 @@ int CL_DLLEXPORT HUD_VidInit(void)
 	//	RecClHudVidInit();
 	g_pViewport->VidInit();
 	gHUD.VidInit();
-	g_ImGuiManager.VidInitialize();
 	g_StudioRenderer.InitOnConnect();
 	PM_ResetBHopDetection();
 	PM_ResetUseSlowDownDetection();
@@ -310,8 +306,6 @@ void CL_DLLEXPORT HUD_Init(void)
 	ClientSteamContext().Activate();
 	CClientOpenGL::Get().Init();
 	gHUD.Init();
-	g_ImGuiViewport.Initialize();
-	g_ImGuiManager.Initialize();
 	CSvcMessages::Get().Init();
 	EngFuncs_UpdateHooks();
 	console::HudPostInit();
@@ -331,7 +325,6 @@ int CL_DLLEXPORT HUD_Redraw(float time, int intermission)
 	//	RecClHudRedraw(time, intermission);
 
 	gHUD.Redraw(time, intermission);
-	g_ImGuiManager.NewFrame();
 	return 1;
 }
 
