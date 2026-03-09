@@ -543,7 +543,6 @@ target_link_libraries( client
 	glad
 	pcre
 	semver
-	GL
 	nlohmann_json
 	${CLIENT_PLAT_LIBS}
 	Threads::Threads
