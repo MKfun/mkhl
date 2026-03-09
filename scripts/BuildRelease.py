@@ -122,14 +122,14 @@ class TargetClient:
         self.script = scr
 
     def get_build_target_names(self):
-        return ['client', 'test_client']
+        return ['client', 'gameui', 'test_client']
 
     def get_file_list(self):
         files = COMMON_FILES_TO_COPY
         files.append(FileToCopy(self.script.paths.out_bin + 'client' + self.script.platform.get_dll_ext(),
                                 'valve_addon/cl_dlls/client' + self.script.platform.get_dll_ext()))
         files.append(FileToCopy(self.script.paths.out_bin + 'gameui' + self.script.platform.get_dll_ext(),
-                                'valve_addon/cl_dlls/client' + self.script.platform.get_dll_ext()))
+                                'valve/cl_dlls/gameui' + self.script.platform.get_dll_ext()))
         files.append(FileToCopy('gamedir/resource', 'valve_addon/resource'))
         files.append(FileToCopy('gamedir/sound', 'valve_addon/sound'))
         files.append(FileToCopy('gamedir/sprites', 'valve_addon/sprites'))
