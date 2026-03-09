@@ -19,6 +19,8 @@ Features
     - Flying shotguns: only shotguns and bumpmines. Nothing else. Every 20 seconds players earn new bumpmine ```sv_flyingshots 1```
     - Hazardous zone™: Danger zone, but if it was in Half-Life. ```sv_hazardz 1```
   - Powerups: classic Quake (DMC) powerups.
+  - Movement:
+    - ```mp_ultrakill_additions``` enables some ultrakill additions (wow) like fast-fall (duck+use) and damaging with fast-fall (just hold duck and fly ont top of enemy)
  ### ClientSide
  - Same as BHL-Rebased but with some spicy extras
  - Custom vgui2 csgo-like hud from [this pr](https://github.com/tmp64/BugfixedHL-Rebased/pull/280) ```hud_custom 1```

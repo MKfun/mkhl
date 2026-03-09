@@ -63,6 +63,7 @@ ConVar mp_weaponbox_time("mp_weaponbox_time", "120", FCVAR_SERVER, "Dead player'
 ConVar mp_weapondrop_time("mp_weapondrop_time", "0", FCVAR_SERVER, "Manually dropped weapons will stay for this many seconds, 0 forever");
 ConVar mp_spawntype("mp_spawntype", "0", FCVAR_SERVER, "Spawn point selection method:\n0 - HL25\n1 - Pre-HL25\n2 - Random with item accounting");
 ConVar mp_eventondeath("mp_eventondeath", "1", FCVAR_SERVER, "Do something special on death (grenade/gauss)");
+ConVar mp_ultrakill_additions("mp_ultrakill_additions", "1", FCVAR_SERVER | FCVAR_ARCHIVE, "Ultrakill movement additions.");
 //ConVar mp_egon("mp_egon", "1", FCVAR_SERVER, "egon enable");
 #define TRAIN_ACTIVE  0x80
 #define TRAIN_NEW     0xc0
@@ -2493,6 +2494,7 @@ void CBasePlayer::PreThink(void)
 	if ((pev->button & IN_DUCK) || FBitSet(pev->flags, FL_DUCKING) || (m_afPhysicsFlags & PFLAG_DUCKING))
 	{
 		Duck();
+        if (mp_ultrakill_additions.GetBool()) {
             TraceResult tr;
             UTIL_TraceLine(pev->origin, pev->origin - Vector(0, 0, 2000), dont_ignore_monsters, edict(), &tr);
             if (tr.flFraction < 1.0) {
@@ -2507,9 +2509,17 @@ void CBasePlayer::PreThink(void)
     		m_flFatAssDamageNextAttack = gpGlobals->time + 3.0f;
                 }
             }
+        }
 	}
+    if (mp_ultrakill_additions.GetBool() && (pev->button & (IN_DUCK | IN_USE)) == (IN_DUCK | IN_USE) && m_flFatAssDamageNextAttack <= gpGlobals->time && !(pev->flags & FL_ONGROUND))
+    {
+        pev->velocity.x = 0;
+        pev->velocity.y = 0;
+        pev->velocity.z -= 500;
+        m_flFatAssDamageNextAttack = gpGlobals->time + 3.0f;
+    }
 	if (!FBitSet(pev->flags, FL_ONGROUND))
-	{
+    {
 		m_flFallVelocity = -pev->velocity.z;
 	}
 
