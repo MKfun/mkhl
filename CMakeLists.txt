@@ -102,7 +102,7 @@ set( CMAKE_CXX_EXTENSIONS OFF )
 # Enable project folders in VS
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 
-set( C_CXX_COMPILER_FLAGS "" )			# Flags for C and C++ compilers
+set( C_CXX_COMPILER_FLAGS "-g" )			# Flags for C and C++ compilers
 set( GAME_LINKER_FLAGS "" )				# Flags for Game DLL linker
 
 if( COMPILER_GNU )

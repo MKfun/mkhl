@@ -2491,8 +2491,23 @@ void CBasePlayer::PreThink(void)
 
 	// If trying to duck, already ducked, or in the process of ducking
 	if ((pev->button & IN_DUCK) || FBitSet(pev->flags, FL_DUCKING) || (m_afPhysicsFlags & PFLAG_DUCKING))
+	{
 		Duck();
+            TraceResult tr;
+            UTIL_TraceLine(pev->origin, pev->origin - Vector(0, 0, 2000), dont_ignore_monsters, edict(), &tr);
+            if (tr.flFraction < 1.0) {
 
+                CBaseEntity *pEntity = CBaseEntity::Instance(tr.pHit);
+                if (pEntity && pEntity->IsPlayer() && m_flFatAssDamageNextAttack <= gpGlobals->time && !(pev->flags & FL_ONGROUND))
+                {
+                    pev->velocity.x = 0;
+                    pev->velocity.y = 0;
+                    pev->velocity.z -= 500;
+                    pEntity->TakeDamage(pev, pev, abs(pev->velocity.z * 0.09), DMG_CRUSH);
+    		m_flFatAssDamageNextAttack = gpGlobals->time + 3.0f;
+                }
+            }
+	}
 	if (!FBitSet(pev->flags, FL_ONGROUND))
 	{
 		m_flFallVelocity = -pev->velocity.z;
@@ -3694,7 +3709,7 @@ void CBasePlayer::Spawn(void)
 	m_bHeadshotKilled = false;
 	g_engfuncs.pfnSetPhysicsKeyValue(edict(), "slj", "0");
 	g_engfuncs.pfnSetPhysicsKeyValue(edict(), "hl", "1");
-
+	m_flFatAssDamageNextAttack = 0; // NOW
 	pev->fov = m_iFOV = 0; // init field of view.
 	m_iClientFOV = -1; // make sure fov reset is sent
 

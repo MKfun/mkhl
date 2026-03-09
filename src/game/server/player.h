@@ -192,7 +192,7 @@ public:
 	float m_flDeathAnimationStartTime; // used in PlayerDeathThink() to make sure players can always respawn
 
 	int m_lastx, m_lasty; // These are the previous update's crosshair angles, DON"T SAVE/RESTORE
-
+	float m_flFatAssDamageNextAttack;	// DLL: spbog's idea of ultrakill fat ass damage
 	int m_nCustomSprayFrames; // Custom clan logo frames for this player
 	float m_flNextDecalTime; // next time this player can spray a decal
 	int		m_iQuakeItems;
