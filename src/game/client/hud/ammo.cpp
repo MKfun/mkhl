@@ -34,6 +34,7 @@
 
 ConVar hud_fastswitch("hud_fastswitch", "0", FCVAR_ARCHIVE, "Controls whether or not weapons can be selected in one keypress");
 ConVar hud_weapon("hud_weapon", "0", FCVAR_BHL_ARCHIVE, "Controls displaying sprite of currently selected weapon");
+ConVar hud_autocrosshair("hud_autocrosshair", "0", FCVAR_ARCHIVE, "Disable autoaim crosshair");
 extern ConVar cl_cross_zoom;
 
 WEAPON *gpActiveSel; // NULL means off, 1 means just the menu bar, otherwise
@@ -552,10 +553,10 @@ int CHudAmmo::MsgFunc_CurWeapon(const char *pszName, int iSize, void *pbuf)
 	int iClip = READ_CHAR();
 	int m_NumEnemiesKilledThisSpawn = READ_CHAR();
 
-	// detect if we're also on target
-	m_fOnTarget = iState > 1;
+        // detect if we're also on target ... or not detect :)
+        m_fOnTarget = iState > 1 && hud_autocrosshair.GetBool();
 
-	if (iId < 1)
+    if (iId < 1 && hud_autocrosshair.GetBool())
 	{
 		m_pWeapon = NULL;
 		SetCrosshair(0, nullrc, 0, 0, 0);
@@ -607,7 +608,7 @@ void CHudAmmo::UpdateCrosshair()
 	}
 	if (gHUD.m_iFOV >= 90)
 	{ // normal crosshairs
-		if (m_fOnTarget && m_pWeapon->hAutoaim)
+        if (m_fOnTarget && m_pWeapon->hAutoaim && hud_autocrosshair.GetBool())
 			SetCrosshair(m_pWeapon->hAutoaim, m_pWeapon->rcAutoaim, 255, 255, 255);
 		else
 		{
@@ -627,7 +628,7 @@ void CHudAmmo::UpdateCrosshair()
 		}
 		else
 		{
-			if (m_fOnTarget && m_pWeapon->hZoomedAutoaim)
+            if (m_fOnTarget && m_pWeapon->hZoomedAutoaim && hud_autocrosshair.GetBool())
 				SetCrosshair(m_pWeapon->hZoomedAutoaim, m_pWeapon->rcZoomedAutoaim, 255, 255, 255);
 			else
 				SetCrosshair(m_pWeapon->hZoomedCrosshair, m_pWeapon->rcZoomedCrosshair, 255, 255, 255);

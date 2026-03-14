@@ -1246,36 +1246,33 @@ void UTIL_BloodStream(const Vector &origin, const Vector &direction, int color, 
 	MESSAGE_END();
 }
 
-void UTIL_BloodDrips(const Vector &origin, const Vector &direction, int color, int amount)
+void UTIL_BloodDrips( const Vector &origin, const Vector &direction, int color, int amount )
 {
-	if (!UTIL_ShouldShowBlood(color))
-		return;
+    if ( !UTIL_ShouldShowBlood( color ) )
+        return;
 
-	if (color == DONT_BLEED || amount == 0)
-		return;
+    if ( color == DONT_BLEED || amount == 0 )
+        return;
 
-	if (g_Language == LANGUAGE_GERMAN && color == BLOOD_COLOR_RED)
-		color = 0;
+    /*	if ( g_pGameRules->IsMultiplayer() )
+    {
+        // scale up blood effect in multiplayer for better visibility
+        amount *= 2;
+    }*/
 
-	if (g_pGameRules->IsMultiplayer())
-	{
-		// scale up blood effect in multiplayer for better visibility
-		amount *= 2;
-	}
+    if ( amount > 255 )
+        amount = 255;
 
-	if (amount > 255)
-		amount = 255;
-
-	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, origin);
-	WRITE_BYTE(TE_BLOODSPRITE);
-	WRITE_COORD(origin.x); // pos
-	WRITE_COORD(origin.y);
-	WRITE_COORD(origin.z);
-	WRITE_SHORT(g_sModelIndexBloodSpray); // initial sprite model
-	WRITE_SHORT(g_sModelIndexBloodDrop); // droplet sprite models
-	WRITE_BYTE(color); // color index into host_basepal
-	WRITE_BYTE(min(max(3, amount / 10), 16)); // size
-	MESSAGE_END();
+    MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, origin );
+    WRITE_BYTE( TE_BLOODSPRITE );
+    WRITE_COORD( origin.x);								// pos
+    WRITE_COORD( origin.y);
+    WRITE_COORD( origin.z);
+    WRITE_SHORT( g_sModelIndexBloodSpray );				// initial sprite model
+    WRITE_SHORT( g_sModelIndexBloodDrop );				// droplet sprite models
+    WRITE_BYTE( color );								// color index into host_basepal
+    WRITE_BYTE( min( max( 3, amount / 10 ), 16 ) );		// size
+    MESSAGE_END();
 }
 
 Vector UTIL_RandomBloodVector(void)

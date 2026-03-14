@@ -107,6 +107,7 @@ ConVar cl_bob_angled("cl_bob_angled", "0", FCVAR_BHL_ARCHIVE, "Enables the angle
 
 ConVar cl_rollangle("cl_rollangle", "0", FCVAR_BHL_ARCHIVE, "Max viewroll angle");
 ConVar cl_rollspeed("cl_rollspeed", "200", FCVAR_BHL_ARCHIVE, "Max viewroll speed");
+ConVar viewmodel_hands("viewmodel_hands", "", FCVAR_BHL_ARCHIVE);
 
 // These cvars are not registered (so users can't cheat), so set the ->value field directly
 // Register these cvars in V_Init() if needed for easy tweaking
@@ -118,7 +119,6 @@ cvar_t v_iroll_level = { "v_iroll_level", "0.1", 0, 0.1 };
 cvar_t v_ipitch_level = { "v_ipitch_level", "0.3", 0, 0.3 };
 
 float v_idlescale; // used by TFC for concussion grenade effect
-
 //=============================================================================
 /*
 void V_NormalizeAngles( float *angles )
@@ -711,7 +711,7 @@ void V_CalcNormalRefdef(struct ref_params_s *pparams)
 	}
 
 	// view is the weapon model (only visible from inside body )
-	view = gEngfuncs.GetViewModel();
+    view = gEngfuncs.GetViewModel();
 	Vector lastAngles;
 
 	if( view )
@@ -1904,7 +1904,6 @@ void V_Init(void)
 	cl_quakeguns_enable	= gEngfuncs.pfnRegisterVariable( "cl_quakeguns_enable", "0", FCVAR_ARCHIVE );
 	cl_weaponlag_enable = gEngfuncs.pfnRegisterVariable( "cl_weaponlag_enable", "0", FCVAR_ARCHIVE );
 	cl_weaponlag		= gEngfuncs.pfnRegisterVariable( "cl_weaponlag", "1.5", FCVAR_ARCHIVE );
-
 }
 
 //#define TRACE_TEST

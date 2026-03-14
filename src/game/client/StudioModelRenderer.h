@@ -33,6 +33,7 @@ public:
 	// Public Interfaces
 	virtual int StudioDrawModel(int flags);
 	virtual int StudioDrawPlayer(int flags, struct entity_state_s *pplayer);
+    virtual void StudioDrawHands(int flags, cl_entity_t *weapon);
 
 public:
 	// Local interfaces
