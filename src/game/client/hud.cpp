@@ -79,6 +79,7 @@
 #include "hud/jumpspeed.h"
 #include "hud/timer.h"
 #include "hud/strafeguide.h"
+#include "vgui/freezepanel.h"
 
 // Adrenaline Gamer HUD Elements
 #include "hud/ag/ag_countdown.h"
@@ -341,6 +342,8 @@ void CHud::Init(void)
 	// VGUI Menus
 	HookViewportMessage<&CClientViewport::MsgFunc_VGUIMenu>("VGUIMenu");
 
+    // FreezePanel
+    HookViewportMessage<&CClientViewport::MsgFunc_UpdFreezePanel>("UpdFrPanel");
 	m_iLogo = 0;
 	m_iFOV = 0;
 

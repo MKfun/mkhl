@@ -45,6 +45,7 @@ class CHudAmmoPanel;
 class CHudAmmoSecondaryPanel;
 class CTeamMenu;
 class CCommandMenu;
+class CCSFreezePanel;
 struct WEAPON;
 
 class CClientViewport : public vgui2::EditablePanel
@@ -125,7 +126,11 @@ public:
 	{
 		return m_pSpectatorPanel;
 	}
-
+    inline CCSFreezePanel *GetFreezePanel()
+    {
+        return m_pFreezePanel;
+    }
+    // void UpdateFreezePanel(bool m_bShown, int m_pAttackerId, int m_pAttackerHP);
 	// TeamFortressViewport stubs
 	void InputPlayerSpecial(void);
 	bool AllowedToPrintText(void);
@@ -146,6 +151,7 @@ private:
 	CHudAmmoSecondaryPanel *m_pHudAmmoSecondaryPanel = nullptr;
 	CTeamMenu *m_pTeamMenu = nullptr;
 	CCommandMenu *m_pCommandMenu = nullptr;
+    CCSFreezePanel *m_pFreezePanel = nullptr;
 
 	int m_iNumberOfTeams = 0;
 	int m_iAllowSpectators = 0;
@@ -201,6 +207,7 @@ public:
 	void MsgFunc_TeamInfo(const char *pszName, int iSize, void *pbuf);
 	void MsgFunc_Spectator(const char *pszName, int iSize, void *pbuf);
 	void MsgFunc_AllowSpec(const char *pszName, int iSize, void *pbuf);
+    void MsgFunc_UpdFreezePanel(const char *pszName, int iSize, void *pbuf);
 };
 
 inline Color CClientViewport::GetTeamColor(int team)

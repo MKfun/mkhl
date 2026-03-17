@@ -670,7 +670,7 @@ void CScorePanel::UpdateClientIcon(CPlayerInfo *pi)
 	pImg->SetMuted(GetClientVoiceMgr()->IsPlayerBlocked(pi->GetIndex()));
 
 	// Update avatar
-	uint64 steamID64 = pi->GetValidSteamID64();
+    uint64 steamID64 = pi->GetValidSteamID64();
 	if (hud_scoreboard_showavatars.GetBool() && ClientSteamContext().SteamFriends() && ClientSteamContext().SteamUtils() && steamID64 != 0)
 	{
 		CSteamID steamIDForPlayer(steamID64);
