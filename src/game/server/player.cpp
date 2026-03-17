@@ -1114,11 +1114,14 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
     {
         killer_index = ENTINDEX(ENT(pevAttacker));
     }
-    MESSAGE_BEGIN(MSG_ONE, gmsgUpdFreezePanel, NULL, pev);
-    WRITE_BYTE(killer_index);
-    WRITE_BYTE(pevAttacker->health);
-    WRITE_BYTE(1); // show the panel
-    MESSAGE_END();
+    if (killer_index != 0)
+    {
+        MESSAGE_BEGIN(MSG_ONE, gmsgUpdFreezePanel, NULL, pev);
+        WRITE_BYTE(killer_index);
+        WRITE_BYTE(pevAttacker->health);
+        WRITE_BYTE(1); // show the panel
+        MESSAGE_END();
+    }
 
 	// Adrian: always make the players non-solid in multiplayer when they die
 	if (g_pGameRules->IsMultiplayer())
