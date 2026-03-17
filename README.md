@@ -26,6 +26,7 @@ Features
  - Custom vgui2 csgo-like hud from [this pr](https://github.com/tmp64/BugfixedHL-Rebased/pull/280) ```hud_custom 1```
  - With above: There are headshots, and killstreaks in hud like in csgo.
  - Viewmodel extras: QuakeGun™ and sway (weaponlag, like source games vm) ```cl_quakeguns 1``` and ```cl_weaponlag_enable 1```
+ - freeze panel (only servers with mkhl supported, or there will be soon metamod plugin for vanilla servers)
  - SOON - custom gameui (big thanks to ScriptedSnark)
  ### SDK Features
  - Crash handler with libbacktrace (libbacktrace-dev package needed) ```-DWITH_LIBBT_CLIENT=1``` or ```-DWITH_LIBBT_SERVER=1```
