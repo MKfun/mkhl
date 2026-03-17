@@ -221,6 +221,7 @@ int gmsgViewMode = 0;
 int gmsgVGUIMenu = 0;
 int gmsgStatusIcon = 0;
 int gmsgFog = 0;
+int gmsgUpdFreezePanel = 0;
 
 const char *const gCustomMessages[] = {
 	"IconInfo",
@@ -284,8 +285,10 @@ void LinkUserMessages(void)
 	gmsgViewMode = REG_USER_MSG("ViewMode", 0); // Switches client to first person mode
 	gmsgVGUIMenu = REG_USER_MSG("VGUIMenu", 1); // Opens team selection menu with map briefing
 	gmsgStatusIcon = REG_USER_MSG("StatusIcon", -1); // Displays specified status icon sprite in hud
-
 	// Register messages from some custom mods to prevent "Host_Error: UserMsg: Not Present on Client"
+
+    gmsgUpdFreezePanel = REG_USER_MSG("UpdFrPanel", 3); // Updates freeze panel
+
 	for (int i = 0; gCustomMessages[i] != NULL; i++)
 	{
 		REG_USER_MSG(gCustomMessages[i], 0);
@@ -1104,6 +1107,18 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 	MESSAGE_BEGIN(MSG_ONE, gmsgSetFOV, NULL, pev);
 	WRITE_BYTE(0);
 	MESSAGE_END();
+
+    // DLL: Send information to freezepanel
+    int killer_index = 0;
+    if (pevAttacker->flags & FL_CLIENT)
+    {
+        killer_index = ENTINDEX(ENT(pevAttacker));
+    }
+    MESSAGE_BEGIN(MSG_ONE, gmsgUpdFreezePanel, NULL, pev);
+    WRITE_BYTE(killer_index);
+    WRITE_BYTE(pevAttacker->health);
+    WRITE_BYTE(1); // show the panel
+    MESSAGE_END();
 
 	// Adrian: always make the players non-solid in multiplayer when they die
 	if (g_pGameRules->IsMultiplayer())
@@ -3799,7 +3814,11 @@ void CBasePlayer::Spawn(void)
 	m_flNextChatTime = 0; // Not using gpGlobals->time - see Host_Say
 	m_flNextFullupdate[0] = gpGlobals->time;
 	m_flNextFullupdate[1] = gpGlobals->time;
-
+    MESSAGE_BEGIN(MSG_ONE, gmsgUpdFreezePanel, NULL, pev);
+    WRITE_BYTE(ENTINDEX(ENT(pev)));
+    WRITE_BYTE(100);
+    WRITE_BYTE(0);
+    MESSAGE_END();
 	g_pGameRules->PlayerSpawn(this);
 }
 
@@ -3839,7 +3858,6 @@ void CBasePlayer ::Precache(void)
 
 	// Make sure any necessary user messages have been registered
 	LinkUserMessages();
-
 	m_iUpdateTime = 5; // won't update for 1/2 a second
 	if (gInitHUD)
 		m_fInitHUD = TRUE;

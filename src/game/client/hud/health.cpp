@@ -55,8 +55,8 @@ void CHudHealth::Init(void)
 {
 	BaseHudClass::Init();
 
-	HookMessage<&CHudHealth::MsgFunc_Health>("Health");
-	HookMessage<&CHudHealth::MsgFunc_Damage>("Damage");
+    HookMessage<&CHudHealth::MsgFunc_Health>("Health");
+    HookMessage<&CHudHealth::MsgFunc_Damage>("Damage");
 
 	m_iHealth = 100;
 	m_fFade = 0;

@@ -78,7 +78,6 @@ add_sources(
 	voice_banmgr.cpp
 	voice_banmgr.h
 	wrect.h
-
 	
 	# Weapons
 	../server/crossbow.cpp

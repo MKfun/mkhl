@@ -43,7 +43,7 @@ extern int gmsgScoreInfo;
 extern int gmsgMOTD;
 extern int gmsgHtmlMOTD;
 extern int gmsgServerName;
-
+extern int gmsgUpdFreezePanel;
 extern int g_teamplay;
 
 extern ConVar sv_bhl_defer_motd;
@@ -693,7 +693,6 @@ void CHalfLifeMultiplay ::PlayerKilled(CBasePlayer *pVictim, entvars_t *pKiller,
 	}
 
 	DeathNotice(pVictim, pKiller, pInflictor, 0, /*GetRarityOfKill(peKiller, pVictim)*/ 1);
-
 	pVictim->m_iDeaths += 1;
 
 	FireTargets("game_playerdie", pVictim, pVictim, USE_TOGGLE, 0);

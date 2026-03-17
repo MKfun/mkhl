@@ -24,6 +24,7 @@
 #include "hud_ammo_secondary.h"
 #include "team_menu.h"
 #include "command_menu.h"
+#include "freezepanel.h"
 
 // FIXME: Move it to hud.cpp
 int g_iPlayerClass;
@@ -179,6 +180,7 @@ void CClientViewport::CreateDefaultPanels()
 	AddNewPanel(m_pHudAmmoSecondaryPanel = new CHudAmmoSecondaryPanel());
 	AddNewPanel(m_pTeamMenu = new CTeamMenu());
 	AddNewPanel(m_pCommandMenu = new CCommandMenu());
+    AddNewPanel(m_pFreezePanel = new CCSFreezePanel());
 }
 
 void CClientViewport::AddNewPanel(IViewportPanel *panel)
@@ -793,6 +795,18 @@ void CClientViewport::MsgFunc_AllowSpec(const char *pszName, int iSize, void *pb
 	m_iAllowSpectators = READ_BYTE();
 }
 
+void CClientViewport::MsgFunc_UpdFreezePanel(const char *pszName, int iSize, void *pbuf)
+{
+    BEGIN_READ(pbuf, iSize);
+    int pAttackerId = READ_BYTE();
+    int pAttackerHealth = READ_BYTE();
+    bool m_bShown = READ_BYTE();
+    GetFreezePanel()->UpdatePanelInfo(m_bShown, pAttackerId, pAttackerHealth);
+}
+// void CClientViewport::UpdateFreezePanel(bool m_bShown, int pAttackerId, int pAttackerHealth)
+// {
+
+// }
 //-------------------------------------------------------
 // TeamFortressViewport stubs
 //-------------------------------------------------------
@@ -815,3 +829,4 @@ void CClientViewport::DeathMsg(int killer, int victim)
 {
 	m_pScorePanel->DeathMsg(killer, victim);
 }
+

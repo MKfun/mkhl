@@ -24,4 +24,7 @@ add_sources(
 	hud_battery.cpp
 	hud_ammo_secondary.cpp
 	hud_gauss.cpp
+	freezepanel.h
+	freezepanel.cpp
+
 )

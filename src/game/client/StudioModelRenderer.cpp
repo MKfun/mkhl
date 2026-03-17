@@ -45,7 +45,7 @@ extern Vector g_vViewRight;
 extern Vector g_vViewUp;
 
 extern ConVar cl_viewmodel_fov;
-
+extern ConVar viewmodel_hands;
 ConVar cl_viewmodel_hltv("cl_viewmodel_hltv", "0", FCVAR_BHL_ARCHIVE,
     "Disables animations of the viewmodel\n"
     "   0 - nothing is disabled\n"
@@ -1133,6 +1133,107 @@ void CStudioModelRenderer::StudioMergeBones(model_t *m_pSubModel)
 	}
 }
 
+void Hk_StudioSetupModel(int bodypart, void **ppbodypart, void **ppsubmodel)
+{
+    cl_entity_t *entity;
+    bool viewModel;
+    studiohdr_t *studiohdr;
+    mstudiobodyparts_t *body;
+    int oldbody;
+    int current;
+    int newbody;
+    int teamIndex;
+
+    entity = IEngineStudio.GetCurrentEntity();
+    viewModel = (entity == IEngineStudio.GetViewEntity());
+    if (!viewModel) /* we don't want to do anything */
+    {
+        IEngineStudio.StudioSetupModel(bodypart, ppbodypart, ppsubmodel);
+        return;
+    }
+
+    /* check if bodypart is right */
+    studiohdr = (studiohdr_t *)entity->model->cache.data;
+    if (!studiohdr)
+    {
+        IEngineStudio.StudioSetupModel(bodypart, ppbodypart, ppsubmodel);
+        return;
+    }
+
+    body = (mstudiobodyparts_t *)((byte *)studiohdr + studiohdr->bodypartindex) + bodypart;
+
+    /* check if the names matches and that there's enough submodels */
+    if (*(uint32 *)body->name != *(uint32 *)"arms" || body->nummodels < 2)
+    {
+        IEngineStudio.StudioSetupModel(bodypart, ppbodypart, ppsubmodel);
+        return;
+    }
+
+    /* bodypart is right one, do arm changing stuff */
+    oldbody = entity->curstate.body;
+
+    // if (user1 == 4)
+    //     teamIndex = playerInfo[user2].team;
+    // else
+    //     teamIndex = localTeam;
+
+    newbody = 1;
+
+    current = (entity->curstate.body / body->base) % body->nummodels;
+    entity->curstate.body = (entity->curstate.body - (current * body->base) + (newbody * body->base));
+
+    /* set the arm bodygroup */
+    IEngineStudio.StudioSetupModel(bodypart, ppbodypart, ppsubmodel);
+
+    /* restore state */
+    entity->curstate.body = oldbody;
+}
+
+
+void CStudioModelRenderer::StudioDrawHands(int flags, cl_entity_t *weapon)
+{
+    static bool vmdrawing;
+    if (vmdrawing) return; // pls dont loop
+    bool changed;
+    model_t *model;
+    cl_entity_t backup;
+    static char hands_path[256] = "";
+    static bool hands_valid = false;
+
+    if (!*viewmodel_hands.GetString())
+        return;
+
+    /* skip "models/" for comparison */
+    changed = strncmp(hands_path + 7, viewmodel_hands.GetString(), sizeof(hands_path) - 7) != 0;
+    if (changed)
+    {
+        /* update path */
+        sprintf(hands_path, "models/%s", viewmodel_hands.GetString());
+    }
+    else if (!hands_valid)
+    {
+        /* no change and the last hands were invalid, don't even try */
+        return;
+    }
+
+    /* mikkotodo: even though Mod_ForName returns null, it doesn't actually
+    free the model so we'd need to do that manually... */
+    model = IEngineStudio.Mod_ForName(hands_path, false);
+    hands_valid = model != NULL;
+    if (!hands_valid)
+        return;
+
+    /* should probably see what changes and only backup the necessary */
+    backup = *weapon;
+
+    /* abuse existing bonemerge functionality */
+    weapon->model = model;
+    weapon->curstate.movetype = 12; /* MOVETYPE_FOLLOW */
+    vmdrawing = true;
+    StudioDrawModel(flags);
+    vmdrawing = false;
+    *weapon = backup;
+}
 /*
 ====================
 StudioDrawModel
@@ -1239,7 +1340,10 @@ int CStudioModelRenderer::StudioDrawModel(int flags)
 		m_nBottomColor = (m_pCurrentEntity->curstate.colormap & 0xFF00) >> 8;
 
 		IEngineStudio.StudioSetRemapColors(m_nTopColor, m_nBottomColor);
-
+        if (m_pCurrentEntity == IEngineStudio.GetViewEntity())
+        {
+            StudioDrawHands(flags, m_pCurrentEntity);
+        }
 		StudioRenderModel();
 	}
 
@@ -1802,8 +1906,9 @@ void CStudioModelRenderer::StudioRenderFinal_Hardware(void)
 	{
 		for (i = 0; i < m_pStudioHeader->numbodyparts; i++)
 		{
-			IEngineStudio.StudioSetupModel(i, (void **)&m_pBodyPart, (void **)&m_pSubModel);
-
+            // if (m_pCurrentEntity == IEngineStudio.GetViewEntity())
+            // csldr hands logic
+                Hk_StudioSetupModel(i, (void **)&m_pBodyPart, (void **)&m_pSubModel);
 			if (m_fDoInterp)
 			{
 				// interpolation messes up bounding boxes.

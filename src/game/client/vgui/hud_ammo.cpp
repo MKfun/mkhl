@@ -90,7 +90,7 @@ void CHudAmmoPanel::PaintBackground()
 	m_pAmmoIcon->SetPos(iconX, m_iAmmoIconY);
 	m_pAmmoIcon->SetSize(m_iAmmoIconWide, m_iAmmoIconTall);
 	m_pAmmoIcon->SetColor(m_hudCurrentColor);
-	m_pAmmoIcon->Paint();
+    m_pAmmoIcon->Paint();
 }
 
 enum AmmoType
@@ -214,7 +214,7 @@ void CHudAmmoPanel::OnThink()
 			m_pDigitRightLabelGlow->SetText(buf);
 			// Position and size
 			SetPos(m_iBarFullX, GetYPos());
-			SetSize(m_iBarFullWide, GetTall());
+            SetSize(m_iBarFullWide, GetTall());
 		}
 		else // No clip
 		{
@@ -234,7 +234,7 @@ void CHudAmmoPanel::OnThink()
 				m_pDigitLeftLabelGlow->SetText(buf);
 
 				SetPos(m_iBarX, GetYPos());
-				SetSize(m_iBarWide, GetTall());
+                SetSize(m_iBarWide, GetTall());
 			}
 			else
 			{
@@ -251,22 +251,22 @@ void CHudAmmoPanel::OnThink()
 
 				SetPos(m_iBarFullX, GetYPos());
 				SetSize(m_iBarFullWide, GetTall());
-			}
+            }
 		}
-	}
-	wchar_t wszString[8];
-	if ( iNumKills > 0 )
-	{
-		V_snwprintf( wszString, sizeof( wszString ), L"x%d", iNumKills );
-		m_pKillCounter->SetText( wszString );
-		m_pKillCounter->SetVisible( true );
-//		m_pKillCounterImage->SetVisible( true );
-	}
-	else
-	{
-		m_pKillCounter->SetVisible( false );
-//		m_pKillCounterImage->SetVisible( false );
-	}
+        wchar_t wszString[8];
+        if ( iNumKills > 0 )
+        {
+            V_snwprintf( wszString, sizeof( wszString ), L"x%d", iNumKills );
+            m_pKillCounter->SetText( wszString );
+            m_pKillCounter->SetVisible( true );
+            //		m_pKillCounterImage->SetVisible( true );
+        }
+        else
+        {
+            m_pKillCounter->SetVisible( false );
+            //		m_pKillCounterImage->SetVisible( false );
+        }
+    }
 	// Show glow effect when dimmed, if not, set full alpha and hide glow digits
 	auto [a1, a2] = gHUD.GetHudDimAlphas(m_pHudDim.GetBool(), m_fFade, gHUD.m_flTimeDelta);
 	// Set colors for glow and normal digits
