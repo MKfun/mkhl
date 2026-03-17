@@ -5,28 +5,17 @@
 // $NoKeywords: $
 //=============================================================================//
 
-// #include "cbase.h"
 #include "freezepanel.h"
 #include <vgui/IVGui.h>
 #include "parsemsg.h"
 #include "vgui_controls/AnimationController.h"
-// #include "iclientmode.h"
-// #include "c_cs_player.h"
-// #include "c_cs_playerresource.h"
 #include <vgui_controls/Label.h>
 #include <vgui/ILocalize.h>
 #include <vgui/ISurface.h>
-// #include "VGUI/bordered_panel.h"
 #include "fmtstr.h"
 // #include "cs_gamerules.h"
 #include "view.h"
 #include "viewport_panel_names.h"
-// #include "ivieweffects.h"
-// #include "viewrender.h"
-// #include "usermessages.h"
-// #include "hud_macros.h"
-// #include "c_baseanimating.h"
-// #include "backgroundpanel.h"	// rounded border support
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -103,7 +92,6 @@ DECLARE_BUILD_FACTORY( HorizontalGauge );
 
 CCSFreezePanel::CCSFreezePanel() :
     EditablePanel( NULL, VIEWPORT_PANEL_FREEZEPANEL ),
-    // CHudElement( pElementName ),
     m_pBackgroundPanel(NULL),
     m_pKillerHealth(NULL),
     m_pAvatar(NULL)
@@ -111,26 +99,23 @@ CCSFreezePanel::CCSFreezePanel() :
 {
     SetSize( 10, 10 ); // Quiet "parent not sized yet" spew
     m_bShouldBeVisible = false;
-    SetScheme( "ClientScheme" );
+    // SetScheme( "ClientScheme" );
     // RegisterForRenderGroup( "hide_for_scoreboard" );
-    LoadControlSettings( "ui/resource/FreezePanel_Basic.res" );
     m_pKillerHealth = new HorizontalGauge(this, "KillerHealth");
+    // m_pKillerHealth->SetProgress(1.0f);
+    LoadControlSettings( "ui/resource/FreezePanel_Basic.res" );
     m_pAvatar = new ImagePanel(this, "AvatarImage"); // new CAvatarImagePanel(this, "AvatarImage");
     m_pAvatar->SetShouldScaleImage(false);
     m_pAvatarImage = new CAvatarImage();
-    // m_pAvatarImage->SetShouldDrawFriendIcon(false);
     m_pAvatarImage->SetDrawFriend(false);
+    m_pAvatar->SetImage(m_pAvatarImage);
     m_pAvatarImage->SetSize(64, 64);
     m_pAvatar->SetSize(64, 64);
-    m_pAvatar->SetImage(m_pAvatarImage);
+    m_pAvatar->SetPos(0,0);
     pi = GetPlayerInfoSafe(0);
-    SetProportional(true);
 }
 void CCSFreezePanel::Init()
 {
-    // HookMessage<&CCSFreezePanel::MsgFunc_ShowPanel>("ShowFreezePanel");
-    // HookMessage<&CCSFreezePanel::MsgFunc_HidePanel>("HideFreezePanel");
-    // BaseHudClass::Init();
 }
 
 void CCSFreezePanel::Reset()
@@ -145,19 +130,9 @@ void CCSFreezePanel::ApplySchemeSettings( vgui2::IScheme *pScheme )
 int CCSFreezePanel::UpdatePanelInfo(bool m_bShown, int m_iAttackerId, int m_iAttackerHP)
 {
     pi = GetPlayerInfoSafe(m_iAttackerId);
-    // uint64 steamID64 = pi->GetValidSteamID64();
-    // if(ClientSteamContext().SteamFriends() && ClientSteamContext().SteamUtils() && steamID64 != 0)
-    // {
-    //     CSteamID steamIDForPlayer(steamID64);
-    // }
-    m_pKillerHealth->SetPercent( (float)m_iAttackerHP / 100.0f/*iMaxHealth*/ );
+    m_pKillerHealth->SetPercent(clamp( m_iAttackerHP / 100.0f, 0.0f, 1.0f ));
     SetDialogVariable( "InfoLabel1", g_pVGuiLocalize->Find("#FreezePanel_Killer1"));
     SetDialogVariable( "InfoLabel2", g_pVGuiLocalize->Find("#FreezePanel_Killer2"));
-
-    // if (m_iAttackerId != 0 && ClientSteamContext().SteamFriends() && ClientSteamContext().SteamUtils())
-    //     m_pAvatar->SetPlayer(m_iAttackerId, k_EAvatarSize64x64);
-    // else
-    //     m_pAvatar->ClearAvatar();
     uint64 steamId = pi->GetValidSteamID64();
     if (ClientSteamContext().SteamUtils() && steamId != 0)
     {
@@ -170,7 +145,6 @@ int CCSFreezePanel::UpdatePanelInfo(bool m_bShown, int m_iAttackerId, int m_iAtt
     }
 
     SetDialogVariable("killername", pi->GetDisplayName());
-    // m_pKillerName->SetText(pi->GetDisplayName());
     SetVisible(m_bShown);
     return 1;
 }
@@ -187,18 +161,6 @@ void CCSFreezePanel::OnScreenSizeChanged( int nOldWide, int nOldTall )
 }
 void CCSFreezePanel::InitLayout()
 {
-#if 0
-    LoadControlSettings( "resource/UI/FreezePanel_Basic.res" );
-
-    m_pBackgroundPanel = dynamic_cast<BorderedPanel*>( FindChildByName("FreezePanelBG"));
-    m_pAvatar = dynamic_cast<CAvatarImagePanel*>( m_pBackgroundPanel->FindChildByName("AvatarImage"));
-    m_pKillerHealth	= dynamic_cast<HorizontalGauge*>( m_pBackgroundPanel->FindChildByName("KillerHealth"));
-    m_pDominationIcon = dynamic_cast<ImagePanel*>( m_pBackgroundPanel->FindChildByName("DominationIcon"));
-
-    m_pAvatar->SetDefaultAvatar(scheme()->GetImage( CSTRIKE_DEFAULT_AVATAR, true ));
-    m_pAvatar->SetShouldScaleImage(true);
-    m_pAvatar->SetShouldDrawFriendIcon(false);
-#endif
 }
 void CCSFreezePanel::SetActive( bool bActive )
 {

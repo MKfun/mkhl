@@ -129,7 +129,7 @@
 		
 		"KillerHealth"
 		{
-			"ControlName"	"HorizontalGauge"
+			"ControlName"	"ContinuousProgressBar"
 			"xpos"			"0"
 			"ypos"			"64"
 			"zpos"			"2"

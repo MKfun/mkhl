@@ -18,6 +18,7 @@
 #include <vgui/ISystem.h>
 #include <vgui_controls/AnimationController.h>
 #include <vgui_controls/EditablePanel.h>
+#include <vgui_controls/ProgressBar.h>
 #include "vgui/ILocalize.h"
 #include "vgui/avatar_image.h"
 #include "hud.h"
