@@ -42,12 +42,12 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt update || true
-          sudo apt install -y libc6:i386 cmake ninja-build gcc-9-multilib g++-9-multilib libssl-dev:i386 zlib1g-dev:i386
+          sudo apt install -y libc6:i386 cmake ninja-build gcc-multilib g++-multilib libssl-dev:i386 zlib1g-dev:i386
 
       - name: Build release
         id: build
         run: |
-          python ./scripts/BuildRelease.py --target ${{ matrix.target }} --build-type release --vs 2022 --toolset v141_xp --linux-compiler gcc-9 --out-dir ./_build_out --cmake-args="-DWARNINGS_ARE_ERRORS=ON" --github-actions
+          python ./scripts/BuildRelease.py --target ${{ matrix.target }} --build-type release --vs 2022 --toolset v141_xp --linux-compiler gcc --out-dir ./_build_out --cmake-args="-DWARNINGS_ARE_ERRORS=ON" --github-actions
 
       - name: Run tests
         run: |
