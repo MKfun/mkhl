@@ -15,8 +15,8 @@
 		"KillerName"
 		{	
 			"ControlName"	"Label"
-			"font"			"DefaultBold"
-			"xpos"			"70"	// 64+8
+			"font"			"UiBold"
+			"xpos"			"72"	// 64+8
 			"ypos"			"4"
 			"zpos"			"3"
 			"wide"			"140"
@@ -51,7 +51,7 @@
 		"InfoLabel2"
 		{	
 			"ControlName"	"Label"
-			"font"			"Default"
+			"font"			"UiBold"
 			"xpos"			"60"	// (212-100)/2
 			"ypos"			"26"
 			"zpos"			"3"
@@ -102,8 +102,8 @@
 		"AvatarImage"
 		{
 			"ControlName"	"ImagePanel"
-			"xpos"			"12"
-			"ypos"			"22"	// (54-32)/2
+			"xpos"			"0"
+			"ypos"			"0"	// (54-32)/2
 			"zpos"			"4"
 			"wide"			"64"
 			"tall"			"64"
@@ -129,14 +129,14 @@
 		
 		"KillerHealth"
 		{
-			"ControlName"	"ContinuousProgressBar"
+			"ControlName"	"HorizontalGauge"
 			"xpos"			"0"
 			"ypos"			"64"
 			"zpos"			"2"
 			"wide"			"64"
 			"tall"			"6"
 			"visible"		"1"
-			"enabled"		"1"	
+			"enabled"		"1"
 		}	
 	}
 }

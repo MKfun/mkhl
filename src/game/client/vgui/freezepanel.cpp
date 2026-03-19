@@ -13,16 +13,12 @@
 #include <vgui/ILocalize.h>
 #include <vgui/ISurface.h>
 #include "fmtstr.h"
-// #include "cs_gamerules.h"
 #include "view.h"
 #include "viewport_panel_names.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-// DECLARE_HUDELEMENT_DEPTH( CCSFreezePanel, 1 );
-// DECLARE_HUD_MESSAGE( CCSFreezePanel, Damage );
-// DECLARE_HUD_MESSAGE( CCSFreezePanel, DroppedEquipment );
 
 #define CALLOUT_WIDE		(XRES(100))
 #define CALLOUT_TALL		(XRES(50))
@@ -98,20 +94,20 @@ CCSFreezePanel::CCSFreezePanel() :
     // m_pDominationIcon(NULL)
 {
     SetSize( 10, 10 ); // Quiet "parent not sized yet" spew
+    SetProportional(true);
     m_bShouldBeVisible = false;
-    // SetScheme( "ClientScheme" );
-    // RegisterForRenderGroup( "hide_for_scoreboard" );
     m_pKillerHealth = new HorizontalGauge(this, "KillerHealth");
-    // m_pKillerHealth->SetProgress(1.0f);
-    LoadControlSettings( "ui/resource/FreezePanel_Basic.res" );
     m_pAvatar = new ImagePanel(this, "AvatarImage"); // new CAvatarImagePanel(this, "AvatarImage");
+    LoadControlSettings( "ui/resource/FreezePanel_Basic.res" );
     m_pAvatar->SetShouldScaleImage(false);
     m_pAvatarImage = new CAvatarImage();
     m_pAvatarImage->SetDrawFriend(false);
+    int x, y, wide, tall = 0;
+    m_pAvatar->GetBounds(x, y, wide, tall);
+    m_pAvatar->SetShouldScaleImage(0);
+    m_pAvatarImage->SetSize(m_pAvatar->GetWide(), m_pAvatar->GetTall());
     m_pAvatar->SetImage(m_pAvatarImage);
-    m_pAvatarImage->SetSize(64, 64);
-    m_pAvatar->SetSize(64, 64);
-    m_pAvatar->SetPos(0,0);
+
     pi = GetPlayerInfoSafe(0);
 }
 void CCSFreezePanel::Init()
@@ -137,7 +133,7 @@ int CCSFreezePanel::UpdatePanelInfo(bool m_bShown, int m_iAttackerId, int m_iAtt
     if (ClientSteamContext().SteamUtils() && steamId != 0)
     {
         CSteamID steamIDForPlayer(steamId);
-        m_pAvatarImage->SetAvatarSteamID(steamIDForPlayer, k_EAvatarSize64x64);
+        m_pAvatarImage->SetAvatarSteamID(steamIDForPlayer, k_EAvatarSize184x184);
     }
     else
     {
