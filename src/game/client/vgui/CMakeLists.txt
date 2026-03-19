@@ -26,5 +26,6 @@ add_sources(
 	hud_gauss.cpp
 	freezepanel.h
 	freezepanel.cpp
-
+	hud_damageindicator.cpp
+	hud_damageindicator.h
 )

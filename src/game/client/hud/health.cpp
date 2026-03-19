@@ -130,11 +130,11 @@ int CHudHealth::MsgFunc_Damage(const char *pszName, int iSize, void *pbuf)
 		vecFrom[i] = READ_COORD();
 
 	UpdateTiles(gHUD.m_flTime, bitsDamage);
-
-	// Actually took damage?
-	if (damageTaken > 0 || armor > 0)
+    if (damageTaken > 0 || armor > 0) {
 		CalcDamageDirection(vecFrom);
-
+        if (g_pViewport)
+            g_pViewport->UpdateDamagePanel(armor, damageTaken, bitsDamage, vecFrom);
+    }
 	return 1;
 }
 
@@ -224,9 +224,8 @@ void CHudHealth::Draw(float flTime)
 			if (m_pHudCustom.GetBool())
 			{
 				g_pViewport->ShowHealthPanel();
-				DrawDamage(flTime);
+                DrawDamage(flTime);
 				DrawPain(flTime);
-				return;
 			}
 			else
 			{

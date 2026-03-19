@@ -175,6 +175,7 @@ void CClientViewport::CreateDefaultPanels()
 	AddNewPanel(m_pMOTD = new CClientMOTD());
 	AddNewPanel(m_pSpectatorPanel = new CSpectatorPanel());
 	AddNewPanel(m_pHudHealthPanel = new CHudHealthPanel());
+    AddNewPanel(m_pHudDamageIndicator = new CHudDamageIndicator());
 	AddNewPanel(m_pHudBatteryPanel = new CHudBatteryPanel());
 	AddNewPanel(m_pHudAmmoPanel = new CHudAmmoPanel());
 	AddNewPanel(m_pHudAmmoSecondaryPanel = new CHudAmmoSecondaryPanel());
@@ -376,7 +377,10 @@ void CClientViewport::UpdateHealthPanel(int health)
 {
 	m_pHudHealthPanel->UpdateHealthPanel(health);
 }
-
+void CClientViewport::UpdateDamagePanel(int armor, int damageTaken, int bitsDamage, Vector vecFrom)
+{
+    m_pHudDamageIndicator->UpdateDamagePanel(armor, damageTaken, bitsDamage, vecFrom);
+}
 void CClientViewport::ShowBatteryPanel()
 {
 	m_pHudBatteryPanel->ShowPanel(true);

@@ -4,6 +4,7 @@
 #include <vgui_controls/Frame.h>
 #include <global_consts.h>
 #include "IViewportPanel.h"
+#include "vgui/hud_damageindicator.h"
 
 enum
 {
@@ -89,6 +90,7 @@ public:
 	void IsAmmoSecondaryPanelVisible();
 	void UpdateAmmoSecondaryPanel(WEAPON *pWeapon, int maxClip, int ammo1, int ammo2);
 
+    void UpdateDamagePanel(int armor, int damageTaken, int bitsDamage, Vector vecFrom);
 	// Allows to get custom positions to avoid overlapping with other panels
 	int GetAmmoHistoryYPos();
 	int GetStatusBarYPos();
@@ -146,6 +148,7 @@ private:
 	CClientMOTD *m_pMOTD = nullptr;
 	CSpectatorPanel *m_pSpectatorPanel = nullptr;
 	CHudHealthPanel *m_pHudHealthPanel = nullptr;
+    CHudDamageIndicator *m_pHudDamageIndicator = nullptr;
 	CHudBatteryPanel *m_pHudBatteryPanel = nullptr;
 	CHudAmmoPanel *m_pHudAmmoPanel = nullptr;
 	CHudAmmoSecondaryPanel *m_pHudAmmoSecondaryPanel = nullptr;
