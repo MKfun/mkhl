@@ -7,4 +7,21 @@ add_sources(
         VGuiSystemModuleLoader.h
         BasePanel.cpp
         BasePanel.h
+        Sys_Utils.cpp
+        Sys_Utils.h
+        ModInfo.cpp
+        ModInfo.h
+        GameConsole.cpp
+        GameConsole.h
+        GameConsoleDialog.cpp
+        GameConsoleDialog.h
+        GameMenu.cpp
+        GameMenu.h
+        BackgroundMenuButon.cpp
+        BackgroundMenuButon.h
+
+        menuitems/gamemenuitem.cpp
+        menuitems/gamemenuitem.h
+        menuitems/gameuimenubutton.cpp
+        menuitems/gameuimenubutton.h
 )

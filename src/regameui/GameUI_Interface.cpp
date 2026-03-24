@@ -178,7 +178,7 @@ void CGameUI::InternalInitialize()
 //	CvarSystem::RegisterCvars();
 
 	// TODO: Remove completely, only leave gEngfuncs
-	gEngfuncs.pfnClientCmd("map c1a0"); // TODO: randomize - ScriptedSnark
+    // gEngfuncs.pfnClientCmd("map c1a0"); // TODO: randomize - ScriptedSnark
 
 //	SteamAPI_InitSafe();
 //	steamapicontext->Init();
@@ -216,7 +216,7 @@ void CGameUI::InternalInitialize()
 	factoryBasePanel->SetPaintBackgroundEnabled(true);
 	factoryBasePanel->SetPaintEnabled(true);
 	factoryBasePanel->SetVisible(true);
-	factoryBasePanel->	SetScheme(vgui2::scheme()->LoadSchemeFromFile("resource/ClientSourceScheme.res", "ClientSourceScheme"));
+    factoryBasePanel->	SetScheme(vgui2::scheme()->LoadSchemeFromFile("ui/resource/ClientSourceScheme.res", "ClientSourceScheme"));
 
 	factoryBasePanel->SetMouseInputEnabled(IsPC());
 	// factoryBasePanel.SetKeyBoardInputEnabled( IsPC() );

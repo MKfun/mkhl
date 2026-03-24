@@ -53,16 +53,18 @@ private:
 	};
 	bimage_t m_ImageID[BACKGROUND_ROWS][BACKGROUND_COLUMNS];
 	typedef vgui2::Panel BaseClass;
-	vgui2::Button *m_pButton;
 	CGameMenu *RecursiveLoadGameMenu(KeyValues *datafile);
 	void CreateGameMenu();
 	CUtlVector< coord > m_iGameTitlePos;
 //	CUtlVector< CBackgroundMenuButton * >m_pGameMenuButtons;
 	CUtlVector< CBackgroundMenuButton * >m_pGameMenuButtons;
-	CGameMenu *m_pGameMenu;
 	int m_iGameMenuInset;
 	coord m_iGameMenuPos;
 	void UpdateGameMenus();
+    //Controls
+    CGameMenu *m_pGameMenu;
+    vgui2::MenuBar *m_pMenuBar;
+    CGameMenuItem *m_pGameMenuButton;
 };
 
 //-----------------------------------------------------------------------------

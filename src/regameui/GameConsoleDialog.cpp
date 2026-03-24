@@ -155,7 +155,7 @@ CGameConsoleDialog::CGameConsoleDialog() : CTaskFrame(NULL, "GameConsole")
 	SetMinimumSize(100,100);
 
 //	g_pTaskbar->AddTask(GetVPanel());
-	SetScheme(vgui2::scheme()->LoadSchemeFromFile("resource/ClientSourceScheme.res", "ClientSourceScheme"));
+    SetScheme(vgui2::scheme()->LoadSchemeFromFile("ui/resource/ClientSourceScheme.res", "ClientSourceScheme"));
 
 	SetTitle("#GameUI_Console", true);
 

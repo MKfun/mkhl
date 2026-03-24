@@ -11,6 +11,7 @@
 #include "ModInfo.h"
 
 #include "BackgroundMenuButon.h"
+#include "vgui_controls/MenuBar.h"
 #include <vgui/IPanel.h>
 #include <vgui/ISurface.h>
 #include <vgui/ISystem.h>
@@ -19,6 +20,8 @@
 extern cl_enginefunc_t gEngfuncs;
 using namespace vgui2;
 static CBasePanel	*g_pBasePanel = NULL;
+
+#define MENU_HEIGHT 28
 
 CBasePanel *BasePanel()
 {
@@ -37,13 +40,19 @@ CBasePanel::CBasePanel() : EditablePanel(NULL, "BaseGameUIPanel")
 {
 	SetProportional( true );
 	g_pBasePanel = this;
-	m_eBackgroundState = BACKGROUND_BLACK;
-	m_pButton = new Button(this, "button", "button1");
-	m_pButton->SetArmed(true);
-	m_pButton->SetVisible(true);
-	m_pButton->SetPos(200, 200);
-//	m_pGameMenu = NULL;
+    m_eBackgroundState = BACKGROUND_BLACK;
 
+    int w;
+    int h;
+    vgui2::surface()->GetScreenSize(w, h);
+    m_pMenuBar = new vgui2::MenuBar(this, "MainMenuBar");
+    m_pMenuBar->SetParent( this );
+    m_pMenuBar->SetSize( w, MENU_HEIGHT );
+    vgui2::Menu *pFileMenu = new vgui2::Menu(m_pMenuBar, "FileMenu");
+    pFileMenu->AddMenuItem("Open", new KeyValues("FileOpen"), this);
+    pFileMenu->AddMenuItem("Exit", new KeyValues("FileExit"), this);
+    m_pMenuBar->AddMenu("File", pFileMenu);
+    // m_pGameMenuButton = new CGameMenuItem(pFileMenu, "GameMenu");
 	m_pGameMenuButtons.AddToTail( CreateMenuButton( this, "GameMenuButton", ModInfo().GetGameTitle() ) );
 	m_pGameMenuButtons.AddToTail( CreateMenuButton( this, "GameMenuButton2", ModInfo().GetGameTitle2() ) );	CreateGameMenu();
 	LoadControlSettings("resource/mainmenu.res");

@@ -568,19 +568,6 @@ clear_sources()
 add_subdirectory(src/regameui)
 preprocess_sources()
 add_library(gameui SHARED ${PREP_SRCS}
-		src/regameui/Sys_Utils.cpp
-		src/regameui/Sys_Utils.h
-		src/regameui/ModInfo.cpp
-		src/regameui/ModInfo.h
-		src/regameui/GameConsole.cpp
-		src/regameui/GameConsole.h
-		src/regameui/GameConsoleDialog.cpp
-		src/regameui/GameConsoleDialog.h
-		src/regameui/GameMenu.cpp
-		src/regameui/GameMenu.h
-		src/regameui/BackgroundMenuButon.cpp
-		src/regameui/BackgroundMenuButon.h
-
 )
 target_include_directories( gameui PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/src/game/client
