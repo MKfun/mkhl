@@ -5,12 +5,15 @@
 
 #include "BasePanel.h"
 #include "EngineInterface.h"
+#include "GameConsole.h"
 #include "IEngineVGui.h"
 #include "GameUI_Interface.h"
 #include "GameMenu.h"
 #include "ModInfo.h"
-
+#include "options/optionsdialog.h"
+#include "convar.h"
 #include "BackgroundMenuButon.h"
+#include "sdl_rt.h"
 #include "vgui_controls/MenuBar.h"
 #include <vgui/IPanel.h>
 #include <vgui/ISurface.h>
@@ -20,7 +23,7 @@
 extern cl_enginefunc_t gEngfuncs;
 using namespace vgui2;
 static CBasePanel	*g_pBasePanel = NULL;
-
+// extern CGameConsole g_GameConsole;
 #define MENU_HEIGHT 28
 
 CBasePanel *BasePanel()
@@ -39,28 +42,54 @@ static CBackgroundMenuButton* CreateMenuButton( CBasePanel *parent, const char *
 CBasePanel::CBasePanel() : EditablePanel(NULL, "BaseGameUIPanel")
 {
 	SetProportional( true );
+    // SetParent(PANEL_GAMEUIDLL);
 	g_pBasePanel = this;
     m_eBackgroundState = BACKGROUND_BLACK;
-
+    RequestFocus();
     int w;
     int h;
     vgui2::surface()->GetScreenSize(w, h);
+
+    SetZPos(1000);
+    SetBuildModeEditable(1);
+    SetBuildModeDeletable(1);
+
+    SetProportional(true);
+    LoadControlSettings("resource/mainmenu.res");
     m_pMenuBar = new vgui2::MenuBar(this, "MainMenuBar");
     m_pMenuBar->SetParent( this );
     m_pMenuBar->SetSize( w, MENU_HEIGHT );
-    vgui2::Menu *pFileMenu = new vgui2::Menu(m_pMenuBar, "FileMenu");
-    pFileMenu->AddMenuItem("Open", new KeyValues("FileOpen"), this);
-    pFileMenu->AddMenuItem("Exit", new KeyValues("FileExit"), this);
-    m_pMenuBar->AddMenu("File", pFileMenu);
-    // m_pGameMenuButton = new CGameMenuItem(pFileMenu, "GameMenu");
-	m_pGameMenuButtons.AddToTail( CreateMenuButton( this, "GameMenuButton", ModInfo().GetGameTitle() ) );
-	m_pGameMenuButtons.AddToTail( CreateMenuButton( this, "GameMenuButton2", ModInfo().GetGameTitle2() ) );	CreateGameMenu();
-	LoadControlSettings("resource/mainmenu.res");
+    m_pMenuBar->SetMouseInputEnabled(true);
+    vgui2::Menu *pGameMenu = new vgui2::Menu(m_pMenuBar, "FileMenu");
+    m_pMenuBar->AddMenu("Game", pGameMenu);
+    pGameMenu->AddMenuItem("Create a server", new KeyValues("NewGameDialog"), pGameMenu);
+    pGameMenu->AddMenuItem("Connect to a server", new KeyValues("ConnectDialog"), pGameMenu);
+    vgui2::Menu *pOptionsMenu = new vgui2::Menu(m_pMenuBar, "OptionsMenu");
+    m_pMenuBar->AddMenu("Options", pOptionsMenu);
+    pOptionsMenu->AddMenuItem("Multiplayer options", new KeyValues("OpenOptionsDialog"), pOptionsMenu);
+    pOptionsMenu->AddMenuItem("Video settings", new KeyValues("OpenOptionsDialog"), pOptionsMenu);
+    pOptionsMenu->AddMenuItem("Audio settings", new KeyValues("OpenOptionsDialog"), pOptionsMenu);
+    pOptionsMenu->AddMenuItem("Addon settings", new KeyValues("OpenOptionsDialog"), pOptionsMenu);
+    m_hOptionsDialog = new COptionsDialog(this);
+    m_hOptionsDialog->Activate();
+    // OnOpenOptionsDialog();
+    vgui2::Menu *pAdvOptionsMenu = new vgui2::Menu(m_pMenuBar, "AdvOptionsMenu");
+    m_pMenuBar->AddMenu("Advanced Options", pAdvOptionsMenu);
+    pAdvOptionsMenu->AddMenuItem("Addon settings", new KeyValues("AdvOptionsDialog"), pAdvOptionsMenu);
+
+}
+void CBasePanel::OnOpenOptionsDialog()
+{
+    if ( !m_hOptionsDialog )
+    {
+        m_hOptionsDialog = new COptionsDialog(this);
+    }
+    m_hOptionsDialog->Activate();
 }
 
 void CBasePanel::OnChildAdded(VPANEL child)
 {
-
+    BaseClass::OnChildAdded(child);
 }
 
 void CBasePanel::PaintBackground()
@@ -80,11 +109,11 @@ void CBasePanel::PaintBackground()
 	{
 	case BACKGROUND_BLACK:
 	{
-		// if the loading dialog is visible, draw the background black
-		int swide, stall;
-		surface()->GetScreenSize(swide, stall);
-		surface()->DrawSetColor(0, 0, 0, 128);
-		surface()->DrawFilledRect(0, 0, swide, stall);
+        // if the loading dialog is visible, draw the background black
+        int swide, stall;
+        surface()->GetScreenSize(swide, stall);
+        surface()->DrawSetColor(0, 0, 0, 128);
+        surface()->DrawFilledRect(0, 0, swide, stall);
 	}
 	break;
 
@@ -221,7 +250,7 @@ void CBasePanel::CreateGameMenu()
 {
 	// load settings from config file
 	KeyValues *datafile = new KeyValues("GameMenu");
-//	datafile->UsesEscapeSequences( true );	// VGUI uses escape sequences
+    // datafile->UsesEscapeSequences( true );	// VGUI uses escape sequences
 	if (datafile->LoadFromFile( g_pFullFileSystem, "resource/GameMenu.res" ) )
 	{
 		m_pGameMenu = RecursiveLoadGameMenu(datafile);
@@ -263,8 +292,9 @@ void CBasePanel::UpdateGameMenus()
 }
 void CBasePanel::PerformLayout()
 {
-	m_pGameMenu->SetPos(300, 300);
-	UpdateGameMenus();
+    // m_pGameMenu->SetPos(300, 300);
+    // UpdateGameMenus();
+    BaseClass::PerformLayout();
 }
 CGameMenu *CBasePanel::RecursiveLoadGameMenu(KeyValues *datafile)
 {
@@ -309,3 +339,24 @@ CGameMenu *CBasePanel::RecursiveLoadGameMenu(KeyValues *datafile)
 	return menu;
 }
 CGameMenu::~CGameMenu() {}
+
+void CBasePanel::OnCommand(const char* command)
+{
+    if (!stricmp(command, "OpenOptionsDialog"))
+    {
+        OnOpenOptionsDialog();
+    }
+    BaseClass::OnCommand(command);
+}
+void CBasePanel::PositionDialog(vgui2::PHandle dlg)
+{
+    if (!dlg.Get())
+        return;
+
+    int x, y, ww, wt, wide, tall;
+    vgui2::surface()->GetWorkspaceBounds( x, y, ww, wt );
+    dlg->GetSize(wide, tall);
+
+    // Center it, keeping requested size
+    dlg->SetPos(x + ((ww - wide) / 2), y + ((wt - tall) / 2));
+}

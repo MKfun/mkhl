@@ -1,6 +1,7 @@
 //
 // Created by den4ik on 01.12.25.
 //
+#include "GameConsole.h"
 #ifdef WIN32
 #if !defined( _X360 )
 #include <windows.h>
@@ -211,20 +212,18 @@ void CGameUI::InternalInitialize()
 	// setup base panel
 //	CBasePanel *factoryBasePanel = new CBasePanel(); // explicit singleton instantiation
 	factoryBasePanel = new CBasePanel();
-	factoryBasePanel->SetBounds(0, 0, 640, 480);
+    factoryBasePanel->SetBounds(0, 0, 400, 300);
 	factoryBasePanel->SetPaintBorderEnabled(false);
 	factoryBasePanel->SetPaintBackgroundEnabled(true);
 	factoryBasePanel->SetPaintEnabled(true);
 	factoryBasePanel->SetVisible(true);
-    factoryBasePanel->	SetScheme(vgui2::scheme()->LoadSchemeFromFile("ui/resource/ClientSourceScheme.res", "ClientSourceScheme"));
-
-	factoryBasePanel->SetMouseInputEnabled(IsPC());
-	// factoryBasePanel.SetKeyBoardInputEnabled( IsPC() );
-	factoryBasePanel->SetKeyBoardInputEnabled(true);
-
+    factoryBasePanel->SetScheme(vgui2::scheme()->LoadSchemeFromFile("ui/resource/ClientSourceScheme.res", "ClientSourceScheme"));
+    factoryBasePanel->SetMouseInputEnabled(true);
+    factoryBasePanel->SetKeyBoardInputEnabled(true);
 	vgui2::VPANEL rootpanel = enginevguifuncs->GetPanel(PANEL_GAMEUIDLL);
-	factoryBasePanel->SetParent(rootpanel);
+    // rootpanel->
 
+	factoryBasePanel->SetParent(rootpanel);
 	// Client DLL interface
 	g_pGameClientExports = (IGameClientExports *)s_pFactory(GAMECLIENTEXPORTS_INTERFACE_VERSION, NULL);
 }
@@ -379,8 +378,8 @@ int CGameUI::ActivateGameUI()
 	GetUiBaseModPanelClass().SetVisible(true);
 	// pause the game
 	gEngfuncs.pfnClientCmd("setpause");
-
-
+    GetUiBaseModPanelClass().SetMouseInputEnabled(true);
+    GetUiBaseModPanelClass().MoveToFront();
 	// return that things have been handled
 	return 1;
 }
@@ -394,6 +393,7 @@ void CGameUI::HideGameUI()
 	{
 		//show both the background panel and the taskbar
 		GetUiBaseModPanelClass().SetVisible(false);
+        GetUiBaseModPanelClass().SetMouseInputEnabled(false);
 
 		// unpause the game
 		gEngfuncs.pfnClientCmd("unpause");

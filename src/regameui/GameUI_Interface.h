@@ -92,6 +92,4 @@ extern CGameUI &GameUI();
 
 // expose client interface
 extern IGameClientExports *GameClientExports();
-
-
 #endif // GAMEUI_INTERFACE_H

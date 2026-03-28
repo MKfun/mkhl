@@ -1,4 +1,5 @@
 add_sources(
+        # base
         GameUI_Interface.cpp
         EngineInterface.h
         icvar.cpp
@@ -19,6 +20,28 @@ add_sources(
         GameMenu.h
         BackgroundMenuButon.cpp
         BackgroundMenuButon.h
+
+        # controls
+        CvarSlider.cpp
+        KeyToggleCheckButton.cpp
+        VControlsListPanel.cpp
+        CvarToggleCheckButton.cpp
+        LabeledCommandComboBox.cpp
+        CvarNegateCheckButton.cpp
+        CvarTextEntry.cpp
+        # misc
+        ../common/convar.cpp
+
+        # options
+        options/optionsdialog.cpp
+        options/MultiplayerAdvancedDialog.cpp
+        options/OptionsSubAdvanced.cpp
+        options/OptionsSubAudio.cpp
+        options/OptionsSubKeyboard.cpp
+        options/OptionsSubMouse.cpp
+        options/OptionsSubMultiplayer.cpp
+        options/OptionsSubVideo.cpp
+        options/OptionsSubVoice.cpp
 
         menuitems/gamemenuitem.cpp
         menuitems/gamemenuitem.h

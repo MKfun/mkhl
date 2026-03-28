@@ -4,6 +4,7 @@
 
 #ifndef BASEPANEL_H
 #define BASEPANEL_H
+#include "options/optionsdialog.h"
 #ifdef _WIN32
 #pragma once
 #endif
@@ -25,7 +26,7 @@ public:
 	virtual void OnChildAdded(vgui2::VPANEL child);
 	virtual void PaintBackground();
 	virtual void ApplySchemeSettings(vgui2::IScheme *pScheme);
-
+    virtual void OnCommand(const char *command);
 	enum EBackgroundState
 	{
 		BACKGROUND_NONE,
@@ -41,9 +42,9 @@ public:
 	virtual void PerformLayout();
 
 private:
-	void DrawBackgroundImage();
-
-	EBackgroundState m_eBackgroundState;
+    void DrawBackgroundImage();
+    void OnOpenOptionsDialog();
+    EBackgroundState m_eBackgroundState;
 
 	enum { BACKGROUND_ROWS = 3, BACKGROUND_COLUMNS = 4 };
 	struct bimage_t
@@ -65,6 +66,11 @@ private:
     CGameMenu *m_pGameMenu;
     vgui2::MenuBar *m_pMenuBar;
     CGameMenuItem *m_pGameMenuButton;
+
+    COptionsDialog *m_hOptionsDialog;
+
+    // misc
+    void PositionDialog(vgui2::PHandle dlg);
 };
 
 //-----------------------------------------------------------------------------
