@@ -9,8 +9,9 @@ ReGameUI is my project, that implementing gameui.so (like base panel, options, e
 Roadmap
 --------
 - [x] Engine starts (no crashes)
+- [x] Console
 - [x] BasePanel shows
-- [x] Options frame (wip)
+- [x] Options frame (wip) 
 - [ ] ServerBrowser
 - [ ] Multiplayer dialog
 - [ ] Singleplayer dialog
