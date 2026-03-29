@@ -1,52 +1,28 @@
-Bugfixed and improved Half-Life
+ReGameUI (bhl-rb based)
 ===============================
 
-Bugfixed and Improved Half-Life Release (*BugfixedHL* for short) is a Half-Life modification that aims
-to improve DM experience for players and fix server bugs for server owners while being completely
-backwards-compatible with vanilla clients and servers.
+### THIS BRANCH SHOULD BE USED ONLY FOR BUILDING GAMEUI, FOR SDK PLS USE MASTER BRANCH
 
-*BugfixedHL-Rebased* is port of [Lev's BugfixedHL](https://github.com/LevShisterov/BugfixedHL) on
-new [Half-Life SDK](https://github.com/ValveSoftware/halflife).
-It features improved UI using VGUI2 library, Linux support and refactored source code for better maintainablity.
-
-- [Screenshots](https://github.com/tmp64/BugfixedHL-Rebased/wiki/Screenshots)
-- [How to install](https://github.com/tmp64/BugfixedHL-Rebased/wiki/Installation)
-- [Commands](https://github.com/tmp64/BugfixedHL-Rebased/wiki/Client-command-reference)
+ReGameUI is my project, that implementing gameui.so (like base panel, options, etc), but open sourced unlike valve's
 
 
-Features
+Roadmap
 --------
-
-The mod features a number of improvements over stock client and server.
-
-Client:
-- Bunnyhopping (for servers that have it enabled)
-- Colored HUD
-- Raw mouse input via DirectInput
-- Customizable crosshairs (like in CS:GO)
-- Improved user interface
-  - Scoreboard
-  - Unicode and HTML MOTD (requires server support)
-  - Chat with history, input editing and automatic splitting of long messages
-  - Spectator UI
-  - Team selection (used by some servers)
-  - Command menu
-  - Options dialog
-- Automatic demo recording
-- HUD support for WeaponMod
-- Slowhacking protection (for old engine versions)
-- Ability to disable custom player models completely
+- [x] Engine starts (no crashes)
+- [x] BasePanel shows
+- [x] Options frame (wip)
+- [ ] ServerBrowser
+- [ ] Multiplayer dialog
+- [ ] Singleplayer dialog
+- [ ] Nice menu (not vanilla)
+- [ ] Builds on windows
+- [ ] ifdefs for MKHL
 
 
-Server:
-- Bugfixes and crash fixes
-- Selfgauss can be disabled
-- Welcome camera mode - after connecting, player is put into semi-spectator mode and can spawn with MOUSE1
-- HTML and Unicode MOTD for clients that support them
-- Fixed spectator mode
-- Invisible model fix
-- UTF-8 support
-
+Technical moments
+------------------
+ - The code may be ugly, but thats a source beta code, srry
+ - gameui lib will NOT load from valve_addon. Replace original library (backup first!)
 
 SDK changes
 -----------
