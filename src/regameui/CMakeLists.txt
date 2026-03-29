@@ -31,7 +31,7 @@ add_sources(
         CvarTextEntry.cpp
         # misc
         ../common/convar.cpp
-
+        ../game/client/sdl_rt.cpp
         # options
         options/optionsdialog.cpp
         options/MultiplayerAdvancedDialog.cpp

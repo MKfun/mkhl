@@ -10,6 +10,7 @@
 #include "GameUI_Interface.h"
 #include "GameMenu.h"
 #include "ModInfo.h"
+#include "VGuiSystemModuleLoader.h"
 #include "options/optionsdialog.h"
 #include "convar.h"
 #include "BackgroundMenuButon.h"
@@ -38,6 +39,8 @@ static CBackgroundMenuButton* CreateMenuButton( CBasePanel *parent, const char *
 
 	return pButton;
 }
+extern IServerBrowser *g_pServerBrowser;
+
 //-----------------------------------------------------------------------------
 CBasePanel::CBasePanel() : EditablePanel(NULL, "BaseGameUIPanel")
 {
@@ -73,6 +76,8 @@ CBasePanel::CBasePanel() : EditablePanel(NULL, "BaseGameUIPanel")
     m_hOptionsDialog = new COptionsDialog(this);
     m_hOptionsDialog->Activate();
     // OnOpenOptionsDialog();
+    g_VModuleLoader.ActivateModule(0);
+    g_VModuleLoader.ActivateModule(1);
     vgui2::Menu *pAdvOptionsMenu = new vgui2::Menu(m_pMenuBar, "AdvOptionsMenu");
     m_pMenuBar->AddMenu("Advanced Options", pAdvOptionsMenu);
     pAdvOptionsMenu->AddMenuItem("Addon settings", new KeyValues("AdvOptionsDialog"), pAdvOptionsMenu);

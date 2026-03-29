@@ -6,6 +6,7 @@
 #define BUGFIXEDHL_GAMEUI_INTERFACE_H
 
 #include "IGameUI.h"
+#include "iserverbrowser.h"
 
 #include <vgui_controls/Panel.h>
 #include <vgui_controls/PHandle.h>
@@ -75,7 +76,6 @@ private:
 
 	const char *m_pszCurrentProgressType;
 	float m_flProgressStartTime;
-
 	CSocket *m_pMaster;
 
 	vgui2::DHANDLE<CCDKeyEntryDialog> m_hCDKeyEntryDialog;
@@ -86,7 +86,6 @@ private:
 	void InternalStart();
 
 };
-
 // Purpose: singleton accessor
 extern CGameUI &GameUI();
 

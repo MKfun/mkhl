@@ -11,10 +11,10 @@
 #include <stdio.h>
 
 #include "VGuiSystemModuleLoader.h"
-//#include "Sys_Utils.h"
+#include "Sys_Utils.h"
 #include "IEngineVGui.h"
-//#include "ServerBrowser/IServerBrowser.h"
-
+#include "iserverbrowser.h"
+#include "GameUI_Interface.h"
 #include <vgui/IPanel.h>
 #include <vgui/ISystem.h>
 #include <vgui/IVGui.h>
@@ -25,6 +25,7 @@
 #include <vgui_controls/Panel.h>
 
 #include "FileSystem.h"
+#include "sdl_rt.h"
 
 
 // instance of class
@@ -67,7 +68,7 @@ bool CVGuiSystemModuleLoader::IsPlatformReady()
 {
 	return m_bModulesInitialized;
 }
-
+vgui2::VPANEL GetGameUIBasePanel();
 //-----------------------------------------------------------------------------
 // Purpose: sets up all the modules for use
 //-----------------------------------------------------------------------------
@@ -92,14 +93,15 @@ void CVGuiSystemModuleLoader::InitializeAllModules(CreateInterfaceFn *factorylis
 	// give the modules a chance to link themselves together
 	for (int i = 0; i < m_Modules.Size(); i++)
 	{
-		if (!m_Modules[i].moduleInterface->PostInitialize(moduleFactories, m_Modules.Size()))
-		{
-			vgui2::ivgui()->DPrintf2("Platform Error: module failed to initialize\n");
-		}
+        if (!m_Modules[i].moduleInterface->PostInitialize(moduleFactories, m_Modules.Count()))
+        {
+            vgui2::ivgui()->DPrintf2("Platform Error: module failed to post-initialize\n");
+        }
 
 #ifdef GAMEUI_EXPORTS
+        m_Modules[i].moduleInterface->SetParent(GetGameUIBasePanel());
 #else
-		m_Modules[i].moduleInterface->SetParent(g_pMainPanel->GetVPanel());
+        m_Modules[i].moduleInterface->SetParent(GetGameUIBasePanel());
 #endif
 	}
 
@@ -111,97 +113,61 @@ void CVGuiSystemModuleLoader::InitializeAllModules(CreateInterfaceFn *factorylis
 //-----------------------------------------------------------------------------
 void CVGuiSystemModuleLoader::LoadPlatformModules(CreateInterfaceFn *factorylist, int factorycount, bool useSteamModules)
 {
-	// load platform menu
-	KeyValues *kv = new KeyValues("Platform");
-	if (!kv->LoadFromFile(g_pFullFileSystem, "resource/PlatformMenu.vdf", "PLATFORM"))
-		return;
+    char dllPath[512];
+    // load platform menu
+    KeyValues *kv = new KeyValues("Platform");
+    if (!kv->LoadFromFile(g_pFullFileSystem, "steam/games/PlatformMenu.vdf", "PLATFORM"))
+        return;
 
-	// walk the platform menu loading all the interfaces
-	KeyValues *menuKeys = kv->FindKey("Menu", true);
-	for (KeyValues *it = menuKeys->GetFirstSubKey(); it != NULL; it = it->GetNextKey())
-	{
-		// see if we should skip steam modules
-		if (!useSteamModules && it->GetInt("SteamApp"))
-			continue;
-
-		// get copy out of steam cache
-		const char *dllPath = it->GetString("dll");
-		g_pFullFileSystem->GetLocalCopy(dllPath);
-
-		// load the dll
-		char szDir[512];
-		if (!g_pFullFileSystem->GetLocalPath(dllPath, szDir, 1000))
-		{
-			vgui2::ivgui()->DPrintf2("Platform Error: couldn't find %s, not loading\n", it->GetString("dll"));
-			continue;
-		}
-
-		// make sure it's a valid dll
-		CSysModule *mod = Sys_LoadModule(szDir);
-		if (!mod)
-		{
-			vgui2::ivgui()->DPrintf2("Platform Error: bad module '%s', not loading\n", it->GetString("dll"));
-			continue;
-		}
-
-		// make sure we get the right version
-		IVGuiModule *moduleInterface = (IVGuiModule *)Sys_GetFactory(mod)(it->GetString("interface"), NULL);
-		if (!moduleInterface)
-		{
-			vgui2::ivgui()->DPrintf2("Platform Error: module version ('%s, %s) invalid, not loading\n", it->GetString("dll"), it->GetString("interface"));
-			continue;
-		}
-
-		// store off the module
-		int newIndex = m_Modules.AddToTail();
-		m_Modules[newIndex].module = mod;
-		m_Modules[newIndex].moduleInterface = moduleInterface;
-		m_Modules[newIndex].data = it;
-	}
-	/*
-    // find all the AddOns
-	FileFindHandle_t findHandle = NULL;
-	const char *filename = vgui::filesystem()->FindFirst("AddOns/*.", &findHandle);
-
-    for ( ; filename != NULL ; filename = vgui::filesystem()->FindNext(findHandle))
-//    while (filename)
+    // walk the platform menu loading all the interfaces
+    KeyValues *menuKeys = kv->FindKey("Menu", true);
+    for (KeyValues *it = menuKeys->GetFirstSubKey(); it != NULL; it = it->GetNextKey())
     {
-        // skip the . directories
-        if (vgui::filesystem()->FindIsDirectory ( findHandle ) && filename[0] != '.')
+        // see if we should skip steam modules
+        if (!useSteamModules && it->GetInt("SteamApp"))
+            continue;
+
+        // get copy out of steam cache
+        strcpy(dllPath, it->GetString("dll"));
+        char* v11 = strrchr(dllPath, 46);
+        if ( v11 )
+            *v11 = 0;
+        strncat(dllPath, "_linux.so", 512);
+        g_pFullFileSystem->GetLocalCopy(dllPath);
+        GetSDL()->ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, dllPath, dllPath);
+        // load the dll
+        char szDir[512];
+
+        if (!g_pFullFileSystem->GetLocalPath(dllPath, szDir, 1000))
         {
-            // add this to list
-            const char *gameName = filename;
-            KeyValues* kv = new KeyValues(gameName);
-            char fileName[512];
-            sprintf(fileName, "AddOns/%s/%s.vdf", gameName, gameName);
-            if (!kv->LoadFromFile(vgui::filesystem(), fileName, true, "PLATFORM"))
-                continue;
-
-            sprintf(fileName, "AddOns/%s/%s.dll", gameName, gameName);
-            vgui::filesystem()->GetLocalCopy(fileName);
-            CSysModule *mod = Sys_LoadModule(fileName);
-            if (!mod)
-                continue;
-
-            // make sure we get the right version
-            IVGuiModule *moduleInterface = (IVGuiModule *)Sys_GetFactory(mod)(kv->GetString("interface"), NULL);
-            if (!moduleInterface)
-                continue;
-
-			// hide it from the Steam Platform Menu
-			kv->SetInt("Hidden", 1);
-
-            // store off the module
-            int newIndex = m_Modules.AddToTail();
-            m_Modules[newIndex].module = mod;
-            m_Modules[newIndex].moduleInterface = moduleInterface;
-            m_Modules[newIndex].data = kv;
+            printf("Platform Error: couldn't find %s, not loading\n", it->GetString("dll"));
+            continue;
         }
-    }
-	vgui::filesystem()->FindClose(findHandle);
-*/
 
-	InitializeAllModules(factorylist, factorycount);
+        // make sure it's a valid dll
+        CSysModule *mod = Sys_LoadModule(szDir);
+        if (!mod)
+        {
+            printf("Platform Error: bad module '%s', not loading\n", it->GetString("dll"));
+            continue;
+        }
+
+        // make sure we get the right version
+        IVGuiModule *moduleInterface = (IVGuiModule *)Sys_GetFactory(mod)(it->GetString("interface"), NULL);
+        if (!moduleInterface)
+        {
+            printf("Platform Error: module version ('%s, %s) invalid, not loading\n", it->GetString("dll"), it->GetString("interface"));
+            continue;
+        }
+
+        // store off the module
+        int newIndex = m_Modules.AddToTail();
+        m_Modules[newIndex].module = mod;
+        m_Modules[newIndex].moduleInterface = moduleInterface;
+        m_Modules[newIndex].data = it;
+    }
+
+    InitializeAllModules(factorylist, factorycount);
 }
 
 //-----------------------------------------------------------------------------
@@ -311,7 +277,21 @@ bool CVGuiSystemModuleLoader::ActivateModule(int moduleIndex)
 	m_Modules[moduleIndex].moduleInterface->Activate();
 
 #ifdef GAMEUI_EXPORTS
-	return true;
+    // if (g_pTaskbar)
+    {
+        wchar_t *wTitle;
+        wchar_t w_szTitle[1024];
+
+        wTitle = g_pVGuiLocalize->Find(m_Modules[moduleIndex].data->GetName());
+
+        if(!wTitle)
+        {
+            g_pVGuiLocalize->ConvertANSIToUnicode(m_Modules[moduleIndex].data->GetName(),w_szTitle,sizeof(w_szTitle));
+            wTitle = w_szTitle;
+        }
+
+        // g_pTaskbar->SetTitle(m_Modules[moduleIndex].moduleInterface->GetPanel(),wTitle);
+    }
 #endif
 
 	return true;

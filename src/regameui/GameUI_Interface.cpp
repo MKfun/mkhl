@@ -2,6 +2,7 @@
 // Created by den4ik on 01.12.25.
 //
 #include "GameConsole.h"
+#include "sdl_rt.h"
 #ifdef WIN32
 #if !defined( _X360 )
 #include <windows.h>
@@ -79,7 +80,7 @@ static CGameUI g_GameUI;
 
 static int g_hMutex = NULL;
 static int g_hWaitMutex = NULL;
-
+IServerBrowser *g_pServerBrowser;
 typedef CBasePanel UI_BASEMOD_PANEL_CLASS;
 inline UI_BASEMOD_PANEL_CLASS &GetUiBaseModPanelClass() { return *BasePanel(); }
 inline UI_BASEMOD_PANEL_CLASS &ConstructUiBaseModPanelClass()
@@ -119,7 +120,7 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CGameUI, IGameUI, GAMEUI_INTERFACE_VERSION_GS,
 CGameUI::CGameUI()
 {
 	g_pGameUI = this;
-	m_bTryingToLoadTracker = false;
+    m_bTryingToLoadTracker = false;
 	m_iGameIP = 0;
 	m_iGamePort = 0;
 	m_flProgressStartTime = 0.0f;
@@ -185,7 +186,6 @@ void CGameUI::InternalInitialize()
 //	steamapicontext->Init();
 
 //	ma_engine_init(NULL, &miniaudio);
-
 	vgui2::VGui_InitInterfacesList("GameUI", &s_pFactory, 1);
 
 	// load localization file
@@ -202,6 +202,7 @@ void CGameUI::InternalInitialize()
 	enginesurfacefuncs = g_pVGuiSurface;
 	gameuifuncs = (IGameUIFuncs *)s_pFactory(IGAMEUIFUNCS_NAME, NULL);
 	baseuifuncs = (IBaseUI *)s_pFactory(IBASEUI_NAME, NULL);
+
 //	xboxsystem = (IXboxSystem *)s_pFactory(XBOXSYSTEM_INTERFACE_VERSION, NULL);
 	bFailed = !enginesurfacefuncs || !gameuifuncs || !enginevguifuncs;
 	if (bFailed)
@@ -237,9 +238,8 @@ void CGameUI::InternalStart()
 {
 	// determine Steam location for configuration
 
-//	if (!FindPlatformDirectory(m_szPlatformDir, sizeof(m_szPlatformDir)))
-//		return;
-
+    if (!FindPlatformDirectory(m_szPlatformDir, sizeof(m_szPlatformDir)))
+        return;
 	if (IsPC())
 	{
 		// setup config file directory
@@ -261,7 +261,7 @@ void CGameUI::InternalStart()
 	// localization
 	g_pVGuiLocalize->AddFile(g_pFullFileSystem, "Resource/platform_%language%.txt");
 	g_pVGuiLocalize->AddFile(g_pFullFileSystem, "Resource/vgui_%language%.txt");
-
+    g_VModuleLoader.LoadPlatformModules(&s_pFactory, 1, false);
 	Sys_SetLastError(0L);
 	if (IsPC())
 	{
@@ -299,7 +299,7 @@ void CGameUI::InternalStart()
 //		PlayGameStartupSound();
 
 		// now we are set up to check every frame to see if we can friends/server browser
-//		m_bTryingToLoadFriends = true;
+        m_bTryingToLoadTracker = true;
 //		m_iFriendsLoadPauseFrames = 1;
 	}
 }
@@ -314,7 +314,7 @@ bool CGameUI::FindPlatformDirectory(char *platformDir, int bufferSize)
 		if ( 1 )
 		{
 #ifdef WIN32
-			if ( ::GetModuleFileName( ( HINSTANCE )GetModuleHandle( NULL ), platformDir, bufferSize ) )
+            if ( ::GetModuleFileName( ( HINSTANCE )GetModuleHandle( NULL ), platformDir, bufferSize ) )
 			{
 				char *lastslash = strrchr(platformDir, '\\'); // this should be just before the filename
 				if ( lastslash )
@@ -332,12 +332,59 @@ bool CGameUI::FindPlatformDirectory(char *platformDir, int bufferSize)
 				V_AppendSlash( platformDir, bufferSize );
 				return true;
 			}
+            printf(platformDir);
 #endif
 		}
 
 		Error( "Unable to determine platform directory\n" );
 		return false;
 	}
+    // check for ServerBrowser DLL on local area
+    if (platformDir[0] == '\0')
+    {
+#ifdef WIN32
+        char *pszServerBrowserDLL = "..\\platform\\servers\\serverbrowser.dll";
+#else
+                char *pszServerBrowserDLL = "..\\platform\\servers\\serverbrowser.so";
+#endif
+        // Require that we find the ServerBrowser DLL.
+        if (g_pFullFileSystem->FileExists(pszServerBrowserDLL))
+        {
+            char szPlatformPath[MAX_PATH], szFinalPath[MAX_PATH];
+            g_pFullFileSystem->GetLocalPath(pszServerBrowserDLL, szPlatformPath, sizeof(szPlatformPath));
+            szPlatformPath[MAX_PATH - 1] = 0;
+
+            // remove any \..\ from the path
+            szFinalPath[0] = 0;
+            int finalPathPos = 0;
+            for (int i = 0; szPlatformPath[i] != 0; i++)
+            {
+                if (!strncmp(szPlatformPath + i, "\\..\\", 4))
+                {
+                    // skip over the "\\.."
+                    i += 3;
+
+                    // walk the final dir back until the previous '\\'
+                    while (szFinalPath[finalPathPos] != '\\' && finalPathPos)
+                    {
+                        finalPathPos--;
+                    }
+                }
+
+                szFinalPath[finalPathPos++] = szPlatformPath[i];
+            }
+#ifdef WIN32
+            char *binpos = strstr(szFinalPath, "servers\\serverbrowser.dll");
+#else
+            char *binpos = strstr(szFinalPath, "servers\\serverbrowser.so");
+#endif
+            if (binpos)
+            {
+                *binpos = 0;
+                strcpy(platformDir, szFinalPath);
+            }
+        }
+    }
 
 	return (platformDir[0] != 0);
 }
@@ -428,7 +475,7 @@ void CGameUI::RunFrame(void)
 
 //	GameConsole().RunFrame();
 
-//	if (IsPC() && m_bTryingToLoadFriends && m_iFriendsLoadPauseFrames-- < 1 && g_hMutex && g_hWaitMutex)
+    if (IsPC() && m_bTryingToLoadTracker)
 //	{
 		// try and load Steam platform files
 //		unsigned int waitResult = Sys_WaitForSingleObject(g_hMutex, 0);
@@ -436,34 +483,32 @@ void CGameUI::RunFrame(void)
 //		{
 //			// we got the mutex, so load Friends/Serverbrowser
 //			// clear the loading flag
-//			m_bTryingToLoadFriends = false;
-//			g_VModuleLoader.LoadPlatformModules(&s_pFactory, 1, false);
-//
+            m_bTryingToLoadTracker = false;
+    g_pServerBrowser = (IServerBrowser *)s_pFactory(SERVERBROWSER_INTERFACE_VERSION, NULL);
 //			// release the wait mutex
 //			Sys_ReleaseMutex(g_hWaitMutex);
-//
 //			// notify the game of our game name
-//			const char *fullGamePath = engine->GetGameDirectory();
-//			const char *pathSep = strrchr(fullGamePath, '/');
-//			if (!pathSep)
-//			{
-//				pathSep = strrchr(fullGamePath, '\\');
-//			}
-//			if (pathSep)
-//			{
-//				KeyValues *pKV = new KeyValues("ActiveGameName");
-//				pKV->SetString("name", pathSep + 1);
-//				pKV->SetInt("appid", engine->GetAppID());
-//				KeyValues *modinfo = new KeyValues("ModInfo");
-//				if (modinfo->LoadFromFile(g_pFullFileSystem, "gameinfo.txt"))
-//				{
-//					pKV->SetString("game", modinfo->GetString("game", ""));
-//				}
-//				modinfo->deleteThis();
-//
-//				g_VModuleLoader.PostMessageToAllModules(pKV);
-//			}
-//
+//             const char *fullGamePath = gEngfuncs.pfnGetGameDirectory();
+//             const char *pathSep = strrchr(fullGamePath, '/');
+//             if (!pathSep)
+//             {
+//                 pathSep = strrchr(fullGamePath, '\\');
+//             }
+//             if (pathSep)
+//             {
+//                 KeyValues *pKV = new KeyValues("ActiveGameName");
+//                 pKV->SetString("name", pathSep + 1);
+//                 pKV->SetInt("appid", gEngfuncs.pfnGetAppID());
+//                 KeyValues *modinfo = new KeyValues("ModInfo");
+//                 if (modinfo->LoadFromFile(g_pFullFileSystem, "gameinfo.txt"))
+//                 {
+//                     pKV->SetString("game", modinfo->GetString("game", ""));
+//                 }
+//                 modinfo->deleteThis();
+
+//                 g_VModuleLoader.PostMessageToAllModules(pKV);
+//             }
+// //
 //			// notify the ui of a game connect if we're already in a game
 //			if (m_iGameIP)
 //			{
