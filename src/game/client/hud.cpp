@@ -94,6 +94,7 @@
 #include "hud/ag/ag_timeout.h"
 #include "hud/ag/ag_vote.h"
 
+#include "rmlui/rkhud_infopanel.h"
 struct HudScaleInfo
 {
 	//! The sprite resolution.
@@ -268,14 +269,15 @@ CHud::CHud()
 CHud::~CHud()
 {
 }
-
+void LoadRkInfoBar();
 // This is called every time the DLL is loaded
 void CHud::Init(void)
 {
 	// Check that elem list is empty
 	Assert(m_HudList.empty());
     RocketUIImpl::m_Instance.Init();
-
+    RkHudInfoBar *m_pInfoBar = new RkHudInfoBar("hud_infobar");
+    LoadRkInfoBar();
 	// Fill color code colors with default ones
 	memcpy(m_ColorCodeColors, s_DefaultColorCodeColors, sizeof(s_DefaultColorCodeColors));
 
@@ -298,7 +300,6 @@ void CHud::Init(void)
 	HookHudMessage<&CHud::MsgFunc_Concuss>("Concuss");
 	HookHudMessage<&CHud::MsgFunc_Logo>("Logo");
 	HookHudMessage<&CHud::MsgFunc_Fog>("Fog");
-
 	// TFFree CommandMenu
 	HookCommand("+commandmenu", [] {
 		if (g_pViewport)
@@ -448,6 +449,7 @@ void CHud::VidInit(void)
 	}
 
 	CSvcMessages::Get().VidInit();
+    // RocketUIImpl::m_Instance.SetScreenSize(m_scrinfo.iWidth, m_scrinfo.iHeight);
 
 	// ----------
 	// Load Sprites

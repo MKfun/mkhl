@@ -1,5 +1,6 @@
 #include "rocketuiimpl.h"
 #include "FileSystem.h"
+#include "sdl_rt.h"
 #include "utlbuffer.h"
 #include <GL/gl.h>
 #include <GLES2/gl2.h>
@@ -104,7 +105,9 @@ Rml::Context* RocketUIImpl::AccessMenuContext()
 bool ReadFile(const char* filepath, const char *pPath, CUtlBuffer &buf)
 {
     bool bSuccess = 0;
-    FileHandle_t file = g_pFullFileSystem->Open(filepath, "rb");
+    bool bBinary = !( buf.IsText() && !buf.ContainsCRLF() );
+
+    FileHandle_t file = g_pFullFileSystem->Open(filepath, ( bBinary ) ? "rb" : "rt", pPath);
     if (file == FILESYSTEM_INVALID_HANDLE)
         return bSuccess;
     int nFileSize = g_pFullFileSystem->Size(file);
@@ -166,7 +169,7 @@ static Rml::ElementDocument *LoadDocumentFile( Rml::Context *ctx, const char *ta
     CUtlBuffer buffer;
     Rml::ElementDocument *document;
 
-    if( ReadFile( filepath, pPath, buffer ) )
+    if( !ReadFile( filepath, pPath, buffer ) )
     {
         fprintf(stderr, "[RocketUI]Failed to read file (%s)\n", filepath );
         return NULL;
@@ -179,6 +182,7 @@ static Rml::ElementDocument *LoadDocumentFile( Rml::Context *ctx, const char *ta
         fprintf(stderr, "[RocketUI]Failed to load document from memory (%s)\n", filepath);
         return NULL;
     }
+    fprintf(stderr, "[RocketUI]Document size (%d)\n", buffer.Size() - 1 );
 
     return document;
 }
@@ -340,22 +344,17 @@ bool RocketUIImpl::IsConsumingInput()
 
 void RocketUIImpl::EnableCursor(bool state)
 {
-    ConVarRef cl_mouseenable( "cl_mouseenable" );
+    // ConVarRef cl_mouseenable( "cl_mouseenable" );
 
     Msg("Turnin %s the mouse\n", state ? "on" : "off" );
 
-    cl_mouseenable.SetValue( !state );
+    // cl_mouseenable.SetValue( !state );
 
-    // if( state )
-    //     m_pLauncherMgr->ForceSystemCursorVisible();
-    // else
-    //     m_pLauncherMgr->UnforceSystemCursorVisible();
-
+    // gEngfuncs.pfnSetMouseEnable(state);
+    GetSDL()->SetRelativeMouseMode(state? SDL_FALSE : SDL_TRUE);
     m_bCursorVisible = state;
 }
 
-// This function is an input hook.
-// return true if we want to deny the game the input.
 bool IsMouseCode(int code)
 {
     return code == K_MOUSE1 ||
@@ -366,6 +365,8 @@ bool IsMouseCode(int code)
         code == K_MWHEELUP ||
         code == K_MWHEELDOWN;
 }
+// This function is an input hook.
+// return true if we want to deny the game the input.
 bool RocketUIImpl::HandleInputEvent(bool keyDown, int keyNumber, const char *bindName)
 {
     // Haven't rendered our very first frame ever yet.
@@ -374,13 +375,13 @@ bool RocketUIImpl::HandleInputEvent(bool keyDown, int keyNumber, const char *bin
 
     // Always get the mouse location.
     int mx, my;
-    gEngfuncs.GetMousePosition(&mx, &my);
+    GetSDL()->GetMouseState(&mx, &my);
     static Vector2D mousePos(0, 0);
     if(mousePos != Vector2D(mx, my))
     {
         // TODO update this with keymodifiers
         mousePos = Vector2D(mx, my);
-        m_ctxCurrent->ProcessMouseMove( mousePos.x, mousePos.y, 0 );
+        m_ctxCurrent->ProcessMouseMove( mx, my, 0 );
     }
 
     // // Some edge cases
@@ -537,38 +538,12 @@ void RocketUIImpl::RenderHUDFrame()
 
     RocketRender::m_Instance.PrepareGLState();
     SaveGLState();
-    //CMatRenderContextPtr pRenderContext( g_pMaterialSystem );
-    //ShaderStencilState_t state;
 
-    //// Setup the Matrix/Ortho
-    //StartDrawing();
-    //
-    //// Clear z + stencil buffer
-    //pRenderContext->ClearBuffers( false, true, true );
-    //
-    //state.m_bEnable = true;
-    //state.m_FailOp = SHADER_STENCILOP_KEEP;
-    //state.m_ZFailOp = SHADER_STENCILOP_KEEP;
-    //state.m_PassOp = SHADER_STENCILOP_SET_TO_REFERENCE;
-    //state.m_CompareFunc = SHADER_STENCILFUNC_GEQUAL;
-    //state.m_nReferenceValue = 0;
-    //state.m_nTestMask = 0xFFFFFFFF;
-    //state.m_nWriteMask = 0xFFFFFFFF;
-    //pRenderContext->SetStencilState( state );
-
-    //TODO: don't update here. update only after input or new elements
-    //m_ctxHud->Update();
+    // m_ctxHud->Update();
     //m_ctxMenu->Update();
 
     m_ctxHud->Render();
     //m_ctxMenu->Render();
-
-    // Reset stencil to normal
-    //state.m_bEnable = false;
-    //pRenderContext->SetStencilState( state );
-    //
-    //FinishDrawing();
-
     RestoreGLState();
 }
 

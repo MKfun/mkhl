@@ -15,7 +15,7 @@
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,8 +26,8 @@
  *
  */
 
-#ifndef RMLUI_CORE_ELEMENTS_ELEMENTPROGRESSBAR_H
-#define RMLUI_CORE_ELEMENTS_ELEMENTPROGRESSBAR_H
+#ifndef RMLUICONTROLSELEMENTPROGRESSBAR_H
+#define RMLUICONTROLSELEMENTPROGRESSBAR_H
 
 #include "../Header.h"
 #include "../Element.h"
@@ -36,84 +36,87 @@
 #include "../Spritesheet.h"
 
 namespace Rml {
+	namespace Controls {
 
-/**
-	The 'progressbar' element.
+		/**
+		 T he '*progressbar' element.
 
-	The 'value' attribute should be a number [0, 1] where 1 means completely filled.
+		 The 'value' attribute should be a number [0, 1] where 1 means completely filled.
 
-	The 'direction' attribute should be one of:
-		top | right (default) | bottom | left | clockwise | counter-clockwise
+		 The 'direction' attribute should be one of:
+		 top | right (default) | bottom | left | clockwise | counter-clockwise
 
-	The 'start-edge' attribute should be one of:
-		top (default) | right | bottom | left
-	Only applies to 'clockwise' or 'counter-clockwise' directions. Defines which edge the
-	circle should start expanding from.
+		 The 'start-edge' attribute should be one of:
+		 top (default) | right | bottom | left
+		 Only applies to 'clockwise' or 'counter-clockwise' directions. Defines which edge the
+		 circle should start expanding from.
 
-	The progressbar generates a non-dom 'fill' element beneath it which can be used to style
-	the filled part of the bar. The 'fill' element can use the 'fill-image'-property to set
-	an image which will be clipped according to the progressbar value. This property is the
-	only way to style a 'clockwise' or 'counter-clockwise' progressbar.
+		 The progressbar generates a non-dom 'fill' element beneath it which can be used to style
+		 the filled part of the bar. The 'fill' element can use the 'fill-image'-property to set
+		 an image which will be clipped according to the progressbar value. This property is the
+		 only way to style a 'clockwise' or 'counter-clockwise' progressbar.
 
- */
+		 */
 
-class RMLUICORE_API ElementProgressBar : public Element
-{
-public:
-	RMLUI_RTTI_DefineWithParent(ElementProgressBar, Element)
+		class RMLUICORE_API ElementProgressBar : public Element
+		{
+		public:
+			RMLUI_RTTI_DefineWithParent(ElementProgressBar, Element)
 
-	/// Constructs a new ElementProgressBar. This should not be called directly; use the Factory instead.
-	/// @param[in] tag The tag the element was declared as in RML.
-	ElementProgressBar(const String& tag);
-	virtual ~ElementProgressBar();
+			/// Constructs a new ElementProgressBar. This should not be called directly; use the Factory instead.
+			/// @param[in] tag The tag the element was declared as in RML.
+			ElementProgressBar(const String& tag);
+			virtual ~ElementProgressBar();
 
-	/// Return the value of the progress bar [0, 1]
-	float GetValue() const;
+			/// Return the value of the progress bar [0, 1]
+			float GetValue() const;
 
-	/// Set the value of the progress bar
-	void SetValue(float value);
+			/// Set the value of the progress bar
+			void SetValue(float value);
 
-protected:
-	void OnRender() override;
+		protected:
+			void OnRender() override;
 
-	void OnResize() override;
+			void OnResize() override;
 
-	void OnAttributeChange(const ElementAttributes& changed_attributes) override;
+			void OnAttributeChange(const ElementAttributes& changed_attributes) override;
 
-	void OnPropertyChange(const PropertyIdSet& changed_properties) override;
+			void OnPropertyChange(const PropertyIdSet& changed_properties) override;
 
-private:
-	enum class Direction { Top, Right, Bottom, Left, Clockwise, CounterClockwise, Count };
-	enum class StartEdge { Top, Right, Bottom, Left, Count };
+		private:
+			enum class Direction { Top, Right, Bottom, Left, Clockwise, CounterClockwise, Count };
+			enum class StartEdge { Top, Right, Bottom, Left, Count };
 
-	static constexpr Direction DefaultDirection = Direction::Right;
-	static constexpr StartEdge DefaultStartEdge = StartEdge::Top;
+			static constexpr Direction DefaultDirection = Direction::Right;
+			static constexpr StartEdge DefaultStartEdge = StartEdge::Top;
 
-	void GenerateGeometry();
-	bool LoadTexture();
+			void GenerateGeometry();
+			bool LoadTexture();
 
-	Direction direction;
-	StartEdge start_edge;
+			Direction direction;
+			StartEdge start_edge;
 
-	float value;
+			float value;
 
-	Element* fill;
+			Element* fill;
 
-	// The size of the fill geometry as if fully filled, and the offset relative to the 'progressbar' element.
-	Vector2f fill_size, fill_offset;
+			// The size of the fill geometry as if fully filled, and the offset relative to the 'progressbar' element.
+			Vector2f fill_size, fill_offset;
 
-	// The texture this element is rendering from if the 'fill-image' property is set.
-	Texture texture;
-	bool texture_dirty;
+			// The texture this element is rendering from if the 'fill-image' property is set.
+			Texture texture;
+			bool texture_dirty;
 
-	// The rectangle extracted from a sprite, 'rect_set' controls whether it is active.
-	Rectangle rect;
-	bool rect_set;
+			// The rectangle extracted from a sprite, 'rect_set' controls whether it is active.
+			Rectangle rect;
+			bool rect_set;
 
-	// The geometry used to render this element. Only applies if the 'fill-image' property is set.
-	Geometry geometry;
-	bool geometry_dirty;
-};
+			// The geometry used to render this element. Only applies if the 'fill-image' property is set.
+			Geometry geometry;
+			bool geometry_dirty;
+		};
 
-} // namespace Rml
+	}
+}
+
 #endif

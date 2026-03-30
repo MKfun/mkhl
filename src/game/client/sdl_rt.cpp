@@ -116,6 +116,7 @@ void CSDLRuntime::InitOther()
 	GameControllerGetAxis = &SDL_GameControllerGetAxis;
 	GameControllerGetButton = &SDL_GameControllerGetButton;
 	JoystickUpdate = &SDL_JoystickUpdate;
+    GetMouseState = &SDL_GetMouseState;
 	GL_GetProcAddress = &SDL_GL_GetProcAddress;
 
 	m_bIsGood = true;

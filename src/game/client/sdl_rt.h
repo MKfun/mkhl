@@ -19,6 +19,7 @@ public:
 	decltype(SDL_GameControllerGetAxis) *GameControllerGetAxis = nullptr;
 	decltype(SDL_GameControllerGetButton) *GameControllerGetButton = nullptr;
 	decltype(SDL_JoystickUpdate) *JoystickUpdate = nullptr;
+    decltype(SDL_GetMouseState) *GetMouseState = nullptr;
 	decltype(SDL_GL_GetProcAddress) *GL_GetProcAddress = nullptr;
 
 	/**

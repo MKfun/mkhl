@@ -50,6 +50,8 @@
 #include <signal.h>
 CHud gHUD;
 #include "rmlui/rocketuiimpl.h"
+#include "rmlui/rkhud_infopanel.h"
+
 void InitInput(void);
 void ShutdownInput();
 void EV_HookEvents(void);
@@ -310,7 +312,7 @@ to a server.  Reinitializes all
 the hud variables.
 ==========================
 */
-
+void LoadRkInfoBar();
 void CL_DLLEXPORT HUD_Init(void)
 {
 	//	RecClHudInit();
@@ -322,7 +324,7 @@ void CL_DLLEXPORT HUD_Init(void)
 	gHUD.Init();
 	CSvcMessages::Get().Init();
 	EngFuncs_UpdateHooks();
-	console::HudPostInit();
+    console::HudPostInit();
 }
 
 /*
@@ -336,11 +338,10 @@ redraw the HUD.
 
 int CL_DLLEXPORT HUD_Redraw(float time, int intermission)
 {
-	//	RecClHudRedraw(time, intermission);
-	gHUD.Redraw(time, intermission);
     RocketUIImpl::m_Instance.RunFrame(time);
     RocketUIImpl::m_Instance.RenderMenuFrame();
-    RocketUIImpl::m_Instance.RenderHUDFrame();
+	//	RecClHudRedraw(time, intermission);
+    gHUD.Redraw(time, intermission);
 	return 1;
 }
 
@@ -378,7 +379,7 @@ void CL_DLLEXPORT HUD_Reset(void)
 {
 	//	RecClHudReset();
 
-	gHUD.VidInit();
+    gHUD.VidInit();
 }
 
 /*

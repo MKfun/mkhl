@@ -28,7 +28,7 @@
 #include "parsemsg.h"
 #include "health.h"
 #include "vgui/client_viewport.h"
-
+#include "rmlui/rkhud_infopanel.h"
 #define PAIN_NAME   "sprites/%d_pain.spr"
 #define DAMAGE_NAME "sprites/%d_dmg.spr"
 extern ConVar hud_custom;
@@ -65,7 +65,13 @@ void CHudHealth::Init(void)
 	m_fAttackFront = m_fAttackRear = m_fAttackRight = m_fAttackLeft = 0;
 	giDmgHeight = 0;
 	giDmgWidth = 0;
-
+    if (RkHudInfoBar::m_Instance.m_pInstance)
+    {
+        RkHudInfoBar::infoBarData.hp = m_iHealth;
+        if (RkHudInfoBar::m_Instance.m_dataModel) {
+            RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("hp");
+        }
+    }
 	memset(m_dmg, 0, sizeof(DAMAGE_IMAGE) * NUM_DMG_TYPES);
 }
 
@@ -103,7 +109,11 @@ int CHudHealth::MsgFunc_Health(const char *pszName, int iSize, void *pbuf)
 
 	if (g_pViewport)
 		g_pViewport->UpdateHealthPanel(x);
-
+    if (RkHudInfoBar::m_Instance.m_pInstance)
+    {
+        // RkHudInfoBar::infoBarData.hp = x;
+        RkHudInfoBar::m_Instance.UpdateHealth(x);
+    }
 	m_iFlags |= HUD_ACTIVE;
 
 	// Only update the fade if we've changed health

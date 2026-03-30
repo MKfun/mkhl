@@ -9,5 +9,6 @@ add_sources(
     rocketrenderer.h
 
     # HUD Elems
-    # rkhud_infopanel.cpp
+    rkhud_infopanel.cpp
+    rkhud_infopanel.h
 )

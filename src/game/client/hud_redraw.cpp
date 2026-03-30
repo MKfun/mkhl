@@ -24,7 +24,8 @@
 #include "vgui/client_viewport.h"
 #include "results.h"
 #include "svc_messages.h"
-
+#include "rmlui/rocketuiimpl.h"
+#include "rmlui/rkhud_infopanel.h"
 #define MAX_LOGO_FRAMES 56
 
 int grgLogoFrame[MAX_LOGO_FRAMES] = {
@@ -217,7 +218,8 @@ int CHud::Redraw(float flTime, int intermission)
 
 		SPR_DrawAdditive(i, x, y, NULL);
 	}
-
+    RocketUIImpl::m_Instance.RenderHUDFrame();
+    RkHudInfoBar::m_Instance.ShowPanel(true, true);
 	return 1;
 }
 

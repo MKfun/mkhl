@@ -6,13 +6,12 @@
 
 #include <RmlUi/Core/DataModel.h>
 
-extern ConVar cl_drawhud;
 
-class RkHudInfoBar : public CHudElem {
+class RkHudInfoBar {
 public:
     explicit RkHudInfoBar(const char *value);
     virtual ~RkHudInfoBar();
-
+    static RkHudInfoBar m_Instance;
     // Overrides from CHudElement
     void LevelInit(void);
     virtual void LevelShutdown(void);
@@ -20,11 +19,35 @@ public:
     virtual bool ShouldDraw(void);
     void ShowPanel(bool bShow, bool force);
 
+    static void UnloadRkInfoBar();
+    static void LoadRkInfoBar();
     Rml::ElementDocument *m_pInstance;
     bool		m_bVisible;
     Rml::DataModelHandle m_dataModel;
-
+    static struct ReloadDocumentFuncs
+    {
+        void *UnloadRkInfoBar();
+        void *LoadRkInfoBar();
+    } reloadDocumentFuncs;
+    static struct InfoBarData
+    {
+        int hp;
+        int armor;
+        bool hasHelmet;
+        int ammo;
+        int ammoReserve;
+        Rml::String fireModeString;
+        Rml::String primaryString;
+        Rml::String secondaryString;
+        Rml::String knifeString;
+        bool hasGrenade;
+        bool hasFlash;
+        bool hasFlashPair;
+        bool hasSmoke;
+        bool hasFire;
+        bool hasC4;
+    } infoBarData;
+    void UpdateHealth(int new_hp);
 };
-
 
 #endif //KISAKSTRIKE_RKHUD_INFOBAR_H

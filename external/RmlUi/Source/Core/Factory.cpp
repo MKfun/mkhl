@@ -147,7 +147,7 @@ struct DefaultInstancers {
 	ElementInstancerGeneric<ElementTextSelection> selection;
 	ElementInstancerGeneric<ElementTabSet> tabset;
 
-	ElementInstancerGeneric<ElementProgressBar> progressbar;
+	ElementInstancerGeneric<Controls::ElementProgressBar> progressbar;
 
 	ElementInstancerGeneric<ElementDataGrid> datagrid;
 	ElementInstancerGeneric<ElementDataGridExpandButton> datagrid_expand;
