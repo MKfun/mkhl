@@ -13,9 +13,11 @@
 #include "rocketrenderer.h"
 #include "rocketfilesystem.h"
 #include "tier2/tier2.h"
+#pragma push_macro("Assert")
+#undef Assert
 #include <RmlUi/Core.h>
 #include <RmlUi/Debugger.h>
-
+#pragma pop_macro("Assert")
 #include "keydefs.h"
 
 #include "rocketkeys.h"
@@ -145,8 +147,8 @@ bool RocketUIImpl::LoadFont( const char *filepath, const char *path )
     m_fontAllocs.AddToTail( fontBuffer );
 
     font.Get( fontBuffer, fontLen );
-
-    if( !Rml::LoadFontFace( fontBuffer, fontLen, "Lato", Rml::Style::FontStyle::Normal, Rml::Style::FontWeight::Normal, false ) )
+    Rml::Span<const Rml::byte> fontSpan(fontBuffer, fontLen);
+    if( !Rml::LoadFontFace( fontSpan, "Lato", Rml::Style::FontStyle::Normal, Rml::Style::FontWeight::Normal, false ) )
     {
         fprintf(stderr,  "[RocketUI]Failed to Initialize Lato font\n" );
         return false;

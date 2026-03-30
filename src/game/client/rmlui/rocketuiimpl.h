@@ -1,7 +1,6 @@
 #ifndef KISAKSTRIKE_ROCKETUI_H
 #define KISAKSTRIKE_ROCKETUI_H
 #define _GLIBCXX_USE_CXX11_ABI 1
-#include "IGameUIFuncs.h"
 #if defined( USE_SDL ) || defined( OSX )
 #include "appframework/ilaunchermgr.h"
 #endif
@@ -14,16 +13,21 @@
 // #include "tier3/tier3.h"
 // #include "shaderapi/IShaderDevice.h"
 // #include "shaderapi/ishaderapi.h"
+
+#include "IGameUIFuncs.h"
 #include "IGameUIFuncs.h"
 #include "cdll_int.h"
 // #include "igameevents.h"
 #include "tier1/utlpair.h"
 #include "utlvector.h"
 #include "utlstring.h"
-
+#pragma push_macro("Assert")
+#undef Assert
 #include "rocketrenderer.h"
 
 #include "RmlUi/Core/ElementDocument.h"
+#pragma pop_macro("Assert")
+
 typedef struct {
     void LoadDocument(void);
     void UnloadDocument(void);

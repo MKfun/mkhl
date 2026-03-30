@@ -1,4 +1,9 @@
+
+
 #include "rocketrenderer.h"
+#pragma push_macro("Assert")
+#undef Assert
+#include <RmlUi/Core.h>
 
 #if defined RMLUI_PLATFORM_WIN32
 #include <win32/IncludeWindows.h>
@@ -22,8 +27,6 @@
 #undef None
 #endif
 #endif
-
-#include <RmlUi/Core.h>
 
 RocketRender RocketRender::m_Instance;
 
@@ -79,18 +82,24 @@ void RocketRender::PrepareGLState()
 
     glEnable(GL_BLEND);
     glBlendColor(1, 1, 1, 1);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBlendEquation(GL_FUNC_ADD);
 
     //glStencilFunc( GL_GEQUAL, 253, -1 );
     //glAlphaFunc(GL_GEQUAL, 0);
 
 }
-
-void RocketRender::RenderGeometry( Rml::Vertex *vertices, int num_vertices, int *indices, int num_indices,
-    Rml::TextureHandle texture, const Rml::Vector2f &translation )
+struct geometryObjs {
+    GLuint vbo;   // Vertex Buffer Object
+    GLuint ibo;   // Index Buffer Object
+    int num_indices;
+    const GLint* renderable;
+};
+void RocketRender::RenderGeometry(Rml::CompiledGeometryHandle handle, Rml::Vector2f translation, Rml::TextureHandle texture)
 {
-    RMLUI_UNUSED(num_vertices);
+    // RMLUI_UNUSED(num_vertices);
+    geometryObjs* geometry = (geometryObjs*)handle;
     glPushMatrix();
 
     glMatrixMode(GL_PROJECTION);
@@ -105,9 +114,11 @@ void RocketRender::RenderGeometry( Rml::Vertex *vertices, int num_vertices, int 
     glDisableClientState(GL_NORMAL_ARRAY);
 
     glTranslatef(translation.x, translation.y, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, geometry->vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geometry->ibo);
 
-    glVertexPointer(2, GL_FLOAT, sizeof(Rml::Vertex), &vertices[0].position);
-    glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Rml::Vertex), &vertices[0].colour);
+    glVertexPointer(2, GL_FLOAT, sizeof(Rml::Vertex), (const GLvoid*)offsetof(Rml::Vertex, position));
+    glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Rml::Vertex), (const GLvoid*)offsetof(Rml::Vertex, colour));
 
     if (!texture)
     {
@@ -119,77 +130,62 @@ void RocketRender::RenderGeometry( Rml::Vertex *vertices, int num_vertices, int 
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, (GLuint) texture);
         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-        glTexCoordPointer(2, GL_FLOAT, sizeof(Rml::Vertex), &vertices[0].tex_coord);
+        glTexCoordPointer(2, GL_FLOAT, sizeof(Rml::Vertex), (const GLvoid*)offsetof(Rml::Vertex, tex_coord));
     }
-
-    glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, indices);
-
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDrawElements(GL_TRIANGLES, geometry->num_indices, GL_UNSIGNED_INT, (const GLvoid*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glPopMatrix();
 }
 
 
-Rml::CompiledGeometryHandle RocketRender::CompileGeometry(Rml::Vertex *vertices, int num_vertices, int *indices, int num_indices, Rml::TextureHandle texture)
+Rml::CompiledGeometryHandle RocketRender::CompileGeometry(Rml::Span<const Rml::Vertex> vertices, Rml::Span<const int> indices)
 {
-    return 0;
+    geometryObjs *gobjs = new geometryObjs();
+    gobjs->num_indices = indices.size();
+    glGenBuffers(1, &gobjs->vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, gobjs->vbo);
+    glBufferData(GL_ARRAY_BUFFER,
+        vertices.size() * sizeof(Rml::Vertex),
+        vertices.data(),
+        GL_STATIC_DRAW);
+
+    // Generate and populate Index Buffer
+    glGenBuffers(1, &gobjs->ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gobjs->ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+        indices.size() * sizeof(int),
+        indices.data(),
+        GL_STATIC_DRAW);
+    gobjs->renderable = indices.data();
+
+    // Unbind to be safe
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    return (Rml::CompiledGeometryHandle)gobjs;
 }
 
 // Called by RmlUi when it wants to enable or disable scissoring to clip content.
 void RocketRender::EnableScissorRegion(bool enable)
 {
-    if (enable) {
-        if (!m_transformEnabled) {
-            glEnable(GL_SCISSOR_TEST);
-            glDisable(GL_STENCIL_TEST);
-        } else {
-            glDisable(GL_SCISSOR_TEST);
-            glEnable(GL_STENCIL_TEST);
-        }
-    } else {
+    if (enable)
+        glEnable(GL_SCISSOR_TEST);
+    else
         glDisable(GL_SCISSOR_TEST);
-        glDisable(GL_STENCIL_TEST);
-    }
 }
 
 // Called by RmlUi when it wants to change the scissor region.
-void RocketRender::SetScissorRegion(int x, int y, int width, int height)
+void RocketRender::SetScissorRegion(Rml::Rectanglei region)
 {
-    if (!m_transformEnabled) {
-        glScissor(x, y, width, height);
-    } else {
-        // clear the stencil buffer
-        glStencilMask(GLuint(-1));
-        glClear(GL_STENCIL_BUFFER_BIT);
-
-        // fill the stencil buffer
-        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-        glDepthMask(GL_FALSE);
-        glStencilFunc(GL_NEVER, 1, GLuint(-1));
-        glStencilOp(GL_REPLACE, GL_KEEP, GL_KEEP);
-
-        float fx = (float)x;
-        float fy = (float)y;
-        float fwidth = (float)width;
-        float fheight = (float)height;
-
-        // draw transformed quad
-        GLfloat vertices[] = {
-            fx, fy, 0,
-            fx, fy + fheight, 0,
-            fx + fwidth, fy + fheight, 0,
-            fx + fwidth, fy, 0
-        };
-        glDisableClientState(GL_COLOR_ARRAY);
-        glVertexPointer(3, GL_FLOAT, 0, vertices);
-        GLushort indices[] = { 1, 2, 0, 3 };
-        glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, indices);
-        glEnableClientState(GL_COLOR_ARRAY);
-
-        // prepare for drawing the real thing
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        glDepthMask(GL_TRUE);
-        glStencilMask(0);
-        glStencilFunc(GL_EQUAL, 1, GLuint(-1));
-    }
+    glScissor(
+        region.Position().x,
+        m_height - (region.Position().y + region.Size().y),
+        region.Size().x,
+        region.Size().y
+        );
 }
 
 // Set to byte packing, or the compiler will expand our struct, which means it won't read correctly from file
@@ -212,7 +208,7 @@ struct TGAHeader
 // Restore packing
 #pragma pack()
 
-bool RocketRender::LoadTexture(Rml::TextureHandle &texture_handle, Rml::Vector2i &texture_dimensions, const Rml::String &source)
+Rml::TextureHandle RocketRender::LoadTexture(Rml::Vector2i& texture_dimensions, const Rml::String& source)
 {
     Rml::FileInterface* file_interface = Rml::GetFileInterface();
     Rml::FileHandle file_handle = file_interface->Open(source);
@@ -280,8 +276,7 @@ bool RocketRender::LoadTexture(Rml::TextureHandle &texture_handle, Rml::Vector2i
 
     texture_dimensions.x = header.width;
     texture_dimensions.y = header.height;
-
-    bool success = GenerateTexture(texture_handle, image_dest, texture_dimensions);
+    bool success = GenerateTexture(Rml::Span<const Rml::byte>(image_dest, image_size), texture_dimensions);
 
     delete [] image_dest;
     delete [] buffer;
@@ -289,7 +284,7 @@ bool RocketRender::LoadTexture(Rml::TextureHandle &texture_handle, Rml::Vector2i
     return success;
 }
 
-bool RocketRender::GenerateTexture(Rml::TextureHandle &texture_handle, const Rml::byte *source, const Rml::Vector2i &source_dimensions)
+Rml::TextureHandle RocketRender::GenerateTexture(Rml::Span<const Rml::byte> source, Rml::Vector2i source_dimensions)
 {
     GLuint texture_id = 0;
     glGenTextures(1, &texture_id);
@@ -301,16 +296,15 @@ bool RocketRender::GenerateTexture(Rml::TextureHandle &texture_handle, const Rml
 
     glBindTexture(GL_TEXTURE_2D, texture_id);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, source_dimensions.x, source_dimensions.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, source);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, source_dimensions.x, source_dimensions.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, source.data());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    texture_handle = (Rml::TextureHandle) texture_id;
-
-    return true;
+    return (Rml::TextureHandle)texture_id;
+    // return true;
 }
 
 void RocketRender::ReleaseTexture(Rml::TextureHandle texture)
@@ -333,3 +327,4 @@ void RocketRender::SetTransform(const Rml::Matrix4f *transform)
     else
         glLoadIdentity();
 }
+#pragma pop_macro("Assert")

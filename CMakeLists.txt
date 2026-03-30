@@ -548,8 +548,8 @@ endif()
 
 # Link with dependencies
 target_link_libraries( client
-	RmlCore
-	RmlDebugger
+	rmlui_core
+	rmlui_debugger
 	${GAME_COMMON_LIBS}
 	${SOURCE_SDK_LIBS}
 	${UPDATER_LIBS}

@@ -1,8 +1,9 @@
 #ifndef KISAKSTRIKE_ROCKETFILESYSTEM_H
 #define KISAKSTRIKE_ROCKETFILESYSTEM_H
-
+#pragma push_macro("Assert")
+#undef Assert
 #include <RmlUi/Core/FileInterface.h>
-
+#pragma pop_macro("Assert")
 class RocketFileSystem : public Rml::FileInterface
 {
     /** singleton support **/

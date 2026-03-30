@@ -5,9 +5,10 @@
 // #include "c_cs_player.h"
 
 // #include <tier0/valve_minmax_off.h> // included to fix an error with min/max and rocketui
-
+#pragma push_macro("Assert")
+#undef Assert
 #include <RmlUi/Core.h>
-
+#pragma pop_macro("Assert")
 // DECLARE_CLASS_SIMPLE( RkHudInfoBar );
 
 // Struct layout for data-binding model.
@@ -280,7 +281,7 @@ void RkHudInfoBar::ShowPanel(bool bShow, bool force)
         m_dataModel.DirtyVariable( "has_fire" );
         m_dataModel.DirtyVariable( "has_c4" );
 
-        m_dataModel.Update();
+        // m_dataModel.();
     }
     else
     {

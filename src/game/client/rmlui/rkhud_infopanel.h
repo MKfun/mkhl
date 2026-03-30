@@ -1,10 +1,11 @@
 #ifndef KISAKSTRIKE_RKHUD_INFOBAR_H
 #define KISAKSTRIKE_RKHUD_INFOBAR_H
-
-#include <rmlui/rocketuiimpl.h>
 #include "hud.h"
-
-#include <RmlUi/Core/DataModel.h>
+#include <rmlui/rocketuiimpl.h>
+#pragma push_macro("Assert")
+#undef Assert
+#include <RmlUi/Core/DataModelHandle.h>
+#pragma pop_macro("Assert")
 
 
 class RkHudInfoBar {

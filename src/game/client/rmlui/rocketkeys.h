@@ -1,6 +1,8 @@
 #pragma once
-
+#pragma push_macro("Assert")
+#undef Assert
 #include <RmlUi/Core/Input.h>
+#pragma pop_macro("Assert")
 #include "keydefs.h"
 #include "vgui/KeyCode.h"
 

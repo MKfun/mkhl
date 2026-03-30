@@ -1,8 +1,9 @@
 #ifndef KISAKSTRIKE_ROCKETSYSTEM_H
 #define KISAKSTRIKE_ROCKETSYSTEM_H
-
+#pragma push_macro("Assert")
+#undef Assert
 #include <RmlUi/Core/SystemInterface.h>
-
+#pragma pop_macro("Assert")
 
 class RocketSystem : public Rml::SystemInterface
 {

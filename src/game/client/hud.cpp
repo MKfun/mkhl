@@ -38,7 +38,10 @@
 #include "vgui/client_viewport.h"
 #include "gameui/options/colorpicker/texture_manager.h"
 #include "hud_renderer.h"
+#pragma push_macro("Assert")
+#undef Assert
 #include "rmlui/rocketuiimpl.h"
+#pragma pop_macro("Assert")
 #include "demo.h"
 #include "demo_api.h"
 #include "cl_voice_status.h"
@@ -93,8 +96,10 @@
 #include "hud/ag/ag_sudden_death.h"
 #include "hud/ag/ag_timeout.h"
 #include "hud/ag/ag_vote.h"
-
+#pragma push_macro("Assert")
+#undef Assert
 #include "rmlui/rkhud_infopanel.h"
+#pragma pop_macro("Assert")
 struct HudScaleInfo
 {
 	//! The sprite resolution.
