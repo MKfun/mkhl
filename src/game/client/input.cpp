@@ -25,7 +25,7 @@
 #include "hud/health.h"
 #include "hud/menu.h"
 #include "hud/spectator.h"
-
+#include "rmlui/rocketuiimpl.h"
 #include "vgui/client_viewport.h"
 
 extern int g_iAlive;
@@ -432,14 +432,14 @@ Return 1 to allow engine to process the key, otherwise, act on it as needed
 int CL_DLLEXPORT HUD_Key_Event(int down, int keynum, const char *pszCurrentBinding)
 {
 	//	RecClKeyEvent(down, keynum, pszCurrentBinding);
-
 	if (g_pViewport && !g_pViewport->KeyInput(down, keynum, pszCurrentBinding))
 		return 0;
 
 	if (down && CHudMenu::Get()->OnKeyPressed(keynum))
 		return 0;
-
-	return 1;
+    if (RocketUIImpl::m_Instance.HandleInputEvent(down, keynum, pszCurrentBinding))
+        return 0;
+    return 1;
 }
 
 void IN_BreakDown(void) { KeyDown(&in_break); };

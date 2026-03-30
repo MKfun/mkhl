@@ -49,7 +49,7 @@
 #endif
 #include <signal.h>
 CHud gHUD;
-
+#include "rmlui/rocketuiimpl.h"
 void InitInput(void);
 void ShutdownInput();
 void EV_HookEvents(void);
@@ -274,7 +274,6 @@ int CL_DLLEXPORT Initialize(cl_enginefunc_t *pEnginefuncs, int iVersion)
 	// So I just disabled it completely since it isn't used in vanilla HL.
 	//
 	// CL_LoadParticleMan();
-
 	return 1;
 }
 
@@ -338,8 +337,10 @@ redraw the HUD.
 int CL_DLLEXPORT HUD_Redraw(float time, int intermission)
 {
 	//	RecClHudRedraw(time, intermission);
-
 	gHUD.Redraw(time, intermission);
+    RocketUIImpl::m_Instance.RunFrame(time);
+    RocketUIImpl::m_Instance.RenderMenuFrame();
+    RocketUIImpl::m_Instance.RenderHUDFrame();
 	return 1;
 }
 
@@ -396,6 +397,7 @@ void CL_DLLEXPORT HUD_Frame(double time)
 	EngFuncs_UpdateHooks();
 	gHUD.Frame(time);
 	GetClientVoiceMgr()->Frame(time);
+    RocketUIImpl::m_Instance.RunFrame(time);
 }
 
 /*

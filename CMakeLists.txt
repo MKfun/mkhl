@@ -346,6 +346,7 @@ endif()
 #-----------------------------------------------------------------
 set( THREADS_PREFER_PTHREAD_FLAG ON )
 find_package( Threads REQUIRED )
+set(DONT_DOWNGRADE_ABI "1")
 add_subdirectory( external )
 
 #-----------------------------------------------------------------
@@ -483,18 +484,19 @@ add_sources( "${SDL2_INCLUDE_FILES}" )
 
 # Add in the sources
 add_subdirectory( src/game/client )
+# add_subdirectory( external/RmlUi )
 
 preprocess_sources()
 add_library( client SHARED ${PREP_SRCS})
 check_winxp_support( client )
 add_auto_deploy( client PublishPathClient.txt )
 bhl_version_info( client "client.dll" "BugfixedHL-Rebased Client" )
-
 target_include_directories( client PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/game/client
 	${GAME_COMMON_INCLUDE_PATHS}
 	${SOURCE_SDK_INCLUDE_PATHS}
 	${UPDATER_INCLUDE_PATHS}
+	${CMAKE_CURRENT_SOURCE_DIR}/external/RmlUi/Include
 )
 if (WITH_LIBBT_CLIENT AND NOT WIN32)
 	list(APPEND GAME_COMMON_DEFINES USE_LIBBT)
@@ -506,6 +508,7 @@ target_compile_definitions( client PRIVATE
 	${UPDATER_DEFINES}
 	VERSION_SAFE_STEAM_API_INTERFACES
 	CLIENT_DLL
+	INCLUDE_ROCKETUI
 )
 
 target_precompile_headers( client PRIVATE src/game/client/pch.h )
@@ -535,6 +538,7 @@ else()
 	set( CLIENT_PLAT_LIBS
 		dl
 		SDL2
+		GL
 
 	)
 if (WITH_LIBBT_CLIENT)
@@ -544,6 +548,8 @@ endif()
 
 # Link with dependencies
 target_link_libraries( client
+	RmlCore
+	RmlDebugger
 	${GAME_COMMON_LIBS}
 	${SOURCE_SDK_LIBS}
 	${UPDATER_LIBS}

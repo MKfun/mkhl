@@ -123,7 +123,7 @@ add_subdirectory( gameui )
 add_subdirectory( hl )
 add_subdirectory( hud )
 add_subdirectory( vgui )
-
+add_subdirectory( rmlui )
 if( USE_UPDATER )
 	add_subdirectory( updater )
 endif()

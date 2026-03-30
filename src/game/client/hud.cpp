@@ -38,7 +38,7 @@
 #include "vgui/client_viewport.h"
 #include "gameui/options/colorpicker/texture_manager.h"
 #include "hud_renderer.h"
-
+#include "rmlui/rocketuiimpl.h"
 #include "demo.h"
 #include "demo_api.h"
 #include "cl_voice_status.h"
@@ -274,6 +274,7 @@ void CHud::Init(void)
 {
 	// Check that elem list is empty
 	Assert(m_HudList.empty());
+    RocketUIImpl::m_Instance.Init();
 
 	// Fill color code colors with default ones
 	memcpy(m_ColorCodeColors, s_DefaultColorCodeColors, sizeof(s_DefaultColorCodeColors));
