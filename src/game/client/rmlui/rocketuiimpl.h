@@ -29,8 +29,8 @@
 #pragma pop_macro("Assert")
 
 typedef struct {
-    void LoadDocument(void);
-    void UnloadDocument(void);
+    void (*LoadDocument)(void);
+    void (*UnloadDocument)(void);
 } documentReloadFuncs;
 
 class DeviceCallbacks;
@@ -123,7 +123,7 @@ public:
         return m_ctxCurrent;
     }
 private:
-    bool LoadFont( const char *filepath, const char *path );
+    bool LoadFont( const char *filepath, const char* fontname, const char *path );
     bool LoadFonts();
 
 public:

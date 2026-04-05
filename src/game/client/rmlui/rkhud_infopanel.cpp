@@ -108,6 +108,9 @@
 //             infoBarData.fireModeString = "SINGLE";
 //     }
 // }
+
+documentReloadFuncs docReloadFuncs;
+
 RkHudInfoBar RkHudInfoBar::m_Instance = RkHudInfoBar("hud_infopanel");
 RkHudInfoBar::InfoBarData RkHudInfoBar::infoBarData =
 {
@@ -144,26 +147,57 @@ RkHudInfoBar::InfoBarData RkHudInfoBar::infoBarData =
 //     pInfoBar.m_pInstance = nullptr;
 // }
 
+
+void UnloadRkInfoBar()
+{
+    RkHudInfoBar &pInfoBar = RkHudInfoBar::m_Instance;
+    if( !pInfoBar.m_pInstance )
+    {
+        Warning( "Couldn't grab RkHudInfoBar element to unload!\n");
+        return;
+    }
+
+    // Not loaded
+    if( !pInfoBar.m_pInstance )
+        return;
+
+    Rml::Context *hudCtx = RocketUIImpl::m_Instance.AccessHudContext();
+    if( hudCtx )
+    {
+        hudCtx->RemoveDataModel("infobar_model");
+    }
+    else
+    {
+        Warning("Couldn't access hudCtx to unload infobar datamodel\n");
+    }
+    pInfoBar.m_dataModel = nullptr;
+
+    if( pInfoBar.m_pInstance )
+    {
+        pInfoBar.m_pInstance->Close();
+        pInfoBar.m_pInstance = nullptr;
+    }
+}
 void LoadRkInfoBar()
 {
-    // 1. Добавлен амперсанд (&), теперь мы работаем с оригиналом!
+    docReloadFuncs.LoadDocument = &LoadRkInfoBar;
+    docReloadFuncs.UnloadDocument = &UnloadRkInfoBar;
+
     RkHudInfoBar &pInfoBar = RkHudInfoBar::m_Instance;
 
     Rml::Context *hudCtx = RocketUIImpl::m_Instance.AccessHudContext();
     if( !hudCtx )
     {
         Error("Couldn't access hudctx!\n");
-        return; // Обязательно return, чтобы не крашнуться ниже
+        return;
     }
 
-    // 2. Оставляем только эту проверку
     if( pInfoBar.m_pInstance || pInfoBar.m_dataModel )
     {
         Warning("RkInfoBar already loaded, call unload first!\n");
         return;
     }
 
-    // Создаем DataModel
     Rml::DataModelConstructor constructor = hudCtx->CreateDataModel("infobar_model");
     if( !constructor )
     {
@@ -171,7 +205,6 @@ void LoadRkInfoBar()
         return;
     }
 
-    // Бинды оставляем как были...
     constructor.Bind("hp", &RkHudInfoBar::infoBarData.hp);
     constructor.Bind("armor", &RkHudInfoBar::infoBarData.armor);
     constructor.Bind("ammo", &RkHudInfoBar::infoBarData.ammo);
@@ -190,43 +223,18 @@ void LoadRkInfoBar()
 
     pInfoBar.m_dataModel = constructor.GetModelHandle();
 
-    // Загружаем документ
-    pInfoBar.m_pInstance = RocketUIImpl::m_Instance.LoadDocumentFileIntoHud( "body", "GAME", "rocketui/hud_infobar.rml", 0 );
+    pInfoBar.m_pInstance = RocketUIImpl::m_Instance.LoadDocumentFileIntoHud( "body", "GAME", "rocketui/hud_infobar.rml", &docReloadFuncs );
 
     if( !pInfoBar.m_pInstance )
     {
         Error("Couldn't create hud_infobar document!\n");
         return;
     }
-
-    // Показываем панель
     pInfoBar.SetActive(1);
+    pInfoBar.m_pInstance->Show(); // Добавь это!
+    pInfoBar.m_pInstance->PullToFront();
 }
 
-void UnloadRkInfoBar()
-{
-    // Добавлен амперсанд (&)
-    RkHudInfoBar &pInfoBar = RkHudInfoBar::m_Instance;
-
-    if( !pInfoBar.m_pInstance )
-    {
-        Warning( "Couldn't grab RkHudInfoBar element to unload!\n");
-        return;
-    }
-
-    Rml::Context *hudCtx = RocketUIImpl::m_Instance.AccessHudContext();
-    if( hudCtx )
-    {
-        hudCtx->RemoveDataModel("infobar_model");
-        pInfoBar.m_dataModel = nullptr;
-    }
-    else
-    {
-        Warning("Couldn't access hudCtx to unload infobar datamodel\n");
-    }
-    pInfoBar.m_pInstance->Close(); // Не забудьте закрыть документ перед обнулением!
-    pInfoBar.m_pInstance = nullptr;
-}
 RkHudInfoBar::RkHudInfoBar(const char *value)
 {
     // SetHiddenBits( /* HIDEHUD_MISCSTATUS */ 0 );

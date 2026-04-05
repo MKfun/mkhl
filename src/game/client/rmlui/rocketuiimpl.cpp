@@ -1,5 +1,6 @@
 #include "rocketuiimpl.h"
 #include "FileSystem.h"
+#include "KeyValues.h"
 #include "sdl_rt.h"
 #include "utlbuffer.h"
 #include <GL/gl.h>
@@ -104,6 +105,43 @@ Rml::Context* RocketUIImpl::AccessMenuContext()
 {
     return m_ctxMenu;
 }
+typedef struct
+{
+    const char* path;
+    const char* name;
+} FontInfo;
+
+std::vector<FontInfo> GetFontsFromConfig(const char* filename)
+{
+    Msg("[RocketUI] Loading config: %s\n", filename);
+    std::vector<FontInfo> fontsVec;
+    KeyValues *kv = new KeyValues("Fonts");
+    if (!kv->LoadFromFile(g_pFullFileSystem, "rocketui/fonts.vdf", "GAME"))
+    {
+
+        printf("[RocketUI]no fonts.vdf found!\n");
+        return {};
+    }
+    // KeyValues *fontKeys = kv->FindKey("Fonts", true);
+    // if (!fontKeys) {
+    //     printf("[RocketUI]cant get \"Fonts\" key!\n");
+    //     kv->deleteThis();
+    //     return {};
+    // }
+    for (KeyValues *it = kv->GetFirstSubKey(); it != NULL; it = it->GetNextKey())
+    {
+        FontInfo fi;
+        fi.name = V_strdup(it->GetName());
+        fi.path = V_strdup(it->GetString());
+        printf("[RocketUI]got font %s at %s, %s fi.name and %s fi.path\n",
+            it->GetName(),
+            it->GetString(),
+            fi.name, fi.path);
+        fontsVec.push_back(fi);
+    }
+    if (kv) kv->deleteThis();
+    return fontsVec;
+}
 bool ReadFile(const char* filepath, const char *pPath, CUtlBuffer &buf)
 {
     bool bSuccess = 0;
@@ -120,7 +158,7 @@ bool ReadFile(const char* filepath, const char *pPath, CUtlBuffer &buf)
     bSuccess = 1;
     return bSuccess;
 }
-bool RocketUIImpl::LoadFont( const char *filepath, const char *path )
+bool RocketUIImpl::LoadFont( const char *filepath, const char* fontName, const char *path )
 {
     unsigned char *fontBuffer = NULL;
     CUtlBuffer font;
@@ -128,7 +166,7 @@ bool RocketUIImpl::LoadFont( const char *filepath, const char *path )
 
     if( !ReadFile( filepath, path, font ) )
     {
-        fprintf(stderr, "[RocketUI]Failed to read %s font.", filepath );
+        fprintf(stderr, "[RocketUI]Failed to read %s font.\n", filepath );
         return false;
     }
 
@@ -148,20 +186,26 @@ bool RocketUIImpl::LoadFont( const char *filepath, const char *path )
 
     font.Get( fontBuffer, fontLen );
     Rml::Span<const Rml::byte> fontSpan(fontBuffer, fontLen);
-    if( !Rml::LoadFontFace( fontSpan, "Lato", Rml::Style::FontStyle::Normal, Rml::Style::FontWeight::Normal, false ) )
+
+    if( !Rml::LoadFontFace( fontSpan, fontName, Rml::Style::FontStyle::Normal, Rml::Style::FontWeight::Normal, false ) )
     {
-        fprintf(stderr,  "[RocketUI]Failed to Initialize Lato font\n" );
+        fprintf(stderr,  "[RocketUI]Failed to Initialize %s font\n", fontName );
         return false;
     }
 
     return true;
 }
 
+
 bool RocketUIImpl::LoadFonts()
 {
     bool fontsOK = true;
-    fontsOK &= LoadFont( "rocketui/fonts/Lato-Black.ttf", "GAME" );
-
+    fontsOK &= LoadFont( "rocketui/fonts/Lato-Black.ttf", "Lato", "GAME" );
+    std::vector<FontInfo> fontsVec = GetFontsFromConfig("rocketui/fonts.vdf");
+    for (auto font : fontsVec )
+    {
+        fontsOK &= LoadFont( font.path, font.name, "GAME" );
+    }
     return fontsOK;
 }
 static Rml::ElementDocument *LoadDocumentFile( Rml::Context *ctx, const char *tag, const char *pPath, const char *filepath )
@@ -197,11 +241,10 @@ Rml::ElementDocument *RocketUIImpl::LoadDocumentFileIntoHud( const char *tag, co
         return nullptr;
 
     // Need both
-    // if( loadDocumentFunc && unloadDocumentFunc )
-    // {
-    //     // CUtlPair<LoadDocumentFn, UnloadDocumentFn> documentFuncPair( loadDocumentFunc, unloadDocumentFunc );
-    //     // m_documentReloadFuncs.AddToTail( documentFuncPair );
-    // }
+    if( m_pReloadDocFuncs->LoadDocument && m_pReloadDocFuncs->UnloadDocument )
+    {
+        m_documentReloadFuncs.AddToTail( m_pReloadDocFuncs );
+    }
 
     return document;
 }
@@ -213,11 +256,10 @@ Rml::ElementDocument *RocketUIImpl::LoadDocumentFileIntoMenu( const char *tag, c
     if( !document )
         return nullptr;
 
-    // // Need both
-    // if( loadDocumentFunc && unloadDocumentFunc )
-    // {
-    //     m_documentReloadFuncs.AddToTail();
-    // }
+    if( m_pReloadDocumentFuncs->LoadDocument && m_pReloadDocumentFuncs->UnloadDocument )
+    {
+        m_documentReloadFuncs.AddToTail( m_pReloadDocumentFuncs );
+    }
 
     return document;
 }
@@ -237,9 +279,13 @@ int RocketUIImpl::Init( void )
 
     // Create/Init the Rocket UI Library
     // Default width/height, these get updated in the DeviceCallbacks
-    int width = 1920;
-    int height = 1080;
-    RocketRender::m_Instance.SetScreenSize( width, height );
+    SCREENINFO m_scrinfo;
+    m_scrinfo.iSize = sizeof(m_scrinfo);
+    gEngfuncs.pfnGetScreenInfo(&m_scrinfo);
+    int width = m_scrinfo.iWidth;
+    int height = m_scrinfo.iHeight;
+
+    RocketRender::m_Instance.SetScreenSize( width, height);
     // RocketRender::m_Instance.SetContext( m_pLauncherMgr->GetMainContext() );
 
     Rml::SetFileInterface( &RocketFileSystem::m_Instance );
@@ -510,7 +556,6 @@ void SaveGLState()
     glPushAttrib(GL_ALL_ATTRIB_BITS);
     glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
 
-    // Сохраняем матрицы
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
 
@@ -525,10 +570,8 @@ void RestoreGLState()
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
 
-    // Восстанавливаем клиентские массивы (ClientState)
     glPopClientAttrib();
 
-    // Восстанавливаем все остальные состояния (Blend, Alpha Test, Textures и т.д.)
     glPopAttrib();
 }
 void RocketUIImpl::RenderHUDFrame()
@@ -574,13 +617,13 @@ bool RocketUIImpl::ReloadDocuments()
     // I dont feel like adding a mutex check every frame for something rarely used by devs
     ThreadSleep( 100 );
 
-    CUtlVector<documentReloadFuncs> copyOfPairs;
+    CUtlVector<documentReloadFuncs*> copyOfPairs;
 
     // Copy the pairs into a local Vector( grug, copy constructor no work )
     // We want a copy because the loading functions will mess with our Vector when we call them.
     for( int i = 0; i < m_documentReloadFuncs.Count(); i++ )
     {
-        copyOfPairs.AddToTail( *m_documentReloadFuncs[i] );
+        copyOfPairs.AddToTail( m_documentReloadFuncs[i] );
     }
 
     // We can now empty the Main Vector since we are about to reload.
@@ -589,11 +632,11 @@ bool RocketUIImpl::ReloadDocuments()
     // Go through the copy and reload
     for( int i = 0; i < copyOfPairs.Count(); i++ )
     {
-        documentReloadFuncs documentPair( copyOfPairs[i] );
+        documentReloadFuncs *documentPair = copyOfPairs[i];
         // Unload...
-        // documentPair.second();
-        documentPair.UnloadDocument();
-        documentPair.LoadDocument();
+        // documentPair.UnloadDocument()
+        documentPair->UnloadDocument();
+        documentPair->LoadDocument();
         // Load...
         // documentPair.first();
     }
@@ -643,14 +686,4 @@ void RocketUIImpl::ToggleDebugger()
         m_isDebuggerOpen = false;
         DenyInputToGame( false, "RocketUI Debugger" );
     }
-}
-
-void documentReloadFuncs::LoadDocument()
-{
-
-}
-
-void documentReloadFuncs::UnloadDocument()
-{
-
 }
