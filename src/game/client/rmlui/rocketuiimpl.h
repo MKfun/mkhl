@@ -71,13 +71,6 @@ protected:
     int                 m_numInputConsumers;
     /** IAppSystem **/
 public:
-    virtual bool Connect( CreateInterfaceFn factory );
-    virtual void Disconnect( void );
-
-    // Here's where systems can access other interfaces implemented by this m_pObject
-    // Returns NULL if it doesn't implement the requested interface
-    virtual void *QueryInterface( const char *pInterfaceName );
-
     // Init, shutdown
     virtual int Init( void );
     virtual void Shutdown( void );

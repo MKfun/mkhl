@@ -49,52 +49,6 @@ CON_COMMAND( rocket_debug, "Open/Close the RocketUI Debugger" )
 
 RocketUIImpl::RocketUIImpl() { }
 
-bool RocketUIImpl::Connect(CreateInterfaceFn factory)
-{
-    // if ( !factory )
-    // {
-    //     return false;
-    // }
-
-
-// #if defined( USE_SDL )
-//     m_pLauncherMgr = (ILauncherMgr *)factory( SDLMGR_INTERFACE_VERSION, NULL);
-// #elif defined( OSX )
-//     m_pLauncherMgr = (ILauncherMgr *)factory( COCOAMGR_INTERFACE_VERSION, NULL);
-// #else
-// #error fixme
-// #endif
-
-    // m_pShaderDeviceMgr = ( IShaderDeviceMgr* ) factory( SHADER_DEVICE_MGR_INTERFACE_VERSION, NULL );
-    // m_pGameUIFuncs = ( IGameUIFuncs* ) factory( VENGINE_GAMEUIFUNCS_VERSION, NULL );
-    // m_pEngine = ( IVEngineClient* )factory( VENGINE_CLIENT_INTERFACE_VERSION, NULL );
-    // m_pGameEventManager = ( IGameEventManager2* )factory ( INTERFACEVERSION_GAMEEVENTSMANAGER2, NULL );
-    // m_pShaderAPI = ( IShaderAPI * )factory( SHADERAPI_INTERFACE_VERSION, NULL );
-
-    // if ( !m_pShaderDeviceMgr || !m_pGameUIFuncs || !m_pEngine || !m_pGameEventManager || !m_pShaderAPI )
-    // {
-    //     Warning( "RocketUI: missing expected interface\n" );
-    //     return false;
-    // }
-
-    return true;
-}
-
-void RocketUIImpl::Disconnect()
-{
-}
-
-void* RocketUIImpl::QueryInterface( const char *pInterfaceName )
-{
-    // if ( !Q_strncmp( pInterfaceName, ROCKETUI_INTERFACE_VERSION, Q_strlen( ROCKETUI_INTERFACE_VERSION ) + 1 ) )
-    // {
-    //     return ( IRocketUI* ) &RocketUIImpl::m_Instance;
-    // }
-
-    // return BaseClass::QueryInterface( pInterfaceName );
-    return 0;
-}
-
 
 Rml::Context* RocketUIImpl::AccessHudContext()
 {
@@ -111,37 +65,28 @@ typedef struct
     const char* name;
 } FontInfo;
 
-std::vector<FontInfo> GetFontsFromConfig(const char* filename)
+void GetFontsFromConfig(const char* filename, CUtlVector<FontInfo> *finf)
 {
     Msg("[RocketUI] Loading config: %s\n", filename);
-    std::vector<FontInfo> fontsVec;
     KeyValues *kv = new KeyValues("Fonts");
     if (!kv->LoadFromFile(g_pFullFileSystem, "rocketui/fonts.vdf", "GAME"))
     {
 
         printf("[RocketUI]no fonts.vdf found!\n");
-        return {};
+        return;
     }
-    // KeyValues *fontKeys = kv->FindKey("Fonts", true);
-    // if (!fontKeys) {
-    //     printf("[RocketUI]cant get \"Fonts\" key!\n");
-    //     kv->deleteThis();
-    //     return {};
-    // }
     for (KeyValues *it = kv->GetFirstSubKey(); it != NULL; it = it->GetNextKey())
     {
         FontInfo fi;
         fi.name = V_strdup(it->GetName());
         fi.path = V_strdup(it->GetString());
-        printf("[RocketUI]got font %s at %s, %s fi.name and %s fi.path\n",
-            it->GetName(),
-            it->GetString(),
-            fi.name, fi.path);
-        fontsVec.push_back(fi);
+        finf->AddToTail(fi);
     }
     if (kv) kv->deleteThis();
-    return fontsVec;
+
 }
+
+
 bool ReadFile(const char* filepath, const char *pPath, CUtlBuffer &buf)
 {
     bool bSuccess = 0;
@@ -158,6 +103,7 @@ bool ReadFile(const char* filepath, const char *pPath, CUtlBuffer &buf)
     bSuccess = 1;
     return bSuccess;
 }
+
 bool RocketUIImpl::LoadFont( const char *filepath, const char* fontName, const char *path )
 {
     unsigned char *fontBuffer = NULL;
@@ -201,10 +147,11 @@ bool RocketUIImpl::LoadFonts()
 {
     bool fontsOK = true;
     fontsOK &= LoadFont( "rocketui/fonts/Lato-Black.ttf", "Lato", "GAME" );
-    std::vector<FontInfo> fontsVec = GetFontsFromConfig("rocketui/fonts.vdf");
-    for (auto font : fontsVec )
+    CUtlVector<FontInfo> fontsVec;
+    GetFontsFromConfig("rocketui/fonts.vdf", &fontsVec);
+    for (int i = 0; i < fontsVec.Count(); i++ )
     {
-        fontsOK &= LoadFont( font.path, font.name, "GAME" );
+        fontsOK &= LoadFont( fontsVec[i].path, fontsVec[i].name, "GAME" );
     }
     return fontsOK;
 }
@@ -266,17 +213,6 @@ Rml::ElementDocument *RocketUIImpl::LoadDocumentFileIntoMenu( const char *tag, c
 
 int RocketUIImpl::Init( void )
 {
-    // int nRetVal = 0;
-    // if ( nRetVal != 1 )
-    // {
-    //     return nRetVal;
-    // }
-
-    // Register a callback with the ShaderDeviceMgr
-    m_pDeviceCallbacks = new DeviceCallbacks();
-    m_pDeviceCallbacks->m_pRocketUI = this;
-    // m_pShaderDeviceMgr->AddDeviceDependentObject( m_pDeviceCallbacks );
-
     // Create/Init the Rocket UI Library
     // Default width/height, these get updated in the DeviceCallbacks
     SCREENINFO m_scrinfo;
@@ -286,8 +222,6 @@ int RocketUIImpl::Init( void )
     int height = m_scrinfo.iHeight;
 
     RocketRender::m_Instance.SetScreenSize( width, height);
-    // RocketRender::m_Instance.SetContext( m_pLauncherMgr->GetMainContext() );
-
     Rml::SetFileInterface( &RocketFileSystem::m_Instance );
     Rml::SetRenderInterface( &RocketRender::m_Instance );
     Rml::SetSystemInterface( &RocketSystem::m_Instance );
@@ -332,27 +266,12 @@ void RocketUIImpl::Shutdown()
         delete[] fontAlloc;
     }
 
-    // if ( m_pShaderDeviceMgr )
-    // {
-    //     if ( m_pDeviceCallbacks )
-    //     {
-    //         m_pShaderDeviceMgr->RemoveDeviceDependentObject( m_pDeviceCallbacks );
-    //         delete m_pDeviceCallbacks;
-    //         m_pDeviceCallbacks = NULL;
-    //     }
-    // }
-
     m_ctxCurrent = NULL;
 
-    // BaseClass::Shutdown();
 }
 
 void RocketUIImpl::RunFrame(float time)
 {
-    // We dont have the device yet..
-    // if( !m_pDevice )
-    //     return;
-
     m_fTime = time;
 
     // This is important. Update the current context 1x per frame.
@@ -392,13 +311,11 @@ bool RocketUIImpl::IsConsumingInput()
 
 void RocketUIImpl::EnableCursor(bool state)
 {
-    // ConVarRef cl_mouseenable( "cl_mouseenable" );
 
-    Msg("Turnin %s the mouse\n", state ? "on" : "off" );
+    DevMsg("Turnin %s the mouse\n", state ? "on" : "off" );
 
-    // cl_mouseenable.SetValue( !state );
 
-    // gEngfuncs.pfnSetMouseEnable(state);
+    gEngfuncs.pfnSetMouseEnable(!state);
     GetSDL()->SetRelativeMouseMode(state? SDL_FALSE : SDL_TRUE);
     m_bCursorVisible = state;
 }
@@ -459,10 +376,6 @@ bool RocketUIImpl::HandleInputEvent(bool keyDown, int keyNumber, const char *bin
     if( !IsConsumingInput() )
         return false;
 
-    // The console is open, skip
-    // if( m_pEngine->Con_IsVisible() )
-        // return false;
-
     Rml::Input::KeyIdentifier key;
     char ascii;
 
@@ -503,22 +416,6 @@ bool RocketUIImpl::HandleInputEvent(bool keyDown, int keyNumber, const char *bin
         {
             m_ctxCurrent->ProcessKeyDown( ButtonToRocketKey( keyNumber ), 0 );
         }
-        // break;
-    // case IE_ButtonReleased:
-        //TODO add key modifiers
-        // break;
-    // case IE_KeyTyped:
-    //     ascii = (char)((wchar_t)event.m_nData);
-    //     if( ascii != 8 ){ // Rocketui doesn't like the backspace for some reason.
-    //         m_ctxCurrent->ProcessTextInput( ascii );
-    //     }
-    //     break;
-    // case IE_AnalogValueChanged:
-    //     // Mouse/Joystick changes. Mouse changes are recorded above
-    //     break;
-
-    // default:
-    //     return false;
     }
     else
     {
@@ -634,11 +531,9 @@ bool RocketUIImpl::ReloadDocuments()
     {
         documentReloadFuncs *documentPair = copyOfPairs[i];
         // Unload...
-        // documentPair.UnloadDocument()
         documentPair->UnloadDocument();
         documentPair->LoadDocument();
         // Load...
-        // documentPair.first();
     }
 
     rocket_enable.SetValue( true );

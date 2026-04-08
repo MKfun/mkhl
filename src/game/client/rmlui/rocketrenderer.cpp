@@ -15,12 +15,12 @@
 #include <OpenGL/glu.h>
 #include <OpenGL/glext.h>
 #elif defined RMLUI_PLATFORM_UNIX
-#include <GL/glx.h>
+#define GL_GLEXT_PROTOTYPES 1
 #include <GL/gl.h>
 #include <GL/glext.h>
-#include <GL/glu.h>
-#include <GLES/gl.h>
-#include <GLES2/gl2.h>
+// #include <GL/glu.h>
+// #include <GLES/gl.h>
+// #include <GLES2/gl2.h>
 // The None define from X.h conflicts with RmlUi code base,
 // use the constant 0L instead where necessary
 #ifdef None
