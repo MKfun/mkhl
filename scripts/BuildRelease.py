@@ -136,7 +136,7 @@ class TargetClient:
         files.append(FileToCopy('gamedir/models', 'valve_addon/models'))
         files.append(FileToCopy('gamedir/events', 'valve_addon/events'))
         files.append(FileToCopy('gamedir/media', 'valve_addon/media'))
-
+        files.append(FileToCopy('gamedir/media', 'valve_addon/rocketui'))
         if get_platform_type() == 'windows':
             files.append(FileToCopy(self.script.paths.out_bin + 'client.pdb',
                                     'valve_addon/cl_dlls/client.pdb'))

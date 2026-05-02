@@ -231,7 +231,6 @@ int RocketUIImpl::Init( void )
         Warning( "RocketUI: Initialise() failed!\n");
         return 0;
     }
-
     if( !LoadFonts() )
     {
         Warning( "RocketUI: Failed to load fonts.\n" );
@@ -312,7 +311,7 @@ bool RocketUIImpl::IsConsumingInput()
 void RocketUIImpl::EnableCursor(bool state)
 {
 
-    DevMsg("Turnin %s the mouse\n", state ? "on" : "off" );
+ Msg("Turnin %s the mouse\n", state ? "on" : "off" );
 
 
     gEngfuncs.pfnSetMouseEnable(!state);

@@ -112,10 +112,9 @@
 documentReloadFuncs docReloadFuncs;
 
 RkHudInfoBar RkHudInfoBar::m_Instance = RkHudInfoBar("hud_infopanel");
-RkHudInfoBar::InfoBarData RkHudInfoBar::infoBarData =
-{
-    0,    0,    0,    0,    0,
-    "0",    "0",    "0",    "0",    0,    0,    0,    0
+RkHudInfoBar::InfoBarData RkHudInfoBar::infoBarData = {
+	0, 0, 0, 0, 0,
+	"0", "0", "0", "0", 0, 0
 };
 // void UnloadRkInfoBar()
 // {
@@ -151,32 +150,30 @@ RkHudInfoBar::InfoBarData RkHudInfoBar::infoBarData =
 void UnloadRkInfoBar()
 {
     RkHudInfoBar &pInfoBar = RkHudInfoBar::m_Instance;
-    if( !pInfoBar.m_pInstance )
-    {
+	if (!pInfoBar.m_pInstance)
+	{
         Warning( "Couldn't grab RkHudInfoBar element to unload!\n");
         return;
     }
 
-    // Not loaded
-    if( !pInfoBar.m_pInstance )
-        return;
 
     Rml::Context *hudCtx = RocketUIImpl::m_Instance.AccessHudContext();
     if( hudCtx )
     {
         hudCtx->RemoveDataModel("infobar_model");
-    }
+		pInfoBar.m_dataModel = nullptr;
+	}
     else
     {
         Warning("Couldn't access hudCtx to unload infobar datamodel\n");
-    }
-    pInfoBar.m_dataModel = nullptr;
+	}
+	// pInfoBar.m_dataModel = nullptr;
 
-    if( pInfoBar.m_pInstance )
-    {
-        pInfoBar.m_pInstance->Close();
-        pInfoBar.m_pInstance = nullptr;
-    }
+	// if (pInfoBar.m_pInstance)
+	{
+		pInfoBar.m_pInstance->Close();
+		pInfoBar.m_pInstance = nullptr;
+	}
 }
 void LoadRkInfoBar()
 {
@@ -192,47 +189,43 @@ void LoadRkInfoBar()
         return;
     }
 
-    if( pInfoBar.m_pInstance || pInfoBar.m_dataModel )
-    {
-        Warning("RkInfoBar already loaded, call unload first!\n");
-        return;
-    }
+	if (pInfoBar.m_pInstance || pInfoBar.m_dataModel)
+	{
+		Warning("RkInfoBar already loaded, call unload first!\n");
+		return;
+	}
 
-    Rml::DataModelConstructor constructor = hudCtx->CreateDataModel("infobar_model");
-    if( !constructor )
-    {
-        Error( "Couldn't create datamodel for infobar!\n");
-        return;
-    }
+	Rml::DataModelConstructor constructor = hudCtx->CreateDataModel("infobar_model");
+	if (!constructor)
+	{
+		Error("Couldn't create datamodel for infobar!\n");
+		return;
+	}
 
-    constructor.Bind("hp", &RkHudInfoBar::infoBarData.hp);
-    constructor.Bind("armor", &RkHudInfoBar::infoBarData.armor);
-    constructor.Bind("ammo", &RkHudInfoBar::infoBarData.ammo);
-    constructor.Bind("ammo_reserve", &RkHudInfoBar::infoBarData.ammoReserve);
-    constructor.Bind("fire_mode_string", &RkHudInfoBar::infoBarData.fireModeString);
-    constructor.Bind("has_helmet", &RkHudInfoBar::infoBarData.hasHelmet);
-    constructor.Bind("primary_string", &RkHudInfoBar::infoBarData.primaryString);
+	constructor.Bind("hp", &RkHudInfoBar::infoBarData.hp);
+	constructor.Bind("armor", &RkHudInfoBar::infoBarData.armor);
+	constructor.Bind("ammo", &RkHudInfoBar::infoBarData.ammo);
+	constructor.Bind("ammo_reserve", &RkHudInfoBar::infoBarData.ammoReserve);
+	constructor.Bind("fire_mode_string", &RkHudInfoBar::infoBarData.fireModeString);
+	constructor.Bind("has_helmet", &RkHudInfoBar::infoBarData.hasHelmet);
+	constructor.Bind("primary_string", &RkHudInfoBar::infoBarData.primaryString);
     constructor.Bind("secondary_string", &RkHudInfoBar::infoBarData.secondaryString);
     constructor.Bind("knife_string", &RkHudInfoBar::infoBarData.knifeString);
-    constructor.Bind("has_grenade", &RkHudInfoBar::infoBarData.hasGrenade);
-    constructor.Bind("has_flash", &RkHudInfoBar::infoBarData.hasFlash);
-    constructor.Bind("has_flash_pair", &RkHudInfoBar::infoBarData.hasFlashPair);
-    constructor.Bind("has_smoke", &RkHudInfoBar::infoBarData.hasSmoke);
-    constructor.Bind("has_fire", &RkHudInfoBar::infoBarData.hasFire);
-    constructor.Bind("has_c4", &RkHudInfoBar::infoBarData.hasC4);
+	constructor.Bind("has_ammo_reserve", &RkHudInfoBar::infoBarData.hasSecondary);
+	constructor.Bind("num_kills", &RkHudInfoBar::infoBarData.numKills);
 
-    pInfoBar.m_dataModel = constructor.GetModelHandle();
+	pInfoBar.m_dataModel = constructor.GetModelHandle();
 
-    pInfoBar.m_pInstance = RocketUIImpl::m_Instance.LoadDocumentFileIntoHud( "body", "GAME", "rocketui/hud_infobar.rml", &docReloadFuncs );
+	pInfoBar.m_pInstance = RocketUIImpl::m_Instance.LoadDocumentFileIntoHud("body", "GAME", "rocketui/hud_infobar.rml", &docReloadFuncs);
 
-    if( !pInfoBar.m_pInstance )
-    {
-        Error("Couldn't create hud_infobar document!\n");
-        return;
-    }
-    pInfoBar.SetActive(1);
-    pInfoBar.m_pInstance->Show(); // Добавь это!
-    pInfoBar.m_pInstance->PullToFront();
+	if (!pInfoBar.m_pInstance)
+	{
+		Error("Couldn't create hud_infobar document!\n");
+		return;
+	}
+	pInfoBar.SetActive(1);
+	pInfoBar.m_pInstance->Show();
+	pInfoBar.m_pInstance->PullToFront();
 }
 
 RkHudInfoBar::RkHudInfoBar(const char *value)
@@ -262,7 +255,7 @@ void RkHudInfoBar::LevelShutdown()
 // this is called every frame, keep that in mind.
 void RkHudInfoBar::ShowPanel(bool bShow, bool force)
 {
-    if( !m_pInstance )
+if( !m_pInstance || !m_dataModel )
         return;
 
     if( bShow )
@@ -282,22 +275,19 @@ void RkHudInfoBar::ShowPanel(bool bShow, bool force)
         m_dataModel.DirtyVariable( "primary_string" );
         m_dataModel.DirtyVariable( "secondary_string" );
         m_dataModel.DirtyVariable( "knife_string" );
-        m_dataModel.DirtyVariable( "has_grenade" );
-        m_dataModel.DirtyVariable( "has_flash" );
-        m_dataModel.DirtyVariable( "has_flash_pair" );
-        m_dataModel.DirtyVariable( "has_smoke" );
-        m_dataModel.DirtyVariable( "has_fire" );
-        m_dataModel.DirtyVariable( "has_c4" );
+		m_dataModel.DirtyVariable("has_ammo_reserve");
+		m_dataModel.DirtyVariable("has_only_reserve");
+		m_dataModel.DirtyVariable("num_kills");
 
-        // m_dataModel.();
-    }
-    else
-    {
-        if( m_bVisible )
-        {
-            m_pInstance->Hide();
-        }
-    }
+		// m_dataModel.();
+	}
+	else
+	{
+		if (m_bVisible)
+		{
+			m_pInstance->Hide();
+		}
+	}
 
 end:
     m_bVisible = bShow;

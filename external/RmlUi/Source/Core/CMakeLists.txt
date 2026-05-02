@@ -1,6 +1,7 @@
 # Declare RmlUi core library
 # Not explicitly setting library type so that it can be chosen by consumer using BUILD_SHARED_LIBS. Header files are not
 # necessary, but are included to improve navigation and code completion on IDEs and language servers.
+set(RMLUI_SVG_PLUGIN ON)
 add_library(rmlui_core
 	BaseXMLParser.cpp
 	Box.cpp
@@ -411,7 +412,8 @@ endif()
 if(RMLUI_SVG_PLUGIN)
 	# RMLUI_CMAKE_MINIMUM_VERSION_RAISE_NOTICE:
 	# From CMake 3.13 we could move this to `Lottie/CMakeLists.txt`, see CMP0079.
-	target_link_libraries(rmlui_core PRIVATE lunasvg::lunasvg)
+	target_link_libraries(rmlui_core PRIVATE lunasvg)
+	target_compile_definitions(rmlui_core PRIVATE RMLUI_SVG_PLUGIN)
 endif()
 
 if(RMLUI_TRACY_PROFILING)

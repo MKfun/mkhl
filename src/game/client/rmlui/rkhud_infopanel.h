@@ -22,10 +22,10 @@ public:
 
     static void UnloadRkInfoBar();
     static void LoadRkInfoBar();
-    Rml::ElementDocument *m_pInstance;
-    bool		m_bVisible;
-    Rml::DataModelHandle m_dataModel;
-    static struct ReloadDocumentFuncs
+	Rml::ElementDocument *m_pInstance = nullptr;
+	bool		m_bVisible;
+	Rml::DataModelHandle m_dataModel = nullptr;
+	static struct ReloadDocumentFuncs
     {
         void *UnloadRkInfoBar();
         void *LoadRkInfoBar();
@@ -41,14 +41,10 @@ public:
         Rml::String primaryString;
         Rml::String secondaryString;
         Rml::String knifeString;
-        bool hasGrenade;
-        bool hasFlash;
-        bool hasFlashPair;
-        bool hasSmoke;
-        bool hasFire;
-        bool hasC4;
-    } infoBarData;
-    void UpdateHealth(int new_hp);
+		bool hasSecondary;
+		int numKills;
+	} infoBarData;
+	void UpdateHealth(int new_hp);
 };
 
 #endif //KISAKSTRIKE_RKHUD_INFOBAR_H

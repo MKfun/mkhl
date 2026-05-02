@@ -24,8 +24,8 @@ if(RMLUI_LOTTIE_PLUGIN)
 endif()
 
 if(RMLUI_SVG_PLUGIN)
-	find_package("lunasvg")
-	report_dependency_found_or_error("LunaSVG" "lunasvg" lunasvg::lunasvg "SVG plugin enabled")
+	# find_package("lunasvg")
+	# report_dependency_found_or_error("LunaSVG" "lunasvg" lunasvg::lunasvg "SVG plugin enabled")
 endif()
 
 # The Lua and LuaJIT modules don't provide targets, so make our own, or let users define the target already.

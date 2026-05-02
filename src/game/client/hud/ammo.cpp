@@ -31,7 +31,7 @@
 #include "crosshair.h"
 #include "menu.h"
 #include "vgui/client_viewport.h"
-
+#include "rmlui/rkhud_infopanel.h"
 ConVar hud_fastswitch("hud_fastswitch", "0", FCVAR_ARCHIVE, "Controls whether or not weapons can be selected in one keypress");
 ConVar hud_weapon("hud_weapon", "0", FCVAR_BHL_ARCHIVE, "Controls displaying sprite of currently selected weapon");
 ConVar hud_autocrosshair("hud_autocrosshair", "0", FCVAR_ARCHIVE, "Disable autoaim crosshair");
@@ -585,6 +585,15 @@ int CHudAmmo::MsgFunc_CurWeapon(const char *pszName, int iSize, void *pbuf)
 	else
 		pWeapon->iClip = iClip;
 	pWeapon->iNumKills = m_NumEnemiesKilledThisSpawn;
+	if (RkHudInfoBar::m_Instance.m_pInstance)
+	{
+		RkHudInfoBar::infoBarData.numKills = m_NumEnemiesKilledThisSpawn;
+		// RkHudInfoBar::infoBarData.ammoReserve = gWR.CountAmmo(pw->iAmmo2Type);
+		if (RkHudInfoBar::m_Instance.m_dataModel)
+		{
+			RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("num_kills");
+		}
+	}
 	if (iState == 0) // we're not the current weapon, so update no more
 		return 1;
 
@@ -852,7 +861,7 @@ void CHudAmmo::UserCmd_PrevWeapon(void)
 //-------------------------------------------------------------------------
 // Drawing code
 //-------------------------------------------------------------------------
-
+extern ConVar rocket_enable;
 void CHudAmmo::Draw(float flTime)
 {
 	int x, y, r, g, b;
@@ -956,8 +965,21 @@ void CHudAmmo::Draw(float flTime)
 			g_pViewport->HideAmmoPanel();
 		}
 	}
-	
-	if (m_pHudCustom.GetBool())
+	{
+		if (RkHudInfoBar::m_Instance.m_pInstance)
+		{
+			RkHudInfoBar::infoBarData.ammo = pw->iClip;
+			RkHudInfoBar::infoBarData.hasSecondary = pw->iClip >= 0;
+			RkHudInfoBar::infoBarData.ammoReserve = gWR.CountAmmo(pw->iAmmoType);
+			if (RkHudInfoBar::m_Instance.m_dataModel)
+			{
+				RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("ammo");
+				RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("ammo_reserve");
+				RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("has_ammo_reserve");
+			}
+		}
+	}
+	if (m_pHudCustom.GetBool() || rocket_enable.GetBool())
 	{
 		// Hide vanilla hud ammo
 	}
