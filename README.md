@@ -23,7 +23,8 @@ Features
     - ```mp_ultrakill_additions``` enables some ultrakill additions (wow) like fast-fall (duck+use) and damaging with fast-fall (just hold duck and fly ont top of enemy)
  ### ClientSide
  - Same as BHL-Rebased but with some spicy extras
- - Custom vgui2 csgo-like hud from [this pr](https://github.com/tmp64/BugfixedHL-Rebased/pull/280) ```hud_custom 1```
+ - ~~Custom vgui2 csgo-like hud from [this pr](https://github.com/tmp64/BugfixedHL-Rebased/pull/280) ```hud_custom 1```~~ DEPRECATED
+ - Custom web-like RocketHUD that anyone can customize! Thats pretty easy, just try it! ```rocket_enable 1```
  - With above: There are headshots, and killstreaks in hud like in csgo.
  - Viewmodel extras: QuakeGun™ and sway (weaponlag, like source games vm) ```cl_quakeguns 1``` and ```cl_weaponlag_enable 1```
  - freeze panel (only servers with mkhl supported, or there will be soon metamod plugin for vanilla servers)
@@ -85,4 +86,5 @@ Thanks
 - ScriptedSnark for help in [ReGameUI project](https://github.com/MKfun/mkhl/tree/regameui).
 - [Nillerusr](https://github.com/nillerusr) for the [source-engine](https://github.com/nillerusr/source-engine) repo, where i got some code from sdk part (killstreak).
 - [FWGS community](https://github.com/FWGS), for help in some moments.
+- [LWSS for kisak-strike](https://github.com/SwagSoftware/Kisak-Strike/) for RmlUI base integration into Source Engine, got some code from it, and partially rewrote it and updated.
 - MK Community, that im working for. They're just my friends.
