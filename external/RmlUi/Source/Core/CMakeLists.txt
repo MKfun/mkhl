@@ -1,7 +1,6 @@
 # Declare RmlUi core library
 # Not explicitly setting library type so that it can be chosen by consumer using BUILD_SHARED_LIBS. Header files are not
 # necessary, but are included to improve navigation and code completion on IDEs and language servers.
-set(RMLUI_SVG_PLUGIN ON)
 add_library(rmlui_core
 	BaseXMLParser.cpp
 	Box.cpp
