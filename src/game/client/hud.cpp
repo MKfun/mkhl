@@ -38,7 +38,10 @@
 #include "vgui/client_viewport.h"
 #include "gameui/options/colorpicker/texture_manager.h"
 #include "hud_renderer.h"
-
+#pragma push_macro("Assert")
+#undef Assert
+#include "rmlui/rocketuiimpl.h"
+#pragma pop_macro("Assert")
 #include "demo.h"
 #include "demo_api.h"
 #include "cl_voice_status.h"
@@ -93,7 +96,10 @@
 #include "hud/ag/ag_sudden_death.h"
 #include "hud/ag/ag_timeout.h"
 #include "hud/ag/ag_vote.h"
-
+#pragma push_macro("Assert")
+#undef Assert
+#include "rmlui/rkhud_infopanel.h"
+#pragma pop_macro("Assert")
 struct HudScaleInfo
 {
 	//! The sprite resolution.
@@ -132,7 +138,7 @@ ConVar hud_color2("hud_color2", "255 160 0", FCVAR_BHL_ARCHIVE, "HUD color when 
 ConVar hud_color3("hud_color3", "255 96 0", FCVAR_BHL_ARCHIVE, "HUD color when (25%; 50%)");
 ConVar hud_color4("hud_color4", "255 0 0", FCVAR_BHL_ARCHIVE, "HUD color when (0%; 25%)");
 ConVar hud_color_override("hud_color_override", "0", FCVAR_ARCHIVE, "Enables/disables HUD coloring according to amount");
-ConVar hud_custom("hud_custom", "1", FCVAR_BHL_ARCHIVE, "Custom HUD using VGUI2");
+ConVar hud_custom("hud_custom", "0", FCVAR_BHL_ARCHIVE, "Custom HUD using VGUI2");
 ConVar hud_custom_progressbar("hud_custom_progressbar", "1", FCVAR_BHL_ARCHIVE, "csgo-like hud");
 ConVar hud_draw("hud_draw", "1", FCVAR_ARCHIVE, "Opacity of the HUD");
 ConVar hud_dim("hud_dim", "1", FCVAR_BHL_ARCHIVE, "Dim inactive HUD elements");
@@ -268,13 +274,15 @@ CHud::CHud()
 CHud::~CHud()
 {
 }
-
+void LoadRkInfoBar();
 // This is called every time the DLL is loaded
 void CHud::Init(void)
 {
 	// Check that elem list is empty
 	Assert(m_HudList.empty());
-
+    RocketUIImpl::m_Instance.Init();
+    RkHudInfoBar *m_pInfoBar = new RkHudInfoBar("hud_infobar");
+    LoadRkInfoBar();
 	// Fill color code colors with default ones
 	memcpy(m_ColorCodeColors, s_DefaultColorCodeColors, sizeof(s_DefaultColorCodeColors));
 
@@ -297,7 +305,6 @@ void CHud::Init(void)
 	HookHudMessage<&CHud::MsgFunc_Concuss>("Concuss");
 	HookHudMessage<&CHud::MsgFunc_Logo>("Logo");
 	HookHudMessage<&CHud::MsgFunc_Fog>("Fog");
-
 	// TFFree CommandMenu
 	HookCommand("+commandmenu", [] {
 		if (g_pViewport)
@@ -447,6 +454,7 @@ void CHud::VidInit(void)
 	}
 
 	CSvcMessages::Get().VidInit();
+    // RocketUIImpl::m_Instance.SetScreenSize(m_scrinfo.iWidth, m_scrinfo.iHeight);
 
 	// ----------
 	// Load Sprites
@@ -859,6 +867,12 @@ void CHud::GetClientColorAsFloat(int idx, float out[3], Color noTeamColor)
 void CHud::UpdateHudColors()
 {
 	ParseColor(hud_color.GetString(), m_HudColor);
+	RkHudInfoBar::infoBarData.col_r = m_HudColor.r();
+	RkHudInfoBar::infoBarData.col_g = m_HudColor.g();
+	RkHudInfoBar::infoBarData.col_b = m_HudColor.b();
+	RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("col_r");
+	RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("col_g");
+	RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("col_b");
 	ParseColor(hud_color1.GetString(), m_HudColor1);
 	ParseColor(hud_color2.GetString(), m_HudColor2);
 	ParseColor(hud_color3.GetString(), m_HudColor3);

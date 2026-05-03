@@ -1,0 +1,141 @@
+<rml>
+	<head>
+		<style>
+			body {
+				font-family: Lato;
+				width: 100%;
+				height: 20%;
+				position: absolute;
+				/*left: 38%;*/
+				top: 79%;
+				margin: auto;
+				bottom: 0;
+				margin-bottom: 2px;
+				/*opacity: 0.5;*/
+			}
+			#container {
+				position: relative;
+				height: 100%;
+				width: 100%;
+				bottom: 0;
+			}
+			.bottom-content {
+				position: absolute;
+				bottom: 0;
+				width: 100%;
+			}
+			h1 {
+				font-size: 36px;
+			}
+			h2 {
+				font-size: 14px;
+			}
+			h3 {
+				font-size: 12px;
+			}
+			h4 {
+				font-size: 18px;
+			}
+			.row {
+/* 				display: block; */
+			}
+			.col {
+/* 				display: inline-block; */
+			}
+			progress {
+/* 				display: inline-block; */
+/* 				width: 82px; */
+/* 				height: 14px; */
+				border: 2px #dddddd11;
+				border-radius: 0px;
+				margin-left: 5px;
+/* 				box-shadow: -2px -2px 4px 3.0px #00000033; */
+				opacity: 0.70;
+				top: 50%;
+				background-color: #03030399;
+			}
+
+			progress fill {
+/* 				display: inline-block; */
+/* 				height: 100%; */
+				background-color: #ffffff;
+			}
+			.hpdiv
+			{
+				display:inline-flex;
+				align-items: center;  
+			}
+			.hpcol
+			{
+/* 				display: inline-block; */
+				decorator: image(images/healtharmor_background.tga);
+				font-family: Counter-Strike;
+				bottom: 0;
+				flex:2;
+				width: 512px;
+				justify-content: center;
+				align-items: center;
+			}
+			.ammocol
+			{
+				decorator: image(images/ammo_background.tga);
+				bottom: 0;
+				width: 512px;
+				right: 0;
+				flex:1;
+				display: flex;
+				justify-content: center;
+			}
+			.critical
+			{
+			    color: red;
+			}
+			.critical fill
+			{
+			    background-color: #ff0000;
+			}
+			.imagediv
+			{
+                flex: 3;
+                display: inline-block;
+                padding-left: 15px;
+                height: 100%;
+			}
+			.image
+			{
+			    display: inline-block;
+			    position: relative;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="container">
+			<div class="bottom-content" data-model="infobar_model">
+				<div class="row" style="display:flex">
+					<div class="hpcol" style="padding-left: 5px; padding-bottom: 2px; ">
+					    <div class="imagediv">
+				        <svg class="image" width="24" height="24" src="images/health.svg"/>
+					    </div>
+						<h1 id="HP" style="flex: 1; padding-left: 10px;" data-class-critical="hp < 25">{{hp}}</h1>
+						<progress data-value="hp" max=100 style="flex: 1; width:25%;" data-class-critical="hp < 25"/>
+                        <div class="imagediv">
+				        <svg class="image" width="24" height="24" src="images/shield.svg"/>
+					    </div>
+						<h1 id="AP" style="padding-left: 10px;">{{armor}}</h1>
+
+						<progress data-value="armor" max=100 style="padding-left: 10px; width:25%;" />
+					</div>
+					<div style="flex:3;">
+					</div>
+					<div class="ammocol" style="">
+					    <h6 style="font-family: Lato;">x{{num_kills}}</h6>
+						<h1 data-if="has_ammo_reserve" id="current_ammo" style="font-family: Counter-Strike;">{{ammo}}</h1>
+						<h1 data-if="has_ammo_reserve"> | </h1>
+						<h1 data-if="has_ammo_reserve" id="reserve_ammo" style="font-family: Counter-Strike; padding-right:10%;">{{ammo_reserve}}</h1>
+						<h1 data-if="!has_ammo_reserve" id="reserve_ammo" style="font-family: Counter-Strike; padding-right:10%;">{{ammo_reserve}}</h1>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</rml>

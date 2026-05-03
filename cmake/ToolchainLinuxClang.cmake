@@ -3,5 +3,5 @@
 
 include( Linux32CrossCompile )
 
-set( CMAKE_C_COMPILER clang -m32 )
-set( CMAKE_CXX_COMPILER clang++ -m32) 
+set( CMAKE_C_COMPILER clang-14 -m32 )
+set( CMAKE_CXX_COMPILER clang++-14 -m32) 

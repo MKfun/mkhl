@@ -25,7 +25,7 @@
 #include "parsemsg.h"
 #include "battery.h"
 #include "vgui/client_viewport.h"
-
+#include "rmlui/rkhud_infopanel.h"
 DEFINE_HUD_ELEM(CHudBattery);
 
 void CHudBattery::Init(void)
@@ -59,7 +59,14 @@ int CHudBattery::MsgFunc_Battery(const char *pszName, int iSize, void *pbuf)
 
 	if (g_pViewport)
 		g_pViewport->UpdateBatteryPanel(battery);
-
+	if (RkHudInfoBar::m_Instance.m_pInstance)
+	{
+		RkHudInfoBar::infoBarData.armor = battery;
+		if (RkHudInfoBar::m_Instance.m_dataModel)
+		{
+			RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("armor");
+		}
+	}
 	if (battery != m_iBat)
 	{
 		m_fFade = FADE_TIME;
@@ -68,7 +75,7 @@ int CHudBattery::MsgFunc_Battery(const char *pszName, int iSize, void *pbuf)
 
 	return 1;
 }
-
+extern ConVar rocket_enable;
 void CHudBattery::Draw(float flTime)
 {
 	if (gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH)
@@ -105,6 +112,11 @@ void CHudBattery::Draw(float flTime)
 		{
 			g_pViewport->HideBatteryPanel();
 		}
+	}
+	if (rocket_enable.GetBool())
+	{
+		return;
+		// do nothing because we draw in other method
 	}
 
 	if (!hud_dim.GetBool())

@@ -49,6 +49,8 @@
 #endif
 #include <signal.h>
 CHud gHUD;
+#include "rmlui/rocketuiimpl.h"
+#include "rmlui/rkhud_infopanel.h"
 
 void InitInput(void);
 void ShutdownInput();
@@ -274,7 +276,6 @@ int CL_DLLEXPORT Initialize(cl_enginefunc_t *pEnginefuncs, int iVersion)
 	// So I just disabled it completely since it isn't used in vanilla HL.
 	//
 	// CL_LoadParticleMan();
-
 	return 1;
 }
 
@@ -311,7 +312,7 @@ to a server.  Reinitializes all
 the hud variables.
 ==========================
 */
-
+void LoadRkInfoBar();
 void CL_DLLEXPORT HUD_Init(void)
 {
 	//	RecClHudInit();
@@ -323,7 +324,7 @@ void CL_DLLEXPORT HUD_Init(void)
 	gHUD.Init();
 	CSvcMessages::Get().Init();
 	EngFuncs_UpdateHooks();
-	console::HudPostInit();
+    console::HudPostInit();
 }
 
 /*
@@ -337,9 +338,10 @@ redraw the HUD.
 
 int CL_DLLEXPORT HUD_Redraw(float time, int intermission)
 {
+    RocketUIImpl::m_Instance.RunFrame(time);
+    RocketUIImpl::m_Instance.RenderMenuFrame();
 	//	RecClHudRedraw(time, intermission);
-
-	gHUD.Redraw(time, intermission);
+    gHUD.Redraw(time, intermission);
 	return 1;
 }
 
@@ -377,7 +379,7 @@ void CL_DLLEXPORT HUD_Reset(void)
 {
 	//	RecClHudReset();
 
-	gHUD.VidInit();
+    gHUD.VidInit();
 }
 
 /*
@@ -396,6 +398,7 @@ void CL_DLLEXPORT HUD_Frame(double time)
 	EngFuncs_UpdateHooks();
 	gHUD.Frame(time);
 	GetClientVoiceMgr()->Frame(time);
+    RocketUIImpl::m_Instance.RunFrame(time);
 }
 
 /*

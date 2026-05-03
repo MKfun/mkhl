@@ -1,0 +1,48 @@
+<rml>
+    <head>
+        <style>
+            body
+            {
+                font-family: Lato;
+                width: 100%;
+                height: 100%;
+                background-color: #222222;
+                opacity: 0.3;
+            }
+            #center
+            {
+                top: 50%;
+                text-align: center;
+                position: absolute;
+            }
+            button
+            {
+                opacity: 1.0;
+                border-width: 1px;
+                border-color: #222;
+                background: #666;
+                margin-left: 6dp;
+                display: inline-block;
+                width: 130dp;
+                line-height: 24dp;
+                text-align: center;
+            }
+            button:hover
+            {
+                background: #999;
+            }
+            .p {
+                display: inline;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="center">
+            <p>Amazing loading screen.</p>
+            <br/>
+            <p>Very amazing. Wow.</p>
+            <br/>
+            <button id="continue">Continue</button>
+        </div>
+    </body>
+</rml>
