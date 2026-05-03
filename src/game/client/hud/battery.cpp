@@ -75,7 +75,7 @@ int CHudBattery::MsgFunc_Battery(const char *pszName, int iSize, void *pbuf)
 
 	return 1;
 }
-
+extern ConVar rocket_enable;
 void CHudBattery::Draw(float flTime)
 {
 	if (gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH)
@@ -112,6 +112,11 @@ void CHudBattery::Draw(float flTime)
 		{
 			g_pViewport->HideBatteryPanel();
 		}
+	}
+	if (rocket_enable.GetBool())
+	{
+		return;
+		// do nothing because we draw in other method
 	}
 
 	if (!hud_dim.GetBool())

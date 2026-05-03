@@ -138,7 +138,7 @@ ConVar hud_color2("hud_color2", "255 160 0", FCVAR_BHL_ARCHIVE, "HUD color when 
 ConVar hud_color3("hud_color3", "255 96 0", FCVAR_BHL_ARCHIVE, "HUD color when (25%; 50%)");
 ConVar hud_color4("hud_color4", "255 0 0", FCVAR_BHL_ARCHIVE, "HUD color when (0%; 25%)");
 ConVar hud_color_override("hud_color_override", "0", FCVAR_ARCHIVE, "Enables/disables HUD coloring according to amount");
-ConVar hud_custom("hud_custom", "1", FCVAR_BHL_ARCHIVE, "Custom HUD using VGUI2");
+ConVar hud_custom("hud_custom", "0", FCVAR_BHL_ARCHIVE, "Custom HUD using VGUI2");
 ConVar hud_custom_progressbar("hud_custom_progressbar", "1", FCVAR_BHL_ARCHIVE, "csgo-like hud");
 ConVar hud_draw("hud_draw", "1", FCVAR_ARCHIVE, "Opacity of the HUD");
 ConVar hud_dim("hud_dim", "1", FCVAR_BHL_ARCHIVE, "Dim inactive HUD elements");
@@ -867,6 +867,12 @@ void CHud::GetClientColorAsFloat(int idx, float out[3], Color noTeamColor)
 void CHud::UpdateHudColors()
 {
 	ParseColor(hud_color.GetString(), m_HudColor);
+	RkHudInfoBar::infoBarData.col_r = m_HudColor.r();
+	RkHudInfoBar::infoBarData.col_g = m_HudColor.g();
+	RkHudInfoBar::infoBarData.col_b = m_HudColor.b();
+	RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("col_r");
+	RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("col_g");
+	RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("col_b");
 	ParseColor(hud_color1.GetString(), m_HudColor1);
 	ParseColor(hud_color2.GetString(), m_HudColor2);
 	ParseColor(hud_color3.GetString(), m_HudColor3);

@@ -175,7 +175,7 @@ void CHudHealth::GetPainColor(int &r, int &g, int &b)
 	}
 #endif
 }
-
+extern ConVar rocket_enable;
 void CHudHealth::Draw(float flTime)
 {
 	int r, g, b;
@@ -236,13 +236,18 @@ void CHudHealth::Draw(float flTime)
 				g_pViewport->ShowHealthPanel();
                 DrawDamage(flTime);
 				DrawPain(flTime);
+				return;
 			}
 			else
 			{
 				g_pViewport->HideHealthPanel();
 			}
 		}
-		
+		if (rocket_enable.GetBool())
+		{
+			return;
+			// do nothing because we draw in other method
+		}
 		HealthWidth = gHUD.GetSpriteRect(gHUD.m_HUD_number_0).right - gHUD.GetSpriteRect(gHUD.m_HUD_number_0).left;
 		int CrossWidth = m_rcCross.right - m_rcCross.left;
 		int iOffset = (m_rcCross.bottom - m_rcCross.top - gHUD.m_iFontHeight) / 2;

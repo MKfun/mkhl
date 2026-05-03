@@ -114,7 +114,7 @@ documentReloadFuncs docReloadFuncs;
 RkHudInfoBar RkHudInfoBar::m_Instance = RkHudInfoBar("hud_infopanel");
 RkHudInfoBar::InfoBarData RkHudInfoBar::infoBarData = {
 	0, 0, 0, 0, 0,
-	"0", "0", "0", "0", 0, 0
+	"0", "0", "0", "0", 0, 255, 255, 255, 0
 };
 // void UnloadRkInfoBar()
 // {
@@ -211,6 +211,9 @@ void LoadRkInfoBar()
 	constructor.Bind("primary_string", &RkHudInfoBar::infoBarData.primaryString);
     constructor.Bind("secondary_string", &RkHudInfoBar::infoBarData.secondaryString);
     constructor.Bind("knife_string", &RkHudInfoBar::infoBarData.knifeString);
+	constructor.Bind("col_r", &RkHudInfoBar::infoBarData.col_r);
+	constructor.Bind("col_g", &RkHudInfoBar::infoBarData.col_g);
+	constructor.Bind("col_b", &RkHudInfoBar::infoBarData.col_b);
 	constructor.Bind("has_ammo_reserve", &RkHudInfoBar::infoBarData.hasSecondary);
 	constructor.Bind("num_kills", &RkHudInfoBar::infoBarData.numKills);
 
@@ -276,7 +279,9 @@ if( !m_pInstance || !m_dataModel )
         m_dataModel.DirtyVariable( "secondary_string" );
         m_dataModel.DirtyVariable( "knife_string" );
 		m_dataModel.DirtyVariable("has_ammo_reserve");
-		m_dataModel.DirtyVariable("has_only_reserve");
+		m_dataModel.DirtyVariable("col_r");
+		m_dataModel.DirtyVariable("col_g");
+		m_dataModel.DirtyVariable("col_b");
 		m_dataModel.DirtyVariable("num_kills");
 
 		// m_dataModel.();

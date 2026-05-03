@@ -42,6 +42,9 @@ public:
         Rml::String secondaryString;
         Rml::String knifeString;
 		bool hasSecondary;
+		int col_r;
+		int col_g;
+		int col_b;
 		int numKills;
 	} infoBarData;
 	void UpdateHealth(int new_hp);

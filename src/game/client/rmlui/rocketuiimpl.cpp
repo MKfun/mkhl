@@ -4,7 +4,6 @@
 #include "sdl_rt.h"
 #include "utlbuffer.h"
 #include <GL/gl.h>
-#include <GLES2/gl2.h>
 
 #ifdef Debugger
 #undef Debugger
