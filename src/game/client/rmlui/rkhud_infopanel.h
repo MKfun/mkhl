@@ -1,6 +1,5 @@
 #ifndef KISAKSTRIKE_RKHUD_INFOBAR_H
 #define KISAKSTRIKE_RKHUD_INFOBAR_H
-#include "hud.h"
 #include <rmlui/rocketuiimpl.h>
 #pragma push_macro("Assert")
 #undef Assert

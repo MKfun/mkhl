@@ -19,6 +19,7 @@
 #include "net.h"
 #include "demo.h"
 #include "demo_api.h"
+#include "rmlui/rkhud_timer.h"
 
 #define NET_API gEngfuncs.pNetAPI
 
@@ -31,6 +32,7 @@
 #define CUSTOM_TIMER_G      160
 #define CUSTOM_TIMER_B      0
 
+extern ConVar rocket_enable;
 CON_COMMAND(customtimer, "Sets a timer to count down from N secs to zero")
 {
 	CHudTimer::Get()->CustomTimerCommand();
@@ -555,7 +557,6 @@ void CHudTimer::Draw(float fTime)
 
 	if (gHUD.m_iHideHUDDisplay & HIDEHUD_ALL)
 		return;
-
 	// We will take time from demo stream if playingback
 	float currentTime;
 	if (gEngfuncs.pDemoAPI->IsPlayingback())
@@ -578,6 +579,13 @@ void CHudTimer::Draw(float fTime)
 
 	// Draw timer
 	float timeleft = m_flSynced ? (int)(m_flEndTime - currentTime) + 1 : (int)(m_flEndTime - m_flEffectiveTime);
+
+	if (rocket_enable.GetBool())
+	{
+		RkHudRoundTimer::m_iRemainingTime = timeleft;
+		RkHudRoundTimer::m_Instance.ShowPanel(true, 1);
+		return;
+	}
 	int hud_timer = (int)m_pCvarHudTimer->value;
 	int ypos = ScreenHeight * TIMER_Y;
 	switch (hud_timer)

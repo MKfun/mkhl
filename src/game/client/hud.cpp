@@ -99,6 +99,7 @@
 #pragma push_macro("Assert")
 #undef Assert
 #include "rmlui/rkhud_infopanel.h"
+#include "rmlui/rkhud_timer.h"
 #pragma pop_macro("Assert")
 struct HudScaleInfo
 {
@@ -275,6 +276,7 @@ CHud::~CHud()
 {
 }
 void LoadRkInfoBar();
+void LoadRkRoundTimer();
 // This is called every time the DLL is loaded
 void CHud::Init(void)
 {
@@ -388,7 +390,9 @@ void CHud::Init(void)
 	RegisterHudElem<CHudJumpspeed>();
 	RegisterHudElem<CHudTimer>();
 	RegisterHudElem<CHudStrafeGuide>();
+	RkHudRoundTimer *m_pTimer = new RkHudRoundTimer("hud_infobar");
 
+	LoadRkRoundTimer();
 	if (CHudRenderer::Get().IsAvailable())
 	{
 		RegisterHudElem<CHudDeathNoticePanel>();
