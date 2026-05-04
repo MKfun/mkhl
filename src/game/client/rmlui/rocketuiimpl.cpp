@@ -26,7 +26,7 @@ RocketUIImpl RocketUIImpl::m_Instance;
 // EXPOSE_SINGLE_INTERFACE_GLOBALVAR( RocketUIImpl, IRocketUI, ROCKETUI_INTERFACE_VERSION, RocketUIImpl::m_Instance )
 
 ConVar rocket_enable( "rocket_enable", "1", 0, "Enables RocketUI" );
-
+ConVar rocket_hud_scale("rocket_hud_scale", "1.0", FCVAR_ARCHIVE, "Hud scale modifier");
 CON_COMMAND( rocket_reload, "Reloads all RocketUI Documents" )
 {
     if( RocketUIImpl::m_Instance.ReloadDocuments() )
@@ -277,6 +277,17 @@ void RocketUIImpl::RunFrame(float time)
     // I am calling it 1x per frame here instead of all over the place for simplicity and no overlap.
     if( m_ctxCurrent )
         m_ctxCurrent->Update();
+
+	// DLLHACKHACKHACK: if we can't set DPI at ::Init(),
+	// lets just observe convar there, the most hacky way.
+	// But this has good side: u dont even need to rocket_reload
+	// when changing scale, cuz this convar is observed.
+	static float oldDP = 0;
+	if (oldDP != rocket_hud_scale.GetFloat())
+	{
+		oldDP = rocket_hud_scale.GetFloat();
+		AccessHudContext()->SetDensityIndependentPixelRatio(oldDP);
+	}
 }
 
 void RocketUIImpl::DenyInputToGame( bool value, const char *why )
