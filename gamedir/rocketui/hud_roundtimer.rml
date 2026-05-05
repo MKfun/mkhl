@@ -44,7 +44,7 @@
 	<body data-model="roundtimer_model">
 		<div id="container">
 			<div id="timer">
-			    <h1 data-if="minutes_left < 10">0</h1>
+			    <h1 data-if="minutes_left < 10 && minutes_left > 1">0</h1>
 				<h1 data-if="minutes_left > 1">{{ minutes_left }}</h1>
 				<h1 data-if="minutes_left > 1">:</h1>
 				<h1 data-if="seconds_left < 10">0</h1>

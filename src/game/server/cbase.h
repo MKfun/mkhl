@@ -203,7 +203,8 @@ public:
 	virtual BOOL IsPlayer(void) { return FALSE; }
 	virtual BOOL IsNetClient(void) { return FALSE; }
 	virtual const char *TeamID(void) { return ""; }
-
+	virtual void SetDmgPenetrationLevel(int penLevel) { };
+	virtual int GetDmgPenetrationLevel() { return 0; };
 	//	virtual void	SetActivator( CBaseEntity *pActivator ) {}
 	virtual CBaseEntity *GetNextTarget(void);
 
@@ -633,7 +634,7 @@ public:
 #define DMG_SLOWBURN     (1 << 21) // in an oven
 #define DMG_SLOWFREEZE   (1 << 22) // in a subzero freezer
 #define DMG_MORTAR       (1 << 23) // Hit by air raid (done to distinguish grenade from mortar)
-#define DMG_IGNORE_MAXHEALTH (1<< 24)
+#define DMG_IGNORE_MAXHEALTH (1 << 24)
 // these are the damage types that are allowed to gib corpses
 #define DMG_GIB_CORPSE (DMG_CRUSH | DMG_FALL | DMG_BLAST | DMG_SONIC | DMG_CLUB)
 

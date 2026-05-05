@@ -361,7 +361,9 @@ public:
 
 	float m_flNextSpectatorCommand;
 	float m_flNextFullupdate[2];
-
+	virtual void SetDmgPenetrationLevel(int penLevel) { m_iPenLevel = penLevel; };
+	virtual int GetDmgPenetrationLevel() { return m_iPenLevel; };
+	int m_iPenLevel;
 	BOOL m_bConnected; // we set it in Spawn() so it will be TRUE only after player was spawned
 	BOOL m_bPutInServer; // we set it after PutInServer finished
 	BOOL m_bIsBot; // we set it at PutInServer start

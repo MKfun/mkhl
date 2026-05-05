@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.1"
+   viewBox="-12 0 78.21862 48"
+   id="svg1"
+   sodipodi:docname="d_9mmhandgun.svg"
+   width="78.21862"
+   height="48"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="9.04"
+     inkscape:cx="48.340708"
+     inkscape:cy="32.688053"
+     inkscape:window-width="1368"
+     inkscape:window-height="768"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg1" />
+  <g
+     transform="matrix(0.09704282,0,0,-0.09704282,-11.805914,47.84211)"
+     id="g1">
+    <path
+       fill="#ffffff"
+       d="m -2,422 q 0,8 6,14 6,6 14,6 11,0 18,-9 1,1 1,1.5 0,0.5 1,1.5 0,1 1,1 h 10 q 3,0 7,10 2,4 3,11 v 25 q 1,2 3,5 5,5 7,5 2,0 7,-5 2,-3 4,-5 v -5 h 61 l 15,-10 5,-5 h 183 l 11,-10 h 71 l 5,10 h 178 l 16,30 h 30 l 10,-15 v -15 h 6 V 305 H 512 l -20,-5 -15,-16 q -2,-9 -4,-19 -2,-8 -4.5,-17 -2.5,-9 -6.5,-14 -4,-6 -15.5,-9.5 Q 435,221 421,219.5 407,218 393,218 h -23 q -10,0 -23,1.5 -13,1.5 -25,3.5 -14,2 -28,5 L 273,223 253,167 237,106 227,35 232,20 222,4 176,-1 H 39 L 18,14 44,137 90,264 80,290 39,315 q -2,0 -3,1 -2,2 -2,4 0,2 0.5,8 0.5,6 1.5,12 1,7 3,16 l -5,5 5,30 q 0,1 -1,3 -2,4 -9,8 -1,0 -2,1 -3,-1 -9,-1 -8,0 -14,6 -6,6 -6,14 z M 319,249 q 9,-3 20,-5 8,-2 18,-3.5 10,-1.5 18,-1.5 8,0 18,0.5 10,0.5 20,1.5 11,1 23,3 l 10,10 10,25 q 0,3 -1,6 -1,2 -1.5,5 -0.5,3 -2.5,5 -2,2 -4.5,3.5 -2.5,1.5 -4.5,3.5 -3,2 -6,3 h -81 v -5 q 0,-7 2,-17 1,-4 3,-9 l 10,-15 v -5 l -10,-5 -46,5 h -3 z m -153,131 20,51 h -10 l -20,-51 z m -20,0 20,51 h -10 l -20,-51 z m -21,0 21,51 h -10 l -21,-51 z m -20,0 20,51 H 115 L 95,380 Z m -20,0 20,51 H 95 L 74,380 Z m 713,88 5,-5 v -31 l -5,-61 -16,-51 -15,-25 h -15 v 10 h -5 l -10,-10 h -11 v 10 h -5 l -10,-10 h -31 v 178 h 108 z"
+       id="path1" />
+  </g>
+</svg>

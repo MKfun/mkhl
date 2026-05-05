@@ -100,6 +100,7 @@
 #undef Assert
 #include "rmlui/rkhud_infopanel.h"
 #include "rmlui/rkhud_timer.h"
+#include "rmlui/rkhud_killfeed.h"
 #pragma pop_macro("Assert")
 struct HudScaleInfo
 {
@@ -277,6 +278,7 @@ CHud::~CHud()
 }
 void LoadRkInfoBar();
 void LoadRkRoundTimer();
+void LoadRkKillFeed();
 // This is called every time the DLL is loaded
 void CHud::Init(void)
 {
@@ -390,8 +392,9 @@ void CHud::Init(void)
 	RegisterHudElem<CHudJumpspeed>();
 	RegisterHudElem<CHudTimer>();
 	RegisterHudElem<CHudStrafeGuide>();
+	// RkHudKillfeed *m_pKillFeed = new RkHudKillfeed("hud_killfeed");
+	LoadRkKillFeed();
 	RkHudRoundTimer *m_pTimer = new RkHudRoundTimer("hud_infobar");
-
 	LoadRkRoundTimer();
 	if (CHudRenderer::Get().IsAvailable())
 	{
@@ -592,7 +595,9 @@ void CHud::Frame(double time)
 		m_NextFrameQueue.pop();
 	}
 }
-
+void UnloadRkInfoBar();
+void UnloadRkRoundTimer();
+void UnloadRkKillFeed();
 void CHud::Shutdown()
 {
 #if USE_UPDATER
@@ -610,6 +615,9 @@ void CHud::Shutdown()
 		if (!dynamic_cast<vgui2::Panel *>(i))
 			delete i;
 	}
+	UnloadRkInfoBar();
+	UnloadRkRoundTimer();
+	UnloadRkKillFeed();
 }
 
 void CHud::ApplyViewportSchemeSettings(vgui2::IScheme *pScheme)

@@ -542,7 +542,8 @@ int CBasePlayer ::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 		// blasts damage armor more.
 		flBonus *= 2;
 	}
-
+	if (!IsAlive() && (bitsDamageType & DMG_BLAST) && GetDmgPenetrationLevel())
+		SetDmgPenetrationLevel(0);
 	// Already dead
 	if (!IsAlive())
 		return 0;
@@ -3740,7 +3741,7 @@ void CBasePlayer::Spawn(void)
 	m_flFatAssDamageNextAttack = 0; // NOW
 	pev->fov = m_iFOV = 0; // init field of view.
 	m_iClientFOV = -1; // make sure fov reset is sent
-
+	m_iPenLevel = 0;
 	m_flNextDecalTime = 0; // let this player decal as soon as he spawns.
 
 	m_flgeigerDelay = gpGlobals->time + 2.0; // wait a few seconds until user-defined message registrations

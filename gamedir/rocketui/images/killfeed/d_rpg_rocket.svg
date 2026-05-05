@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.1"
+   viewBox="-10 0 224.04968 48"
+   id="svg1"
+   sodipodi:docname="d_rpg_rocket.svg"
+   width="224.04968"
+   height="48"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="4.52"
+     inkscape:cx="274.55752"
+     inkscape:cy="65.154867"
+     inkscape:window-width="1368"
+     inkscape:window-height="768"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg1" />
+  <g
+     transform="matrix(0.14909595,0,0,-0.14909595,-10.894576,69.776906)"
+     id="g1">
+    <path
+       fill="#ffffff"
+       d="m 28,429 34,-22 h 44 l 11,22 h 22 l 12,-22 h 77 l 11,11 h 272 l 11,11 11,-11 h 421 v 11 h 44 v -11 h 34 v 11 h 66 v -11 h 89 l 11,11 11,-11 h 34 v 11 h 11 v -11 h 55 v 11 h 11 v -11 h 23 v 11 h 11 v -11 h 22 l 11,11 h 44 l 11,11 h 23 l 11,-11 11,39 h 22 V 257 h -22 l -11,39 -11,-11 h -23 l -11,11 h -44 v -67 h -167 l -27,34 v -23 l 11,-22 v -22 h -44 l 37,-1 v -49 h -75 v 50 h -7 v 22 l 11,22 v 50 h -116 v -16 h -27 q -8,-19 -8,-24 0,-5 0.5,-12 0.5,-7 1.5,-14 1,-8 2,-17 -1,-1 -2,-3 -1,-3 -6,-5 -2,-2 -8,-1.5 -6,0.5 -12,0.5 -7,0 -16,1 -1,1 -2,3 -1,2 -1,8 0,2 1.5,7 1.5,5 3,11 l 3,12 q 0,0 0.5,10 -1,8 -6.5,12 -5.5,4 -7.5,9 0,2 -8,12.5 -8,10.5 -18,23.5 H 533 l -11,-11 -11,11 H 239 l -11,11 h -77 l -12,-22 h -22 l -11,22 H 62 L 28,296 H 6 v 133 z m 1157,-93 q 1,0 7.5,-0.5 6.5,-0.5 15.5,-1.5 9,-1 18.5,-1.5 9.5,-0.5 17.5,-0.5 15,0 29,3 8,1 16.5,2 8.5,1 12.5,0 10,-4 14,-6 4,-2 4,-7 3,-28 -7,-33 -5,-3 -19,-3.5 -14,-0.5 -25,1.5 0,1 -3,1 h -57 q -4,0 -4,-4 v -14 q 0,-4 4,-4 h 57 q 1,0 1.5,0.5 0.5,0.5 1.5,0.5 8,-1 25,-1 17,0 28,5 7,4 11,11 4,7 5.5,15 1.5,8 1.5,15 v 12 q -2,14 -12,20 -10,6 -20,9 -7,2 -16.5,1.5 Q 1282,356 1271,354 l -14,-2 q 0,0 -13,-1 -8,0 -17.5,0.5 -9.5,0.5 -18.5,1.5 -9,1 -15,2 l -6,1 h -4 l -2,-19 z m 59,7 q 7,0 13.5,1 6.5,1 14.5,2 10,2 19,2.5 9,0.5 14,-1.5 9,-3 17,-7 8,-4 9,-15 2,-8 0.5,-23 -1.5,-15 -13.5,-21 -8,-4 -21.5,-4.5 Q 1283,276 1272,278 v 2 q 8,-1 22.5,-1 14.5,0 22.5,4 5,3 8,8.5 3,5.5 4,12 1,6.5 0.5,12.5 -0.5,6 -0.5,9 -2,9 -9,13 -7,4 -15,7 -5,2 -14,1 -9,-1 -19,-3 l -14,-2 q 0,0 -14,-1 -13,0 -29.5,1.5 -16.5,1.5 -24.5,2.5 v 3 q 8,-1 24.5,-2.5 16.5,-1.5 29.5,-1.5 z m -30,-61 h 48 v -6 h -48 z"
+       id="path1" />
+  </g>
+</svg>

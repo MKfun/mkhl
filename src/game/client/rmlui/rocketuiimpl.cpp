@@ -154,7 +154,7 @@ bool RocketUIImpl::LoadFonts()
     }
     return fontsOK;
 }
-static Rml::ElementDocument *LoadDocumentFile( Rml::Context *ctx, const char *tag, const char *pPath, const char *filepath )
+Rml::ElementDocument *LoadDocumentFile(Rml::Context *ctx, const char *tag, const char *pPath, const char *filepath)
 {
     static char documentBuffer[ 4 * 1024 * 1024 ]; //4mb
     std::string documentStr;

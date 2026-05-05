@@ -25,7 +25,7 @@
 #include "spectator.h"
 #include "vgui/client_viewport.h"
 #include "death_notice_panel.h"
-
+#include "rmlui/rkhud_killfeed.h"
 struct DeathNoticeItem
 {
 	char szKiller[MAX_PLAYERNAME_LENGTH * 2];
@@ -78,9 +78,16 @@ void CHudDeathNotice::VidInit()
 	m_HUD_d_headshot = gHUD.GetSpriteIndex("d_skull");
 	m_HUD_d_noscope = gHUD.GetSpriteIndex("bucket1");
 }
-
+extern ConVar rocket_enable;
 void CHudDeathNotice::Draw(float flTime)
 {
+	if (RkHudKillfeed::m_Instance.m_pInstance && rocket_enable.GetBool())
+	{
+		// Rocket hud is main hud now, just accept it!
+		RkHudKillfeed::m_Instance.ShowPanel(1, 1);
+		return;
+	}
+
 	if (hud_deathnotice_vgui.GetBool() && CHudDeathNoticePanel::Get())
 		return;
 
@@ -190,16 +197,19 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	V_strcpy_safe(killedwith, "d_");
 	strncat(killedwith, READ_STRING(), sizeof(killedwith) - 3);
 	killedwith[sizeof(killedwith) - 1] = 0;
-	int headshot = READ_BYTE();
+	int killrarity = READ_LONG();
 	int noscope = READ_BYTE();
 
 	if (g_pViewport)
 		g_pViewport->DeathMsg(killer, victim);
 
 	CHudSpectator::Get()->DeathMessage(victim);
-
-	if (hud_deathnotice_vgui.GetBool() && CHudDeathNoticePanel::Get())
-		CHudDeathNoticePanel::Get()->AddItem(killer, victim, killedwith, headshot, noscope);
+	if (rocket_enable.GetBool())
+	{
+		RkHudKillfeed::m_Instance.OnPlayerDeath(killer, victim, killedwith, killrarity);
+	}
+	else if (hud_deathnotice_vgui.GetBool() && CHudDeathNoticePanel::Get())
+		CHudDeathNoticePanel::Get()->AddItem(killer, victim, killedwith, (killrarity & KILLRARITY_HEADSHOT), noscope);
 
 	int i;
 	for (i = 0; i < MAX_DEATHNOTICES; i++)
@@ -288,7 +298,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	}
 
 	// Find the sprite in the list
-	rgDeathNoticeList[i].iHeadShotId = headshot;
+	rgDeathNoticeList[i].iHeadShotId = (killrarity & KILLRARITY_HEADSHOT);
 	rgDeathNoticeList[i].iNoScopeId = noscope;
 	int spr = gHUD.GetSpriteIndex(killedwith);
 
@@ -310,7 +320,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	// Print to console
 	if (rgDeathNoticeList[i].iNonPlayerKill)
 	{
-		if( headshot )
+		if ((killrarity & KILLRARITY_HEADSHOT))
 			ConsolePrint( "*** ");
 		ConsolePrint(rgDeathNoticeList[i].szKiller);
 		ConsolePrint(" killed a ");
@@ -348,7 +358,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 
 		if (killedwith && *killedwith && (*killedwith > 13) && strcmp(killedwith, "d_world") && !rgDeathNoticeList[i].iTeamKill)
 		{
-			if ( headshot )
+			if ((killrarity & KILLRARITY_HEADSHOT))
 				ConsolePrint(" with a headshot from ");
 			else
 				ConsolePrint(" with ");
@@ -364,7 +374,8 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 
 		ConsolePrint("\n");
 	}
-	if( headshot ) ConsolePrint( " ***");
+	if ((killrarity & KILLRARITY_HEADSHOT))
+		ConsolePrint(" ***");
 	ConsolePrint( "\n" );
 	console::ResetColor();
 

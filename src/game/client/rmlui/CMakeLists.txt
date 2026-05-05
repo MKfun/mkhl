@@ -13,4 +13,6 @@ add_sources(
     rkhud_infopanel.h
     rkhud_timer.cpp
     rkhud_timer.h
+    rkhud_killfeed.cpp
+    rkhud_killfeed.h
 )

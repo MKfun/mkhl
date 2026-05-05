@@ -583,7 +583,7 @@ void CHudTimer::Draw(float fTime)
 	if (rocket_enable.GetBool())
 	{
 		RkHudRoundTimer::m_iRemainingTime = timeleft;
-		RkHudRoundTimer::m_Instance.ShowPanel(true, 1);
+		RkHudRoundTimer::m_Instance.ShowPanel(!(gHUD.m_iHideHUDDisplay & HIDEHUD_ALL) && (currentTime > 0 && timeleft > 0), 1);
 		return;
 	}
 	int hud_timer = (int)m_pCvarHudTimer->value;
