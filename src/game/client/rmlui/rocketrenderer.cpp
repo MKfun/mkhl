@@ -1,23 +1,30 @@
-
-
 #include "rocketrenderer.h"
 #pragma push_macro("Assert")
 #undef Assert
 #include <RmlUi/Core.h>
 
-#if defined RMLUI_PLATFORM_WIN32
-#include <win32/IncludeWindows.h>
-#include <gl/Gl.h>
-#include <gl/Glu.h>
-#elif defined RMLUI_PLATFORM_MACOSX
-#include <AGL/agl.h>
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#include <OpenGL/glext.h>
-#elif defined RMLUI_PLATFORM_UNIX
+#if defined _WIN32
+#if _MSC_VER >= 1500 // MSVC++ 9.0 (Visual Studio 2008)
+#pragma push_macro("ARRAYSIZE")
+#ifdef ARRAYSIZE
+#undef ARRAYSIZE
+#endif
+#define HSPRITE WINDOWS_HSPRITE
+#endif
+#pragma comment(lib, "opengl32.lib")
 #define GL_GLEXT_PROTOTYPES 1
-#include <GL/gl.h>
-#include <GL/glext.h>
+#define WIN32_LEAN_AND_MEAN
+#define _WIN32_WINNT 0x0600
+#define WINVER 0x0600
+#include <windows.h>
+#include "glad/glad.h"
+
+//#endif
+#elif defined POSIX
+#include "glad/glad.h"
+// #define GL_GLEXT_PROTOTYPES 1
+// #include <GL/gl.h>
+// #include <GL/glext.h>
 // #include <GL/glu.h>
 // #include <GLES/gl.h>
 // #include <GLES2/gl2.h>
@@ -27,7 +34,29 @@
 #undef None
 #endif
 #endif
+void SaveGLState()
+{
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
 
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+}
+void RestoreGLState()
+{
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+
+    glPopClientAttrib();
+
+    glPopAttrib();
+}
 RocketRender RocketRender::m_Instance;
 
 RocketRender::RocketRender() { }

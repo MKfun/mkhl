@@ -3,8 +3,6 @@
 #include "KeyValues.h"
 #include "sdl_rt.h"
 #include "utlbuffer.h"
-#include <GL/gl.h>
-
 #ifdef Debugger
 #undef Debugger
 #endif
@@ -22,6 +20,7 @@
 
 #include "rocketkeys.h"
 
+#define GL_ALR_INCLUDED
 RocketUIImpl RocketUIImpl::m_Instance;
 // EXPOSE_SINGLE_INTERFACE_GLOBALVAR( RocketUIImpl, IRocketUI, ROCKETUI_INTERFACE_VERSION, RocketUIImpl::m_Instance )
 
@@ -457,29 +456,8 @@ bool RocketUIImpl::HandleInputEvent(bool keyDown, int keyNumber, const char *bin
     return IsConsumingInput();
 }
 
-void SaveGLState()
-{
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
-    glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
-
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-}
-void RestoreGLState()
-{
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-
-    glPopClientAttrib();
-
-    glPopAttrib();
-}
+void SaveGLState();
+void RestoreGLState();
 void RocketUIImpl::RenderHUDFrame()
 {
     if( !rocket_enable.GetBool() )
@@ -507,7 +485,7 @@ void RocketUIImpl::RenderMenuFrame()
 
     SaveGLState();
     RocketRender::m_Instance.PrepareGLState();
-    glActiveTexture(GL_TEXTURE0);
+    //glActiveTexture(GL_TEXTURE0);
     //TODO: don't update here. update only after input or new elements
     //m_ctxMenu->Update();
 

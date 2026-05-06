@@ -528,6 +528,7 @@ if( WIN32 )
 		DXGUID
 		Dbghelp
 		stackwalker
+		opengl32
     )
 
 	target_include_directories( client PRIVATE
