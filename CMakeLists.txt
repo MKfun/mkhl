@@ -564,8 +564,11 @@ target_link_libraries( client
 
 # Linker flags
 set( CLIENT_LINK_FLAGS "")
-set( CLIENT_COMPILE_FLAGS "")
-
+if (MSVC)
+	set( CLIENT_COMPILE_FLAGS "/permissive")
+else()
+	set( CLIENT_COMPILE_FLAGS "")
+endif()
 set_target_properties( client PROPERTIES
 	COMPILE_FLAGS "${CLIENT_COMPILE_FLAGS}"
 	LINK_FLAGS "${GAME_LINKER_FLAGS} ${CLIENT_LINK_FLAGS}"
