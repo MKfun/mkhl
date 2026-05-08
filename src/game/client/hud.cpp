@@ -882,9 +882,12 @@ void CHud::UpdateHudColors()
 	RkHudInfoBar::infoBarData.col_r = m_HudColor.r();
 	RkHudInfoBar::infoBarData.col_g = m_HudColor.g();
 	RkHudInfoBar::infoBarData.col_b = m_HudColor.b();
-	RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("col_r");
-	RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("col_g");
-	RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("col_b");
+	if (RkHudInfoBar::m_Instance.m_pInstance)
+	{
+		RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("col_r");
+		RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("col_g");
+		RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("col_b");
+	}
 	ParseColor(hud_color1.GetString(), m_HudColor1);
 	ParseColor(hud_color2.GetString(), m_HudColor2);
 	ParseColor(hud_color3.GetString(), m_HudColor3);
