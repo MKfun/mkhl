@@ -95,7 +95,7 @@ void CSDLRuntime::InitWindows()
 	m_bIsGood = m_bIsGood && fnLoadSym(GameControllerGetButton, "SDL_GameControllerGetButton");
 	m_bIsGood = m_bIsGood && fnLoadSym(JoystickUpdate, "SDL_JoystickUpdate");
 	m_bIsGood = m_bIsGood && fnLoadSym(GL_GetProcAddress, "SDL_GL_GetProcAddress");
-
+	m_bIsGood = m_bIsGood && fnLoadSym(GetMouseState, "SDL_GetMouseState");
 	if (!m_bIsGood)
 	{
 		ConPrintf(ConColor::Red, "Failed to link with SDL2 in runtime.\n");
