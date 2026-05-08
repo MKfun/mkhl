@@ -347,9 +347,9 @@ bool RocketUIImpl::HandleInputEvent(bool keyDown, int keyNumber, const char *bin
         return false;
 
     // Always get the mouse location.
-    int mx, my;
-    GetSDL()->GetMouseState(&mx, &my);
-    static Vector2D mousePos(0, 0);
+	int mx = 0, my = 0;
+	GetSDL()->GetMouseState(&mx, &my);
+	static Vector2D mousePos(0, 0);
     if(mousePos != Vector2D(mx, my))
     {
         // TODO update this with keymodifiers
