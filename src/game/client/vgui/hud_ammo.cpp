@@ -185,7 +185,7 @@ void CHudAmmoPanel::Reset()
 
 void CHudAmmoPanel::OnThink()
 {
-	int r, g, b;
+	int r, g, b = 255;
 	// Does weapon have any ammo at all?
 	if (m_iAmmoType > 0)
 	{
