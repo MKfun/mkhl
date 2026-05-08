@@ -879,11 +879,11 @@ void CHud::GetClientColorAsFloat(int idx, float out[3], Color noTeamColor)
 void CHud::UpdateHudColors()
 {
 	ParseColor(hud_color.GetString(), m_HudColor);
-	RkHudInfoBar::infoBarData.col_r = m_HudColor.r();
-	RkHudInfoBar::infoBarData.col_g = m_HudColor.g();
-	RkHudInfoBar::infoBarData.col_b = m_HudColor.b();
 	if (RkHudInfoBar::m_Instance.m_pInstance)
 	{
+		RkHudInfoBar::infoBarData.col_r = m_HudColor.r();
+		RkHudInfoBar::infoBarData.col_g = m_HudColor.g();
+		RkHudInfoBar::infoBarData.col_b = m_HudColor.b();
 		RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("col_r");
 		RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("col_g");
 		RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("col_b");
