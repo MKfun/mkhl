@@ -303,11 +303,10 @@ Rml::TextureHandle RocketRender::LoadTexture(Rml::Vector2i& texture_dimensions, 
     texture_dimensions.x = header.width;
     texture_dimensions.y = header.height;
     // bool success = GenerateTexture(Rml::Span<const Rml::byte>(image_dest, image_size), texture_dimensions);
-
-    delete [] image_dest;
-    delete [] buffer;
-
-    return GenerateTexture(Rml::Span<const Rml::byte>(image_dest, image_size), texture_dimensions);
+	Rml::TextureHandle result = GenerateTexture(Rml::Span<const Rml::byte>(image_dest, image_size), texture_dimensions);
+	delete[] image_dest;
+	delete [] buffer;
+	return result;
 }
 
 Rml::TextureHandle RocketRender::GenerateTexture(Rml::Span<const Rml::byte> source, Rml::Vector2i source_dimensions)
