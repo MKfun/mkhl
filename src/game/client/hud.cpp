@@ -101,6 +101,7 @@
 #include "rmlui/rkhud_infopanel.h"
 #include "rmlui/rkhud_timer.h"
 #include "rmlui/rkhud_killfeed.h"
+#include "rmlui/rkhud_speedometer.h"
 #pragma pop_macro("Assert")
 struct HudScaleInfo
 {
@@ -285,8 +286,8 @@ void CHud::Init(void)
 	// Check that elem list is empty
 	Assert(m_HudList.empty());
     RocketUIImpl::m_Instance.Init();
-    RkHudInfoBar *m_pInfoBar = new RkHudInfoBar("hud_infobar");
-    LoadRkInfoBar();
+	// RkHudInfoBar *m_pInfoBar = new RkHudInfoBar("hud_infobar");
+	// LoadRkInfoBar();
 	// Fill color code colors with default ones
 	memcpy(m_ColorCodeColors, s_DefaultColorCodeColors, sizeof(s_DefaultColorCodeColors));
 
@@ -393,9 +394,9 @@ void CHud::Init(void)
 	RegisterHudElem<CHudTimer>();
 	RegisterHudElem<CHudStrafeGuide>();
 	// RkHudKillfeed *m_pKillFeed = new RkHudKillfeed("hud_killfeed");
-	LoadRkKillFeed();
-	RkHudRoundTimer *m_pTimer = new RkHudRoundTimer("hud_infobar");
-	LoadRkRoundTimer();
+	// LoadRkKillFeed();
+	// RkHudRoundTimer *m_pTimer = new RkHudRoundTimer("hud_infobar");
+	// LoadRkRoundTimer();
 	if (CHudRenderer::Get().IsAvailable())
 	{
 		RegisterHudElem<CHudDeathNoticePanel>();
@@ -415,12 +416,20 @@ void CHud::Init(void)
 	RegisterHudElem<AgHudSuddenDeath>();
 	RegisterHudElem<AgHudTimeout>();
 	RegisterHudElem<AgHudVote>();
-
 	// Init HUD elements
 	for (CHudElem *i : m_HudList)
 		i->Init();
 
+	RegisterRocketHudElem<RkHudRoundTimer>();
+	RegisterRocketHudElem<RkHudInfoBar>();
+	RegisterRocketHudElem<RkHudKillfeed>();
+	RegisterRocketHudElem<RkHudSpeedometer>();
+	// Init RmlUI hud elements
+	for (CRocketHudElem *i : m_rkHudList)
+		i->LevelInit();
+
 	m_HudList.shrink_to_fit();
+	m_rkHudList.shrink_to_fit();
 	MsgFunc_ResetHUD(0, 0, NULL);
 	colorpicker::gTexMgr.Init();
 
@@ -615,9 +624,13 @@ void CHud::Shutdown()
 		if (!dynamic_cast<vgui2::Panel *>(i))
 			delete i;
 	}
-	UnloadRkInfoBar();
-	UnloadRkRoundTimer();
-	UnloadRkKillFeed();
+	// UnloadRkInfoBar();
+	// UnloadRkRoundTimer();
+	// UnloadRkKillFeed();
+	for (CRocketHudElem *i : m_rkHudList)
+	{
+		i->LevelShutdown();
+	}
 }
 
 void CHud::ApplyViewportSchemeSettings(vgui2::IScheme *pScheme)

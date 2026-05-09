@@ -15,4 +15,6 @@ add_sources(
     rkhud_timer.h
     rkhud_killfeed.cpp
     rkhud_killfeed.h
+    rkhud_speedometer.cpp
+    rkhud_speedometer.h
 )

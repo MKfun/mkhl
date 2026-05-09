@@ -1,0 +1,94 @@
+<rml>
+	<head>
+		<style>
+			body {
+				font-family: Lato;
+				width: 10%;
+				height: 10%;
+				position: absolute;
+				margin: auto;
+				bottom: 0;
+				margin-bottom: 2dp;
+				text-align: center;
+				line-height: 0.8;
+			}
+			#container {
+				position: relative;
+				height: 100%;
+				width: 100%;
+				bottom: 0;
+			}
+			.bottom-content {
+				position: absolute;
+				bottom: 0;
+				width: 100%;
+			}
+			h1 {
+				font-size: 36dp;
+			}
+			h2 {
+				font-size: 14dp;
+			}
+			h3 {
+				font-size: 12dp;
+			}
+			h4 {
+				font-size: 18dp;
+			}
+			.row {
+			display: block;
+			}
+			.col {
+			}
+			progress {
+ 				display: inline-block;
+				border: 2dp #dddddd11;
+				border-radius: 0dp;
+				margin-left: 5dp;
+				padding-left: 0 !important;
+				opacity: 0.70;
+                height: 15dp;
+				top: 40%;
+				background-color: #03030399;
+			}
+
+			progress fill {
+                margin: 0;
+				background-color: #ffffff;
+			}
+			.critical
+			{
+			    color: red;
+			}
+			.critical fill
+			{
+			    background-color: #ff0000;
+			}
+			.speed_div
+			{
+			    display: block;
+			    font-family: Counter-Strike;
+			    align-items: center;
+				position: absolute;
+				width: 50%;
+				height: 72dp;
+                margin-left: auto;
+                margin-right: auto;
+                bottom: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="container">
+			<div class="bottom-content" data-model="speedometer_model">
+				<div class="row">
+					<div class="speed_div">
+					    <h1 class="speed">{{speed}}</h1>
+					    <br />
+					    <h1 class="jumpspeed">{{jumpspeed}}</h1>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</rml>

@@ -1,5 +1,5 @@
-#ifndef KISAKSTRIKE_RKHUD_ROUNDTIMER_H
-#define KISAKSTRIKE_RKHUD_ROUNDTIMER_H
+#ifndef KISAKSTRIKE_RKHUD_SPEEDOMETER_H
+#define KISAKSTRIKE_RKHUD_SPEEDOMETER_H
 #include "rmlui/rkhud_elem_interface.h"
 #include <rmlui/rocketuiimpl.h>
 #pragma push_macro("Assert")
@@ -8,28 +8,23 @@
 #pragma pop_macro("Assert")
 extern ConVar cl_drawhud;
 
-class RkHudRoundTimer : public CRocketHudElem
+class RkHudSpeedometer : public CRocketHudElem
 {
 public:
-	explicit RkHudRoundTimer(const char *value);
-	virtual ~RkHudRoundTimer();
-	static RkHudRoundTimer m_Instance;
+	explicit RkHudSpeedometer(const char *value);
+	virtual ~RkHudSpeedometer();
+	static RkHudSpeedometer m_Instance;
 	// Overrides from CHudElement
 	void LevelInit(void);
 	virtual void LevelShutdown(void);
 	virtual void SetActive(bool bActive);
 	virtual bool ShouldDraw(void);
 	void ShowPanel(bool bShow, bool force);
-	static int m_iRemainingTime;
-	// Struct layout for data-binding model.
-	static struct RoundTimerData
-	{
-		int MinutesLeft;
-		int SecondsLeft;
-	} roundTimerData;
+	static int m_iSpeed;
+	static int m_iJumpSpeed;
 
 	Rml::ElementDocument *m_pInstance;
 	Rml::DataModelHandle m_dataModel;
 	bool m_bVisible;
 };
-#endif //KISAKSTRIKE_RKHUD_ROUNDTIMER_H
+#endif //KISAKSTRIKE_RKHUD_SPEEDOMETER_H

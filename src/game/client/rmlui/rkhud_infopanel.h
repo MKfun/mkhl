@@ -1,21 +1,22 @@
 #ifndef KISAKSTRIKE_RKHUD_INFOBAR_H
 #define KISAKSTRIKE_RKHUD_INFOBAR_H
+#include "rmlui/rkhud_elem_interface.h"
 #include <rmlui/rocketuiimpl.h>
 #pragma push_macro("Assert")
 #undef Assert
 #include <RmlUi/Core/DataModelHandle.h>
 #pragma pop_macro("Assert")
 
-
-class RkHudInfoBar {
+class RkHudInfoBar : public CRocketHudElem
+{
 public:
     explicit RkHudInfoBar(const char *value);
     virtual ~RkHudInfoBar();
     static RkHudInfoBar m_Instance;
     // Overrides from CHudElement
-    void LevelInit(void);
-    virtual void LevelShutdown(void);
-    virtual void SetActive(bool bActive);
+	void LevelInit(void);
+	virtual void LevelShutdown(void);
+	virtual void SetActive(bool bActive);
     virtual bool ShouldDraw(void);
     void ShowPanel(bool bShow, bool force);
 

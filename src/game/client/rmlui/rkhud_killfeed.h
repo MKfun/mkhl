@@ -1,6 +1,7 @@
 #ifndef KISAKSTRIKE_RKHUD_KILLFEED_H
 #define KISAKSTRIKE_RKHUD_KILLFEED_H
 
+#include "rmlui/rkhud_elem_interface.h"
 #include "rocketuiimpl.h"
 
 #pragma push_macro("Assert")
@@ -10,7 +11,7 @@
 
 extern ConVar cl_drawhud;
 
-class RkHudKillfeed
+class RkHudKillfeed : public CRocketHudElem
 {
 public:
 	explicit RkHudKillfeed(const char *value);

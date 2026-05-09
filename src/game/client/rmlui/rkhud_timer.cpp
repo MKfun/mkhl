@@ -3,7 +3,7 @@
 #undef Assert
 #include <RmlUi/Core.h>
 
-RkHudRoundTimer RkHudRoundTimer::m_Instance = RkHudRoundTimer("hud_infopanel");
+RkHudRoundTimer RkHudRoundTimer::m_Instance = RkHudRoundTimer("hud_roundtimer");
 RkHudRoundTimer::RoundTimerData RkHudRoundTimer::roundTimerData = {
 	0,
 	0
