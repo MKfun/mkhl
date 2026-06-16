@@ -5,6 +5,7 @@
 
 #include "BasePanel.h"
 #include "EngineInterface.h"
+#include "FileSystem.h"
 #include "GameConsole.h"
 #include "IEngineVGui.h"
 #include "GameUI_Interface.h"
@@ -15,6 +16,7 @@
 #include "convar.h"
 #include "BackgroundMenuButon.h"
 #include "sdl_rt.h"
+#include "serverconnectpanel.h"
 #include "vgui_controls/MenuBar.h"
 #include <vgui/IPanel.h>
 #include <vgui/ISurface.h>
@@ -31,7 +33,7 @@ CBasePanel *BasePanel()
 {
 	return g_pBasePanel;
 }
-static CBackgroundMenuButton* CreateMenuButton( CBasePanel *parent, const char *panelName, const wchar_t *panelText )
+static CBackgroundMenuButton *CreateMenuButton(CBasePanel *parent, const char *panelName, const wchar_t *panelText)
 {
 	CBackgroundMenuButton *pButton = new CBackgroundMenuButton( parent, panelName );
 	pButton->SetCommand("OpenGameMenu");
@@ -44,8 +46,8 @@ extern IServerBrowser *g_pServerBrowser;
 //-----------------------------------------------------------------------------
 CBasePanel::CBasePanel() : EditablePanel(NULL, "BaseGameUIPanel")
 {
-	SetProportional( true );
-    // SetParent(PANEL_GAMEUIDLL);
+	SetProportional(true);
+	// SetParent(PANEL_GAMEUIDLL);
 	g_pBasePanel = this;
     m_eBackgroundState = BACKGROUND_BLACK;
     RequestFocus();
@@ -66,30 +68,33 @@ CBasePanel::CBasePanel() : EditablePanel(NULL, "BaseGameUIPanel")
     vgui2::Menu *pGameMenu = new vgui2::Menu(m_pMenuBar, "FileMenu");
     m_pMenuBar->AddMenu("Game", pGameMenu);
     pGameMenu->AddMenuItem("Create a server", new KeyValues("NewGameDialog"), pGameMenu);
-    pGameMenu->AddMenuItem("Connect to a server", new KeyValues("ConnectDialog"), pGameMenu);
-    vgui2::Menu *pOptionsMenu = new vgui2::Menu(m_pMenuBar, "OptionsMenu");
-    m_pMenuBar->AddMenu("Options", pOptionsMenu);
-    pOptionsMenu->AddMenuItem("Multiplayer options", new KeyValues("OpenOptionsDialog"), pOptionsMenu);
-    pOptionsMenu->AddMenuItem("Video settings", new KeyValues("OpenOptionsDialog"), pOptionsMenu);
-    pOptionsMenu->AddMenuItem("Audio settings", new KeyValues("OpenOptionsDialog"), pOptionsMenu);
-    pOptionsMenu->AddMenuItem("Addon settings", new KeyValues("OpenOptionsDialog"), pOptionsMenu);
-    m_hOptionsDialog = new COptionsDialog(this);
-    m_hOptionsDialog->Activate();
-    // OnOpenOptionsDialog();
-    g_VModuleLoader.ActivateModule(0);
-    g_VModuleLoader.ActivateModule(1);
-    vgui2::Menu *pAdvOptionsMenu = new vgui2::Menu(m_pMenuBar, "AdvOptionsMenu");
-    m_pMenuBar->AddMenu("Advanced Options", pAdvOptionsMenu);
-    pAdvOptionsMenu->AddMenuItem("Addon settings", new KeyValues("AdvOptionsDialog"), pAdvOptionsMenu);
-
+	pGameMenu->AddMenuItem("Connect to a server", "ConnectDialog", this);
+	vgui2::Menu *pOptionsMenu = new vgui2::Menu(m_pMenuBar, "OptionsMenu");
+	m_pMenuBar->AddMenu("Options", pOptionsMenu);
+	pOptionsMenu->AddMenuItem("Multiplayer options", new KeyValues("OpenOptionsDialog"), pOptionsMenu);
+	pOptionsMenu->AddMenuItem("Video settings", "OpenOptionsDialog", this);
+	pOptionsMenu->AddMenuItem("Audio settings", "OpenOptionsDialog", this);
+	pOptionsMenu->AddMenuItem("Addon settings", "OpenOptionsDialog", this);
+	// m_hOptionsDialog = new COptionsDialog(this);
+	// m_hOptionsDialog->Activate();
+	// OnOpenOptionsDialog();
+	vgui2::Menu *pAdvOptionsMenu = new vgui2::Menu(m_pMenuBar, "AdvOptionsMenu");
+	m_pMenuBar->AddMenu("Advanced Options", pAdvOptionsMenu);
+	pAdvOptionsMenu->AddMenuItem("Addon settings", new KeyValues("AdvOptionsDialog"), pAdvOptionsMenu);
+	SetBackgroundRenderState(BACKGROUND_DESKTOPIMAGE);
+	vgui2::Frame *frame = new vgui2::Frame(this, "");
+	frame->Activate();
+	frame->SetAlpha(0);
+	frame->SetVisible(0);
+	frame->SetSize(1, 1);
 }
 void CBasePanel::OnOpenOptionsDialog()
 {
-    if ( !m_hOptionsDialog )
-    {
-        m_hOptionsDialog = new COptionsDialog(this);
-    }
-    m_hOptionsDialog->Activate();
+	if (1 || !m_hOptionsDialog)
+	{
+		m_hOptionsDialog = new COptionsDialog(this);
+	}
+	m_hOptionsDialog->Activate();
 }
 
 void CBasePanel::OnChildAdded(VPANEL child)
@@ -157,76 +162,169 @@ void CBasePanel::ApplySchemeSettings(IScheme *pScheme)
 //	surface()->DrawSetTextureFile(bimage.imageID, filename, hardwareFilter, false);
 //	surface()->DrawGetTextureSize(bimage.imageID, bimage.width, bimage.height);
 
-	for (int y = 0; y < BACKGROUND_ROWS; y++)
-	{
-		for (int x = 0; x < BACKGROUND_COLUMNS; x++)
-		{
-			bimage_t &bimage = m_ImageID[y][x];
-			bimage.imageID = surface()->CreateNewTextureID();
+	// for (int y = 0; y < BACKGROUND_ROWS; y++)
+	// {
+	// 	for (int x = 0; x < BACKGROUND_COLUMNS; x++)
+	// 	{
+	// 		bimage_t &bimage = m_ImageID[y][x];
+	// 		bimage.imageID = surface()->CreateNewTextureID();
 
-			char filename[512];
-			sprintf(filename, "resource/background/800_%d_%c_loading", y + 1, 'a' + x);
-			surface()->DrawSetTextureFile(bimage.imageID, filename, hardwareFilter, false);
-			surface()->DrawGetTextureSize(bimage.imageID, bimage.width, bimage.height);
+	// 		char filename[512];
+	// 		sprintf(filename, "resource/background/800_%d_%c_loading", y + 1, 'a' + x);
+	// 		surface()->DrawSetTextureFile(bimage.imageID, filename, hardwareFilter, false);
+	// 		surface()->DrawGetTextureSize(bimage.imageID, bimage.width, bimage.height);
+	// 	}
+	// }
+
+	SetBgColor(Color(0, 0, 0, 0));
+
+	m_flFrameFadeInTime = 0.3f;
+	m_BackdropColor = Color(0, 0, 0, 128);
+
+	int screenWide, screenTall;
+	vgui2::surface()->GetScreenSize(screenWide, screenTall);
+
+	float aspectRatio = (float)screenWide / (float)screenTall;
+	bool bIsWidescreen = aspectRatio >= 1.5999f;
+	FileHandle_t file = g_pFullFileSystem->Open("resource/HD_BackgroundLayout.txt", "rt");
+	if (!file)
+		return;
+
+	int fileSize = g_pFullFileSystem->Size(file);
+	char *buffer = (char *)alloca(fileSize + 1);
+	g_pFullFileSystem->Read(buffer, fileSize, file);
+	g_pFullFileSystem->Close(file);
+	buffer[fileSize] = 0;
+
+	//int vid_level;
+	//gameuifuncs->GetCurrentRenderer(NULL, 0, NULL, NULL, NULL, &vid_level);
+
+	char token[512];
+	while (buffer && *buffer)
+	{
+		buffer = g_pFullFileSystem->ParseFile(buffer, token, NULL);
+		if (!buffer || !buffer[0])
+			break;
+
+		if (!stricmp(token, "resolution"))
+		{
+			buffer = g_pFullFileSystem->ParseFile(buffer, token, NULL);
+			m_iBaseResX = atoi(token);
+			buffer = g_pFullFileSystem->ParseFile(buffer, token, NULL);
+			m_iBaseResY = atoi(token);
+		}
+		else
+		{
+			bimage_t &bimage = m_ImageID[m_ImageID.AddToTail()];
+			bimage.imageID = vgui2::surface()->CreateNewTextureID();
+
+			char *ext = strstr(token, ".tga");
+			if (ext)
+				*ext = 0;
+
+			vgui2::surface()->DrawSetTextureFile(bimage.imageID, token, 1, false);
+			vgui2::surface()->DrawGetTextureSize(bimage.imageID, bimage.width, bimage.height);
+
+			buffer = g_pFullFileSystem->ParseFile(buffer, token, NULL);
+			bimage.scaled = stricmp(token, "scaled") == 0;
+			buffer = g_pFullFileSystem->ParseFile(buffer, token, NULL);
+			bimage.x = atoi(token);
+			buffer = g_pFullFileSystem->ParseFile(buffer, token, NULL);
+			bimage.y = atoi(token);
 		}
 	}
 }
 
 void CBasePanel::SetBackgroundRenderState(EBackgroundState state)
 {
+	float frametime = gEngfuncs.GetClientTime();
+	if (state == BACKGROUND_NONE)
+	{
+	}
+	else if (state == BACKGROUND_DESKTOPIMAGE)
+	{
+		m_bFadingInMenus = true;
+		m_flFadeMenuStartTime = frametime;
+		m_flFadeMenuEndTime = frametime + 0.2f;
+	}
 	m_eBackgroundState = state;
 }
 
-void CBasePanel::DrawBackgroundImage()
+void CBasePanel::DrawBackgroundImage(void)
 {
-		int xpos, ypos;
+	int swide, stall;
+	vgui2::surface()->GetScreenSize(swide, stall);
+
 	int wide, tall;
 	GetSize(wide, tall);
 
-	// work out scaling factors
-	int swide, stall;
-	surface()->GetScreenSize(swide, stall);
-	float xScale, yScale;
-		xScale = swide / 800.0f;
-		yScale = stall / 600.0f;
-	xScale = 1.0f;
-	yScale = 1.0f;
+	float frametime = gEngfuncs.GetAbsoluteTime();
+	int alpha = 255;
 
-	// iterate and draw all the background pieces
-	ypos = 0;
-	for (int y = 0; y < BACKGROUND_ROWS; y++)
+	if (m_bRenderingBackgroundTransition)
 	{
-		xpos = 0;
-		for (int x = 0; x < BACKGROUND_COLUMNS; x++)
-		{
-			bimage_t &bimage = m_ImageID[y][x];
-
-			int dx = (int)ceil(xpos * xScale);
-			int dy = (int)ceil(ypos * yScale);
-			int dw = (int)ceil((xpos + bimage.width) * xScale);
-			int dt = (int)ceil((ypos + bimage.height) * yScale);
-
-			if (x == 0)
-			{
-				dx = 0;
-			}
-			if (y == 0)
-			{
-				dy = 0;
-			}
-
-//	bimage_t &bimage = m_ImageID[0][0];
-	// draw the color image only if the mono image isn't yet fully opaque
-//	surface()->DrawSetColor(255, 255, 255, 255);
-//	surface()->DrawSetTexture(bimage.imageID);
-//	surface()->DrawTexturedRect(0, 0, wide, tall);
-
-		xpos += bimage.width;
-		}
-		ypos += m_ImageID[y][0].height;
+		alpha = (m_flTransitionEndTime - frametime) / (m_flTransitionEndTime - m_flTransitionStartTime) * 255;
+		alpha = clamp(alpha, 0, 255);
 	}
 
+	int ypos = 0;
+
+	float xScale, yScale;
+	xScale = (float)swide / (float)m_iBaseResX;
+	yScale = (float)stall / (float)m_iBaseResY;
+
+	// iterate and draw all the background pieces
+	for (int x = 0; x < m_ImageID.Size(); x++)
+	{
+		bimage_t &bimage = m_ImageID[x];
+
+		int dx = bimage.x;
+		int dy = bimage.y;
+		int dw = bimage.x + bimage.width;
+		int dt = bimage.y + bimage.height;
+
+		if (bimage.scaled)
+		{
+			dx = (int)ceil(dx * xScale);
+			dy = (int)ceil(dy * yScale);
+			dw = (int)ceil(dw * xScale);
+			dt = (int)ceil(dt * yScale);
+		}
+
+		// draw the color image only if the mono image isn't yet fully opaque
+		vgui2::surface()->DrawSetColor(255, 255, 255, 255);
+		vgui2::surface()->DrawSetTexture(bimage.imageID);
+		vgui2::surface()->DrawTexturedRect(dx, dy, dw, dt);
+	}
+
+	if (IsPC() && (m_bRenderingBackgroundTransition || m_eBackgroundState == BACKGROUND_LOADING))
+	{
+		// if (m_pGameMenu->GetAlpha() < 255)
+		// {
+		// 	vgui2::surface()->DrawSetColor(255, 255, 255, alpha);
+		// 	vgui2::surface()->DrawSetTexture(m_iLoadingImageID);
+
+		// 	int twide, ttall;
+		// 	vgui2::surface()->DrawGetTextureSize(m_iLoadingImageID, twide, ttall);
+		// 	vgui2::surface()->DrawTexturedRect(wide - twide, tall - ttall, wide, tall);
+		// }
+	}
+
+	if (m_bFadingInMenus)
+	{
+		alpha = (frametime - m_flFadeMenuStartTime) / (m_flFadeMenuEndTime - m_flFadeMenuStartTime) * 255;
+		alpha = clamp(alpha, 0, 255);
+
+		for (int i = 0; i < m_pGameMenuButtons.Count(); ++i)
+			m_pGameMenuButtons[i]->SetAlpha(alpha);
+
+		if (alpha == 255)
+			m_bFadingInMenus = false;
+
+		// m_pGameMenu->SetAlpha(alpha);
+	}
 }
+
 void CBasePanel::RunFrame()
 {
 	InvalidateLayout();
@@ -324,8 +422,8 @@ CGameMenu *CBasePanel::RecursiveLoadGameMenu(KeyValues *datafile)
 			bFoundServerBrowser = true;
 	}
 
-	if( !bFoundServerBrowser && !ModInfo().IsSinglePlayerOnly() )
-		menu->AddMenuItem("AntiM*dG*yButton", "#GameUI_GameMenu_FindServers", "OpenServerBrowser", this);
+	// if( !bFoundServerBrowser && !ModInfo().IsSinglePlayerOnly() )
+	// menu->AddMenuItem("AntiM*dG*yButton", "#GameUI_GameMenu_FindServers", "OpenServerBrowser", this);
 
 	// loop through all the data adding items to the menu
 	for (KeyValues *dat = datafile->GetFirstSubKey(); dat != NULL; dat = dat->GetNextKey())
@@ -351,7 +449,18 @@ void CBasePanel::OnCommand(const char* command)
     {
         OnOpenOptionsDialog();
     }
-    BaseClass::OnCommand(command);
+	if (!V_strcmp(command, "ConnectDialog"))
+	{
+		if (1 || !m_hServerConnectDialog)
+		{
+			m_hServerConnectDialog = new ServerConnectPanel(this);
+		}
+		m_hServerConnectDialog->Activate();
+
+		g_VModuleLoader.ActivateModule(0);
+		g_VModuleLoader.ActivateModule(1);
+	}
+	BaseClass::OnCommand(command);
 }
 void CBasePanel::PositionDialog(vgui2::PHandle dlg)
 {

@@ -44,8 +44,8 @@ COptionsDialog::COptionsDialog(vgui2::Panel *parent) : PropertyDialog(parent, "O
     SetBounds(0, 0, 512, 406);
     SetSizeable( false );
     SetProportional(0);
-
-    SetTitle("#GameUI_Options", true);
+	SetDeleteSelfOnClose(true);
+	SetTitle("#GameUI_Options", true);
 
     // debug timing code, this function takes too long
     //	double s4 = system()->GetCurrentTime();

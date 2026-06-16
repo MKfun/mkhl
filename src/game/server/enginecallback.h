@@ -14,6 +14,7 @@
 ****/
 #ifndef ENGINECALLBACK_H
 #define ENGINECALLBACK_H
+#include "eiface.h"
 #pragma once
 
 #include "event_flags.h"

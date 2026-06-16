@@ -5,6 +5,7 @@
 #ifndef BASEPANEL_H
 #define BASEPANEL_H
 #include "options/optionsdialog.h"
+#include "serverconnectpanel.h"
 #ifdef _WIN32
 #pragma once
 #endif
@@ -46,13 +47,16 @@ private:
     void OnOpenOptionsDialog();
     EBackgroundState m_eBackgroundState;
 
-	enum { BACKGROUND_ROWS = 3, BACKGROUND_COLUMNS = 4 };
 	struct bimage_t
 	{
 		int imageID;
+		int x, y;
 		int width, height;
+		bool scaled;
 	};
-	bimage_t m_ImageID[BACKGROUND_ROWS][BACKGROUND_COLUMNS];
+	CUtlVector<bimage_t> m_ImageID;
+	int m_iBaseResX, m_iBaseResY;
+
 	typedef vgui2::Panel BaseClass;
 	CGameMenu *RecursiveLoadGameMenu(KeyValues *datafile);
 	void CreateGameMenu();
@@ -68,9 +72,25 @@ private:
     CGameMenuItem *m_pGameMenuButton;
 
     COptionsDialog *m_hOptionsDialog;
+	ServerConnectPanel *m_hServerConnectDialog;
+	// misc
+	void PositionDialog(vgui2::PHandle dlg);
 
-    // misc
-    void PositionDialog(vgui2::PHandle dlg);
+	int m_iLoadingImageID;
+	bool m_bLevelLoading;
+	bool m_bEverActivated;
+	bool m_bFadingInMenus;
+	bool m_bInitialLoading;
+	float m_flFadeMenuStartTime;
+	float m_flFadeMenuEndTime;
+	bool m_bRenderingBackgroundTransition;
+	float m_flTransitionStartTime;
+	float m_flTransitionEndTime;
+	bool m_bHaveDarkenedBackground;
+	bool m_bHaveDarkenedTitleText;
+	bool m_bForceTitleTextUpdate;
+	float m_flFrameFadeInTime;
+	Color m_BackdropColor;
 };
 
 //-----------------------------------------------------------------------------
