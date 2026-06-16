@@ -11,8 +11,9 @@ Roadmap
 - [x] Engine starts (no crashes)
 - [x] Console
 - [x] BasePanel shows
-- [x] Options frame (wip) 
-- [ ] ServerBrowser
+- [x] Options frame (wip)
+- [x] background image
+- [x] ServerBrowser (PARTIALLY!!!)
 - [ ] Multiplayer dialog
 - [ ] Singleplayer dialog
 - [ ] Nice menu (not vanilla)
