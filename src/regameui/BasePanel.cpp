@@ -119,11 +119,12 @@ void CBasePanel::SetupThatFrickinPanel()
 }
 void CBasePanel::OnOpenOptionsDialog(int tab)
 {
-	if (1 || !m_hOptionsDialog)
+	if (!m_hOptionsDialog)
 	{
 		m_hOptionsDialog = new COptionsDialog(this);
 	}
-	m_hOptionsDialog->Activate(tab);
+	m_hOptionsDialog.Get()->Activate(tab);
+	PositionDialog(m_hOptionsDialog);
 }
 
 void CBasePanel::OnChildAdded(VPANEL child)
@@ -468,11 +469,12 @@ void CBasePanel::OnCommand(const char* command)
 	}
 	else if (!V_strcmp(command, "ConnectDialog"))
 	{
-		if (1 || !m_hServerConnectDialog)
+		if (!m_hServerConnectDialog.Get())
 		{
 			m_hServerConnectDialog = new ServerConnectPanel(this);
 		}
-		m_hServerConnectDialog->Activate();
+		m_hServerConnectDialog.Get()->Activate();
+		PositionDialog(m_hServerConnectDialog);
 
 		g_VModuleLoader.ActivateModule(0);
 		g_VModuleLoader.ActivateModule(1);
@@ -483,23 +485,31 @@ void CBasePanel::OnCommand(const char* command)
 	}
 	else if (!V_strcmp(command, "CreateServerDialog"))
 	{
-		m_hCreateMultiplayerGameDialog = new CCreateMultiplayerGameDialog(this);
-		m_hCreateMultiplayerGameDialog->Activate();
+		if (!m_hCreateMultiplayerGameDialog.Get())
+			m_hCreateMultiplayerGameDialog = new CCreateMultiplayerGameDialog(this);
+		m_hCreateMultiplayerGameDialog.Get()->Activate();
+		PositionDialog(m_hCreateMultiplayerGameDialog);
 	}
 	else if (!V_strcmp(command, "NewGameDialog"))
 	{
-		m_hNewGameDialog = new CNewGameDialog(this);
-		m_hNewGameDialog->Activate();
+		if (!m_hNewGameDialog.Get())
+			m_hNewGameDialog = new CNewGameDialog(this);
+		m_hNewGameDialog.Get()->Activate();
+		PositionDialog(m_hNewGameDialog);
 	}
 	else if (!V_strcmp(command, "LoadGameDialog"))
 	{
-		m_hLoadGameDialog = new CLoadGameDialog(this);
-		m_hLoadGameDialog->Activate();
+		if (!m_hLoadGameDialog.Get())
+			m_hLoadGameDialog = new CLoadGameDialog(this);
+		m_hLoadGameDialog.Get()->Activate();
+		PositionDialog(m_hLoadGameDialog);
 	}
 	else if (!V_strcmp(command, "SaveGameDialog"))
 	{
-		m_hSaveGameDialog = new CSaveGameDialog(this);
-		m_hSaveGameDialog->Activate();
+		if (!m_hSaveGameDialog.Get())
+			m_hSaveGameDialog = new CSaveGameDialog(this);
+		m_hSaveGameDialog.Get()->Activate();
+		PositionDialog(m_hSaveGameDialog);
 	}
 
 	BaseClass::OnCommand(command);

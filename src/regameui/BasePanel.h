@@ -76,12 +76,12 @@ private:
     vgui2::MenuBar *m_pMenuBar;
     CGameMenuItem *m_pGameMenuButton;
 
-    COptionsDialog *m_hOptionsDialog;
-	ServerConnectPanel *m_hServerConnectDialog;
-	CCreateMultiplayerGameDialog *m_hCreateMultiplayerGameDialog;
-	CNewGameDialog *m_hNewGameDialog;
-	CLoadGameDialog *m_hLoadGameDialog;
-	CSaveGameDialog *m_hSaveGameDialog;
+	vgui2::DHANDLE<COptionsDialog> m_hOptionsDialog;
+	vgui2::DHANDLE<ServerConnectPanel> m_hServerConnectDialog;
+	vgui2::DHANDLE<CCreateMultiplayerGameDialog> m_hCreateMultiplayerGameDialog;
+	vgui2::DHANDLE<CNewGameDialog> m_hNewGameDialog;
+	vgui2::DHANDLE<CLoadGameDialog> m_hLoadGameDialog;
+	vgui2::DHANDLE<CSaveGameDialog> m_hSaveGameDialog;
 	// misc
 	void PositionDialog(vgui2::PHandle dlg);
 	void SetupThatFrickinPanel();
