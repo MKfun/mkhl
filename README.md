@@ -11,16 +11,19 @@ Roadmap
 - [x] Engine starts (no crashes)
 - [x] Console
 - [x] BasePanel shows
-- [x] Options frame (wip)
 - [x] background image
-- [x] ServerBrowser (PARTIALLY!!!)
-- [ ] Multiplayer dialog
-- [ ] Singleplayer dialog
-- [ ] Nice menu (not vanilla)
+- [x] Multiplayer dialog
+- [x] Singleplayer dialog
+- [x] Nice menu (not vanilla)
+- [ ] FIXUP Options frame
+- [ ] FIXUP ServerBrowser scheme
 - [ ] Builds on windows
 - [ ] ifdefs for MKHL
 
-
+Bonus roadmap
+--------------
+- [ ] Animated bgs
+- [ ] RocketUI
 Technical moments
 ------------------
  - The code may be ugly, but thats a source beta code, srry
