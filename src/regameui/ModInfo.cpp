@@ -206,6 +206,15 @@ int CModInfo::AdvCrosshairLevel()
 	return m_pModData->GetInt( "advcrosshair" );
 }
 
+const char *CModInfo::GetTrainMap()
+{
+	return m_pModData->GetString("trainmap", "t0a0");
+}
+
+const char *CModInfo::GetStartMap()
+{
+	return m_pModData->GetString("startmap", "c0a0");
+}
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------

@@ -2,6 +2,7 @@
 // Created by den4ik on 01.12.25.
 //
 #include "GameConsole.h"
+#include "LoadingDialog.h"
 #include "sdl_rt.h"
 #ifdef WIN32
 #if !defined( _X360 )
@@ -475,47 +476,7 @@ void CGameUI::RunFrame(void)
 
 //	GameConsole().RunFrame();
 
-    if (IsPC() && m_bTryingToLoadTracker)
-//	{
-		// try and load Steam platform files
-//		unsigned int waitResult = Sys_WaitForSingleObject(g_hMutex, 0);
-//		if (waitResult == SYS_WAIT_OBJECT_0 || waitResult == SYS_WAIT_ABANDONED)
-//		{
-//			// we got the mutex, so load Friends/Serverbrowser
-//			// clear the loading flag
-            m_bTryingToLoadTracker = false;
-    g_pServerBrowser = (IServerBrowser *)s_pFactory(SERVERBROWSER_INTERFACE_VERSION, NULL);
-//			// release the wait mutex
-//			Sys_ReleaseMutex(g_hWaitMutex);
-//			// notify the game of our game name
-//             const char *fullGamePath = gEngfuncs.pfnGetGameDirectory();
-//             const char *pathSep = strrchr(fullGamePath, '/');
-//             if (!pathSep)
-//             {
-//                 pathSep = strrchr(fullGamePath, '\\');
-//             }
-//             if (pathSep)
-//             {
-//                 KeyValues *pKV = new KeyValues("ActiveGameName");
-//                 pKV->SetString("name", pathSep + 1);
-//                 pKV->SetInt("appid", gEngfuncs.pfnGetAppID());
-//                 KeyValues *modinfo = new KeyValues("ModInfo");
-//                 if (modinfo->LoadFromFile(g_pFullFileSystem, "gameinfo.txt"))
-//                 {
-//                     pKV->SetString("game", modinfo->GetString("game", ""));
-//                 }
-//                 modinfo->deleteThis();
-
-//                 g_VModuleLoader.PostMessageToAllModules(pKV);
-//             }
-// //
-//			// notify the ui of a game connect if we're already in a game
-//			if (m_iGameIP)
-//			{
-//				SendConnectedToGameMessage();
-//			}
-//		}
-//	}
+	m_bTryingToLoadTracker = false;
 }
 void CGameUI::ConnectToServer(const char *game, int IP, int port)
 {
@@ -570,7 +531,7 @@ void CGameUI::LoadingFinished(const char *resourceType, const char *resourceName
 	g_VModuleLoader.PostMessageToAllModules(new KeyValues("LoadingFinished", "type", resourceType, "name", resourceName));
 
 	// stop drawing loading screen
-	GetUiBaseModPanelClass().SetBackgroundRenderState(CBasePanel::BACKGROUND_BLACK);
+	GetUiBaseModPanelClass().SetBackgroundRenderState(CBasePanel::BACKGROUND_DESKTOPIMAGE);
 
 	// hide the UI
 //	baseuifuncs->HideGameUI();
@@ -582,11 +543,11 @@ void CGameUI::StartProgressBar(const char *progressType, int progressSteps)
 
 	if (!g_hLoadingDialog.Get())
 	{
-//		g_hLoadingDialog = new CLoadingDialog(staticPanel);
+		g_hLoadingDialog = new CLoadingDialog(factoryBasePanel);
 	}
 
 	// close the start menu
-//	GetUiBaseModPanelClass().SetBackgroundRenderState(CBasePanel::BACKGROUND_LOADING);
+	GetUiBaseModPanelClass().SetBackgroundRenderState(CBasePanel::BACKGROUND_LOADING);
 	m_pszCurrentProgressType = progressType;
 	if (m_flProgressStartTime < 0.001f)
 	{
@@ -594,9 +555,9 @@ void CGameUI::StartProgressBar(const char *progressType, int progressSteps)
 	}
 
 	// open a loading dialog
-//	g_hLoadingDialog->SetProgressRange(0 , progressSteps);
-//	g_hLoadingDialog->SetProgressPoint(0);
-//	g_hLoadingDialog->DisplayProgressBar(progressType, "invalid");
+	g_hLoadingDialog->SetProgressRange(0, progressSteps);
+	g_hLoadingDialog->SetProgressPoint(0);
+	g_hLoadingDialog->DisplayProgressBar(progressType, "invalid");
 }
 
 //-----------------------------------------------------------------------------
@@ -607,7 +568,7 @@ int CGameUI::ContinueProgressBar(int progressPoint, float progressFraction)
 	if (!g_hLoadingDialog.Get())
 		return 0;
 
-//	g_hLoadingDialog->SetProgressPoint(progressPoint);
+	g_hLoadingDialog->SetProgressPoint(progressPoint);
 	return 1;
 }
 
@@ -618,7 +579,7 @@ void CGameUI::StopProgressBar(bool bError, const char *failureReason, const char
 {
 	if (!g_hLoadingDialog.Get() && bError)
 	{
-//		g_hLoadingDialog = new CLoadingDialog(staticPanel);
+		g_hLoadingDialog = new CLoadingDialog(factoryBasePanel);
 	}
 
 	if (!g_hLoadingDialog.Get())
@@ -627,17 +588,17 @@ void CGameUI::StopProgressBar(bool bError, const char *failureReason, const char
 	if (bError)
 	{
 		// turn the dialog to error display mode
-//		g_hLoadingDialog->DisplayError(failureReason,extendedReason);
+		g_hLoadingDialog->DisplayError(failureReason, extendedReason);
 	}
 	else
 	{
 		// close loading dialog
-//		g_hLoadingDialog->Close();
-//		g_hLoadingDialog = NULL;
+		g_hLoadingDialog->Close();
+		g_hLoadingDialog = NULL;
 	}
 
 	// stop drawing loading screen
-	GetUiBaseModPanelClass().SetBackgroundRenderState(CBasePanel::BACKGROUND_BLACK);
+	GetUiBaseModPanelClass().SetBackgroundRenderState(CBasePanel::BACKGROUND_DESKTOPIMAGE);
 }
 
 //-----------------------------------------------------------------------------
@@ -648,7 +609,7 @@ int CGameUI::SetProgressBarStatusText(const char *statusText)
 	if (!g_hLoadingDialog.Get())
 		return 0;
 
-//	g_hLoadingDialog->SetStatusText(statusText);
+	g_hLoadingDialog->SetStatusText(statusText);
 	return 1;
 }
 
@@ -660,7 +621,7 @@ void CGameUI::SetSecondaryProgressBar(float progress /* range [0..1] */)
 	if (!g_hLoadingDialog.Get())
 		return;
 
-//	g_hLoadingDialog->SetSecondaryProgress(progress);
+	g_hLoadingDialog->SetSecondaryProgress(progress);
 }
 
 //-----------------------------------------------------------------------------
@@ -671,7 +632,7 @@ void CGameUI::SetSecondaryProgressBarText(const char *statusText)
 	if (!g_hLoadingDialog.Get())
 		return;
 
-//	g_hLoadingDialog->SetSecondaryProgressText(statusText);
+	g_hLoadingDialog->SetSecondaryProgressText(statusText);
 }
 int CGameUI::ActivateDemoUI() {
 	return 1;

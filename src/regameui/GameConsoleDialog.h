@@ -103,31 +103,29 @@ private:
 	struct cmdnode_t
 	{
 		// pointer to commands (only one will be non-null)
-		//unsigned int cmd;
-		//	struct cvar_s *cvar;
-		ConCommand	*cmd;
+		unsigned int cmd;
+		struct cvar_s *cvar;
 	};
 
 	class CompletionItem
 	{
 	public:
-		CompletionItem( void )
+		CompletionItem(void)
 		{
 			iscommand = true;
-			//	cmd.cmd = 0;
-			//			cmd.cvar = NULL;
-			cmd.cmd = NULL;
+			cmd.cmd = 0;
+			cmd.cvar = NULL;
 
 			m_text = NULL;
 		}
 
-		CompletionItem( const CompletionItem& src )
+		CompletionItem(const CompletionItem &src)
 		{
 			iscommand = src.iscommand;
 			cmd = src.cmd;
-			if ( src.m_text )
+			if (src.m_text)
 			{
-				m_text = new CHistoryItem( (const CHistoryItem& )src.m_text );
+				m_text = new CHistoryItem((const CHistoryItem &)src.m_text);
 			}
 			else
 			{
@@ -135,16 +133,16 @@ private:
 			}
 		}
 
-		CompletionItem& operator =( const CompletionItem& src )
+		CompletionItem &operator=(const CompletionItem &src)
 		{
-			if ( this == &src )
+			if (this == &src)
 				return *this;
 
 			iscommand = src.iscommand;
 			cmd = src.cmd;
-			if ( src.m_text )
+			if (src.m_text)
 			{
-				m_text = new CHistoryItem( (const CHistoryItem& )*src.m_text );
+				m_text = new CHistoryItem((const CHistoryItem &)*src.m_text);
 			}
 			else
 			{
@@ -154,48 +152,60 @@ private:
 			return *this;
 		}
 
-		~CompletionItem( void )
+		~CompletionItem(void)
 		{
 			delete m_text;
 		}
 
-		char const *GetItemText( void )
+		char const *GetItemText(void)
 		{
 			static char text[256];
 			text[0] = 0;
-			if ( m_text )
+			if (m_text)
 			{
-				if ( m_text->HasExtra() )
+				if (m_text->HasExtra())
 				{
-					_snprintf( text, sizeof( text ), "%s %s", m_text->GetText(), m_text->GetExtra() );
+					_snprintf(text, sizeof(text), "%s %s", m_text->GetText(), m_text->GetExtra());
 				}
 				else
 				{
-					strcpy( text, m_text->GetText() );
+					strcpy(text, m_text->GetText());
 				}
 			}
 			return text;
 		}
 
-		const char *GetCommand( void )
+		const char *GetCommand(void)
 		{
 			static char text[256];
 			text[0] = 0;
-			if ( m_text )
+			if (m_text)
 			{
-				strcpy( text, m_text->GetText() );
+				strcpy(text, m_text->GetText());
 			}
 			return text;
 		}
 
-		bool			iscommand;
+		bool iscommand;
 		cmdnode_t cmd;
-		CHistoryItem	*m_text;
+		CHistoryItem *m_text;
 	};
-
 
 	CUtlVector<CompletionItem> m_CompletionList;
 	CUtlVector<CHistoryItem>	m_CommandHistory;
+
+#if defined(__linux__) || defined(__gnu_linux__)
+	static int SortCompletionItems(const void *a, const void *b, void *context)
+#else
+	static int SortCompletionItems(void *context, const void *a, const void *b)
+#endif
+	{
+		auto text = reinterpret_cast<const char *>(context);
+		auto item_a = reinterpret_cast<const CompletionItem *>(a)->m_text->GetText();
+		auto item_b = reinterpret_cast<const CompletionItem *>(b)->m_text->GetText();
+
+		return (item_b - V_stristr(item_b, text)) - (item_a - V_stristr(item_a, text));
+	}
 
 	typedef CTaskFrame BaseClass;
 };

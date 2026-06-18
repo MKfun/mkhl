@@ -13,6 +13,9 @@
 #include "ModInfo.h"
 #include "VGuiSystemModuleLoader.h"
 #include "options/optionsdialog.h"
+#include "createmultiplayer/CreateMultiplayerGameDialog.h"
+#include "NewGameDialog.h"
+
 #include "convar.h"
 #include "BackgroundMenuButon.h"
 #include "sdl_rt.h"
@@ -65,36 +68,62 @@ CBasePanel::CBasePanel() : EditablePanel(NULL, "BaseGameUIPanel")
     m_pMenuBar->SetParent( this );
     m_pMenuBar->SetSize( w, MENU_HEIGHT );
     m_pMenuBar->SetMouseInputEnabled(true);
-    vgui2::Menu *pGameMenu = new vgui2::Menu(m_pMenuBar, "FileMenu");
-    m_pMenuBar->AddMenu("Game", pGameMenu);
-    pGameMenu->AddMenuItem("Create a server", new KeyValues("NewGameDialog"), pGameMenu);
-	pGameMenu->AddMenuItem("Connect to a server", "ConnectDialog", this);
+	vgui2::Menu *pGameMenu = new vgui2::Menu(m_pMenuBar, "GameMenu");
+	m_pMenuBar->AddMenu("Game", pGameMenu);
+	pGameMenu->AddMenuItem("Start a new game", "NewGameDialog", this);
+	pGameMenu->AddMenuItem("Save game", "SaveGameDialog", this);
+	pGameMenu->AddMenuItem("Load game", "LoadGameDialog", this);
+
+	vgui2::Menu *pMultiplayerMenu = new vgui2::Menu(m_pMenuBar, "MuliplayerMenu");
+	m_pMenuBar->AddMenu("Multiplayer", pMultiplayerMenu);
+	pMultiplayerMenu->AddMenuItem("Create a server", "CreateServerDialog", this);
+	pMultiplayerMenu->AddMenuItem("Connect to a server", "ConnectDialog", this);
 	vgui2::Menu *pOptionsMenu = new vgui2::Menu(m_pMenuBar, "OptionsMenu");
 	m_pMenuBar->AddMenu("Options", pOptionsMenu);
-	pOptionsMenu->AddMenuItem("Multiplayer options", new KeyValues("OpenOptionsDialog"), pOptionsMenu);
-	pOptionsMenu->AddMenuItem("Video settings", "OpenOptionsDialog", this);
-	pOptionsMenu->AddMenuItem("Audio settings", "OpenOptionsDialog", this);
-	pOptionsMenu->AddMenuItem("Addon settings", "OpenOptionsDialog", this);
+	pOptionsMenu->AddMenuItem("Multiplayer options", ("OpenOptionsDialog"), this, new KeyValues("Multiplayer"));
+	pOptionsMenu->AddMenuItem("Video settings", "OpenOptionsDialog", this, new KeyValues("Video"));
+	pOptionsMenu->AddMenuItem("Audio settings", "OpenOptionsDialog", this, new KeyValues("Audio"));
 	// m_hOptionsDialog = new COptionsDialog(this);
 	// m_hOptionsDialog->Activate();
 	// OnOpenOptionsDialog();
 	vgui2::Menu *pAdvOptionsMenu = new vgui2::Menu(m_pMenuBar, "AdvOptionsMenu");
 	m_pMenuBar->AddMenu("Advanced Options", pAdvOptionsMenu);
-	pAdvOptionsMenu->AddMenuItem("Addon settings", new KeyValues("AdvOptionsDialog"), pAdvOptionsMenu);
+	pAdvOptionsMenu->AddMenuItem("Addon settings", "AdvOptionsDialog", this);
 	SetBackgroundRenderState(BACKGROUND_DESKTOPIMAGE);
+	// DLLHACKHACKHACK: So, if we dont have active frames at this point,
+	// we are loosing mouse input on WHOOOLE BasePanel, so just setup that
+	// "invisible" frame to force our dear VGUI2 think that we have some frame
+	SetupThatFrickinPanel();
+}
+void CBasePanel::SetupThatFrickinPanel()
+{
 	vgui2::Frame *frame = new vgui2::Frame(this, "");
 	frame->Activate();
 	frame->SetAlpha(0);
-	frame->SetVisible(0);
+	frame->SetVisible(1);
+	int wide, tall;
+	vgui2::surface()->GetScreenSize(wide, tall);
+	frame->SetPos(-100, -100);
+	frame->SetTitleBarVisible(0);
+	frame->SetMinimumSize(1, 1);
+	frame->SetSizeable(0);
 	frame->SetSize(1, 1);
+	frame->SetFgColor(Color(0, 0, 0, 0));
+	frame->SetBgColor(Color(0, 0, 0, 0));
+	frame->SetPaintEnabled(false);
+	frame->SetEnabled(0);
+	frame->SetPaintBackgroundEnabled(0);
+	frame->SetKeyBoardInputEnabled(0);
+	frame->SetBorder(NULL);
+	frame->SetCloseButtonVisible(0);
 }
-void CBasePanel::OnOpenOptionsDialog()
+void CBasePanel::OnOpenOptionsDialog(int tab)
 {
 	if (1 || !m_hOptionsDialog)
 	{
 		m_hOptionsDialog = new COptionsDialog(this);
 	}
-	m_hOptionsDialog->Activate();
+	m_hOptionsDialog->Activate(tab);
 }
 
 void CBasePanel::OnChildAdded(VPANEL child)
@@ -122,8 +151,8 @@ void CBasePanel::PaintBackground()
         // if the loading dialog is visible, draw the background black
         int swide, stall;
         surface()->GetScreenSize(swide, stall);
-        surface()->DrawSetColor(0, 0, 0, 128);
-        surface()->DrawFilledRect(0, 0, swide, stall);
+		surface()->DrawSetColor(0, 0, 0, 128);
+		surface()->DrawFilledRect(0, 0, swide, stall);
 	}
 	break;
 
@@ -196,9 +225,6 @@ void CBasePanel::ApplySchemeSettings(IScheme *pScheme)
 	g_pFullFileSystem->Close(file);
 	buffer[fileSize] = 0;
 
-	//int vid_level;
-	//gameuifuncs->GetCurrentRenderer(NULL, 0, NULL, NULL, NULL, &vid_level);
-
 	char token[512];
 	while (buffer && *buffer)
 	{
@@ -227,6 +253,7 @@ void CBasePanel::ApplySchemeSettings(IScheme *pScheme)
 
 			buffer = g_pFullFileSystem->ParseFile(buffer, token, NULL);
 			bimage.scaled = stricmp(token, "scaled") == 0;
+			bimage.fit = true;
 			buffer = g_pFullFileSystem->ParseFile(buffer, token, NULL);
 			bimage.x = atoi(token);
 			buffer = g_pFullFileSystem->ParseFile(buffer, token, NULL);
@@ -252,76 +279,65 @@ void CBasePanel::SetBackgroundRenderState(EBackgroundState state)
 
 void CBasePanel::DrawBackgroundImage(void)
 {
-	int swide, stall;
-	vgui2::surface()->GetScreenSize(swide, stall);
-
 	int wide, tall;
 	GetSize(wide, tall);
 
-	float frametime = gEngfuncs.GetAbsoluteTime();
-	int alpha = 255;
+	int swide, stall;
+	surface()->GetScreenSize(swide, stall);
 
-	if (m_bRenderingBackgroundTransition)
+	float xScale = (float)swide / (float)m_iBaseResX;
+	float yScale = (float)stall / (float)m_iBaseResY;
+
+	float coverScale, coverWide, coverTall;
+	if (swide > yScale * m_iBaseResX)
 	{
-		alpha = (m_flTransitionEndTime - frametime) / (m_flTransitionEndTime - m_flTransitionStartTime) * 255;
-		alpha = clamp(alpha, 0, 255);
+		coverScale = xScale;
+		coverWide = m_iBaseResX * xScale;
+		coverTall = m_iBaseResY * xScale;
 	}
-
-	int ypos = 0;
-
-	float xScale, yScale;
-	xScale = (float)swide / (float)m_iBaseResX;
-	yScale = (float)stall / (float)m_iBaseResY;
-
-	// iterate and draw all the background pieces
-	for (int x = 0; x < m_ImageID.Size(); x++)
+	else
 	{
-		bimage_t &bimage = m_ImageID[x];
+		coverScale = yScale;
+		coverWide = m_iBaseResX * yScale;
+		coverTall = m_iBaseResY * yScale; // == stall
+	}
+	int fitOffsetX = swide / 2 - (int)(coverWide * 0.5f);
+	int fitOffsetY = stall / 2 - (int)(coverTall * 0.5f);
 
-		int dx = bimage.x;
-		int dy = bimage.y;
-		int dw = bimage.x + bimage.width;
-		int dt = bimage.y + bimage.height;
+	for (int i = 0; i < m_ImageID.Count(); i++)
+	{
+		bimage_t &bimage = m_ImageID[i];
+
+		int dx, dy, dw, dt;
 
 		if (bimage.scaled)
 		{
-			dx = (int)ceil(dx * xScale);
-			dy = (int)ceil(dy * yScale);
-			dw = (int)ceil(dw * xScale);
-			dt = (int)ceil(dt * yScale);
+			dx = bimage.x ? (int)ceil(bimage.x * xScale) : 0;
+			dy = bimage.y ? (int)ceil(bimage.y * yScale) : 0;
+			dw = (int)ceil((bimage.width + bimage.x) * xScale);
+			dt = (int)ceil((bimage.height + bimage.y) * yScale);
+		}
+		else if (bimage.fit)
+		{
+			int x = bimage.x ? (int)ceil(bimage.x * coverScale) : 0;
+			int y = bimage.y ? (int)ceil(bimage.y * coverScale) : 0;
+
+			dx = fitOffsetX + x;
+			dy = fitOffsetY + y;
+			dw = dx + (int)ceil(bimage.width * coverScale);
+			dt = dy + (int)ceil(bimage.height * coverScale);
+		}
+		else
+		{
+			dx = bimage.x ? (int)ceil((double)bimage.x) : 0;
+			dy = bimage.y ? (int)ceil((double)bimage.y) : 0;
+			dw = bimage.width + dx;
+			dt = bimage.height + dy;
 		}
 
-		// draw the color image only if the mono image isn't yet fully opaque
-		vgui2::surface()->DrawSetColor(255, 255, 255, 255);
-		vgui2::surface()->DrawSetTexture(bimage.imageID);
-		vgui2::surface()->DrawTexturedRect(dx, dy, dw, dt);
-	}
-
-	if (IsPC() && (m_bRenderingBackgroundTransition || m_eBackgroundState == BACKGROUND_LOADING))
-	{
-		// if (m_pGameMenu->GetAlpha() < 255)
-		// {
-		// 	vgui2::surface()->DrawSetColor(255, 255, 255, alpha);
-		// 	vgui2::surface()->DrawSetTexture(m_iLoadingImageID);
-
-		// 	int twide, ttall;
-		// 	vgui2::surface()->DrawGetTextureSize(m_iLoadingImageID, twide, ttall);
-		// 	vgui2::surface()->DrawTexturedRect(wide - twide, tall - ttall, wide, tall);
-		// }
-	}
-
-	if (m_bFadingInMenus)
-	{
-		alpha = (frametime - m_flFadeMenuStartTime) / (m_flFadeMenuEndTime - m_flFadeMenuStartTime) * 255;
-		alpha = clamp(alpha, 0, 255);
-
-		for (int i = 0; i < m_pGameMenuButtons.Count(); ++i)
-			m_pGameMenuButtons[i]->SetAlpha(alpha);
-
-		if (alpha == 255)
-			m_bFadingInMenus = false;
-
-		// m_pGameMenu->SetAlpha(alpha);
+		surface()->DrawSetColor(255, 255, 255, 255);
+		surface()->DrawSetTexture(bimage.imageID);
+		surface()->DrawTexturedRect(dx, dy, dw, dt);
 	}
 }
 
@@ -446,10 +462,11 @@ CGameMenu::~CGameMenu() {}
 void CBasePanel::OnCommand(const char* command)
 {
     if (!stricmp(command, "OpenOptionsDialog"))
-    {
-        OnOpenOptionsDialog();
-    }
-	if (!V_strcmp(command, "ConnectDialog"))
+	{
+
+		OnOpenOptionsDialog();
+	}
+	else if (!V_strcmp(command, "ConnectDialog"))
 	{
 		if (1 || !m_hServerConnectDialog)
 		{
@@ -460,6 +477,31 @@ void CBasePanel::OnCommand(const char* command)
 		g_VModuleLoader.ActivateModule(0);
 		g_VModuleLoader.ActivateModule(1);
 	}
+	else if (!V_strcmp(command, "AdvOptionsDialog"))
+	{
+		gEngfuncs.pfnClientCmd("gameui_cl_open_adv_options");
+	}
+	else if (!V_strcmp(command, "CreateServerDialog"))
+	{
+		m_hCreateMultiplayerGameDialog = new CCreateMultiplayerGameDialog(this);
+		m_hCreateMultiplayerGameDialog->Activate();
+	}
+	else if (!V_strcmp(command, "NewGameDialog"))
+	{
+		m_hNewGameDialog = new CNewGameDialog(this);
+		m_hNewGameDialog->Activate();
+	}
+	else if (!V_strcmp(command, "LoadGameDialog"))
+	{
+		m_hLoadGameDialog = new CLoadGameDialog(this);
+		m_hLoadGameDialog->Activate();
+	}
+	else if (!V_strcmp(command, "SaveGameDialog"))
+	{
+		m_hSaveGameDialog = new CSaveGameDialog(this);
+		m_hSaveGameDialog->Activate();
+	}
+
 	BaseClass::OnCommand(command);
 }
 void CBasePanel::PositionDialog(vgui2::PHandle dlg)

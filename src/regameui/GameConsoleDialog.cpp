@@ -24,6 +24,8 @@
 #include "IGameUIFuncs.h"
 #include "keydefs.h"
 #include "icvar.h"
+#include <appversion.h>
+
 extern cl_enginefunc_t gEngfuncs;
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -40,57 +42,117 @@ extern IBaseUI *baseuifuncs;
 //-----------------------------------------------------------------------------
 // Purpose: forwards tab key presses up from the text entry so we can do autocomplete
 //-----------------------------------------------------------------------------
-class TabCatchingTextEntry : public TextEntry
+class TabCatchingTextEntry : public vgui2::TextEntry
 {
 public:
-	TabCatchingTextEntry(Panel *parent, const char *name) : TextEntry(parent, name)
+	TabCatchingTextEntry(Panel *parent, const char *name, vgui2::VPANEL comp)
+	    : TextEntry(parent, name)
+	    , m_pCompletionList(comp)
 	{
+		SetAllowNonAsciiCharacters(true);
 	}
 
-	virtual void OnKeyCodeTyped(KeyCode code)
+	virtual void OnKeyCodeTyped(vgui2::KeyCode code)
 	{
-		if (code == KEY_TAB)
+		if (code == vgui2::KeyCode::KEY_PAD_ENTER)
+		{
+			code = vgui2::KeyCode::KEY_ENTER;
+		}
+
+		if (code != vgui2::KeyCode::KEY_DOWN && code != vgui2::KeyCode::KEY_UP && code != vgui2::KeyCode::KEY_ENTER)
 		{
 			GetParent()->OnKeyCodeTyped(code);
 		}
-		else
-		{
-			TextEntry::OnKeyCodeTyped(code);
-		}
+
+		TextEntry::OnKeyCodeTyped(code);
+	}
+
+	virtual void OnKeyTyped(wchar_t key)
+	{
+		if (!m_bIgnoreKeyTyped)
+			TextEntry::OnKeyTyped(key);
+
+		m_bIgnoreKeyTyped = false;
+	}
+
+	void IgnoreNextTextInput(bool bIgnore)
+	{
+		m_bIgnoreKeyTyped = bIgnore;
 	}
 
 	virtual void OnKillFocus()
 	{
-		PostMessage(GetParent(), new KeyValues("CloseCompletionList"));
+		if (vgui2::input()->GetFocus() != m_pCompletionList) // if its not the completion window trying to steal our focus
+		{
+			PostMessage(GetParent(), new KeyValues("CloseCompletionList"));
+		}
 	}
+
+private:
+	vgui2::VPANEL m_pCompletionList;
+	bool m_bIgnoreKeyTyped;
 };
 
 // Things the user typed in and hit submit/return with
-CHistoryItem::CHistoryItem( void )
+class CNoKeyboardInputRichText : public vgui2::RichText
+{
+public:
+	CNoKeyboardInputRichText(Panel *parent, const char *name, Panel *pFocusPanel)
+	    : RichText(parent, name)
+	{
+		m_pFocusPanel = pFocusPanel;
+	}
+
+	virtual void OnRequestFocus(vgui2::VPANEL subFocus, vgui2::VPANEL defaultPanel)
+	{
+		m_pFocusPanel->RequestFocus();
+	}
+
+	virtual void OnKeyCodeTyped(vgui2::KeyCode code)
+	{
+		RichText::OnKeyCodeTyped(code);
+	}
+
+	virtual void ApplySchemeSettings(vgui2::IScheme *pScheme)
+	{
+		RichText::ApplySchemeSettings(pScheme);
+
+		if (gEngfuncs.pfnGetCvarFloat("con_mono") > 0)
+		{
+			SetFont(pScheme->GetFont("GameConsole_Mono", IsProportional()));
+		}
+	}
+
+private:
+	Panel *m_pFocusPanel;
+};
+
+// Things the user typed in and hit submit/return with
+CHistoryItem::CHistoryItem(void)
 {
 	m_text = NULL;
 	m_extraText = NULL;
 	m_bHasExtra = false;
 }
 
-CHistoryItem::CHistoryItem( const char *text, const char *extra)
+CHistoryItem::CHistoryItem(const char *text, const char *extra)
 {
-	Assert( text );
+	Assert(text);
 	m_text = NULL;
 	m_extraText = NULL;
 	m_bHasExtra = false;
-	SetText( text , extra );
+	SetText(text, extra);
 }
 
-CHistoryItem::CHistoryItem( const CHistoryItem& src )
+CHistoryItem::CHistoryItem(const CHistoryItem &src)
 {
 	m_text = NULL;
 	m_extraText = NULL;
 	m_bHasExtra = false;
-	SetText( src.GetText(), src.GetExtra() );
+	SetText(src.GetText(), src.GetExtra());
 }
 
-CHistoryItem::~CHistoryItem( void )
+CHistoryItem::~CHistoryItem(void)
 {
 	delete[] m_text;
 	delete[] m_extraText;
@@ -99,7 +161,7 @@ CHistoryItem::~CHistoryItem( void )
 
 const char *CHistoryItem::GetText() const
 {
-	if ( m_text )
+	if (m_text)
 	{
 		return m_text;
 	}
@@ -111,7 +173,7 @@ const char *CHistoryItem::GetText() const
 
 const char *CHistoryItem::GetExtra() const
 {
-	if ( m_extraText )
+	if (m_extraText)
 	{
 		return m_extraText;
 	}
@@ -121,28 +183,26 @@ const char *CHistoryItem::GetExtra() const
 	}
 }
 
-void CHistoryItem::SetText( const char *text, const char *extra )
+void CHistoryItem::SetText(const char *text, const char *extra)
 {
 	delete[] m_text;
-	m_text = new char[ strlen( text ) + 1 ];
-	memset( m_text, 0x0, strlen( text ) + 1);
-	strcpy( m_text, text );
+	m_text = new char[strlen(text) + 1];
+	memset(m_text, 0x0, strlen(text) + 1);
+	strcpy(m_text, text);
 
-	if ( extra )
+	if (extra)
 	{
 		m_bHasExtra = true;
 		delete[] m_extraText;
-		m_extraText = new char[ strlen( extra ) + 1 ];
-		memset( m_extraText, 0x0, strlen( extra ) + 1);
-		strcpy( m_extraText, extra );
+		m_extraText = new char[strlen(extra) + 1];
+		memset(m_extraText, 0x0, strlen(extra) + 1);
+		strcpy(m_extraText, extra);
 	}
 	else
 	{
 		m_bHasExtra = false;
 	}
 }
-
-
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
@@ -160,18 +220,19 @@ CGameConsoleDialog::CGameConsoleDialog() : CTaskFrame(NULL, "GameConsole")
 	SetTitle("#GameUI_Console", true);
 
 	// create controls
-	m_pHistory = new RichText(this, "ConsoleHistory");
-	m_pHistory->SetVerticalScrollbar(true);
 
-	m_pEntry = new TabCatchingTextEntry(this, "ConsoleEntry");
-	m_pEntry->AddActionSignalTarget(this);
-	m_pEntry->SendNewLine(true);
+	m_pHistory = new CNoKeyboardInputRichText(this, "ConsoleHistory", m_pEntry);
+	m_pHistory->SetVerticalScrollbar(true);
 
 	m_pSubmit = new Button(this, "ConsoleSubmit", "#GameUI_Submit");
 	m_pSubmit->SetCommand("submit");
 	m_pCompletionList = new Menu(this, "CompletionList");
 	m_pCompletionList->MakePopup();
 	m_pCompletionList->SetVisible(false);
+
+	m_pEntry = new TabCatchingTextEntry(this, "ConsoleEntry", m_pCompletionList->GetVPanel());
+	m_pEntry->AddActionSignalTarget(this);
+	m_pEntry->SendNewLine(true);
 
 	// need to set up default colors, since ApplySchemeSettings won't be called until later
 	m_PrintColor = Color(216, 222, 211, 255);
@@ -334,11 +395,11 @@ void CGameConsoleDialog::PaintBackground()
 
     int wide = GetWide();
     char ver[ 100 ];
-    Q_snprintf(ver, sizeof( ver ), "GoldSource Engine %i/%s (build %d - days until 9/30/03)", 48, "1.1.2.2", 0 );
-    HScheme pScheme = GetScheme();
-    vgui2::surface()->DrawSetTextColor( Color( 255, 255, 255, 255 ) );
-    int x = wide - DrawTextLen( m_hFont, ver ) - 2;
-    DrawText( m_hFont, x, 0, ver );
+	Q_snprintf(ver, sizeof(ver), "MKHL ReGameUI ver %s", APP_VERSION);
+	HScheme pScheme = GetScheme();
+	vgui2::surface()->DrawSetTextColor(Color(255, 255, 255, 255));
+	int x = wide - DrawTextLen(m_hFont, ver) - 2;
+	DrawText(m_hFont, x - 50, 10, ver);
 }
 
 static ConCommand *FindNamedCommand( char const *name )
@@ -382,7 +443,6 @@ static ConCommand *FindAutoCompleteCommmandFromPartial( char const *partial )
 //-----------------------------------------------------------------------------
 void CGameConsoleDialog::RebuildCompletionList(const char *text)
 {
-#if 0
 	// clear any old completion list
 	m_CompletionList.RemoveAll();
 
@@ -391,29 +451,33 @@ void CGameConsoleDialog::RebuildCompletionList(const char *text)
 	if (len < 1)
 	{
 		// Fill the completion list with history instead
-		for ( int i = 0 ; i < m_CommandHistory.Count(); i++ )
+		for (int i = 0; i < m_CommandHistory.Count(); i++)
 		{
-			CHistoryItem *item = &m_CommandHistory[ i ];
-			CompletionItem *comp = &m_CompletionList[ m_CompletionList.AddToTail() ];
+			CHistoryItem *item = &m_CommandHistory[i];
+			CompletionItem *comp = &m_CompletionList[m_CompletionList.AddToTail()];
 			comp->iscommand = false;
-			comp->m_text = new CHistoryItem( *item );
+			comp->m_text = new CHistoryItem(*item);
 		}
 		return;
 	}
 
-	/*	// look through the command list for all matches
-	unsigned int cmd = gEngfuncs.GetFirstCmdFunctionHandle();
+	if (strchr(text, ' '))
+		return;
+
+	// look through the command list for all matches
+	auto cmd = gEngfuncs.GetFirstCmdFunctionHandle();
 	while (cmd)
 	{
-		if (!strnicmp(text, gEngfuncs.GetCmdFunctionName(cmd), len))
+		auto funcname = gEngfuncs.GetCmdFunctionName(cmd);
+		if (V_stristr(funcname, text) != 0)
 		{
 			// match found, add to list
 			int node = m_CompletionList.AddToTail();
 			CompletionItem *item = &m_CompletionList[node];
 			item->iscommand = true;
-			item->cmd.cmd = cmd;
+			// item->cmd.cmd = cmd;
 			item->cmd.cvar = NULL;
-			item->m_text = new CHistoryItem( gEngfuncs.GetCmdFunctionName(cmd) );
+			item->m_text = new CHistoryItem(funcname);
 		}
 
 		cmd = gEngfuncs.GetNextCmdFunctionHandle(cmd);
@@ -423,119 +487,25 @@ void CGameConsoleDialog::RebuildCompletionList(const char *text)
 	cvar_t *cvar = gEngfuncs.GetFirstCvarPtr();
 	while (cvar)
 	{
-		if (!_strnicmp(text, cvar->name, len))
+		if (V_stristr(cvar->name, text) != 0)
 		{
 			// match found, add to list
 			int node = m_CompletionList.AddToTail();
 			CompletionItem *item = &m_CompletionList[node];
-			item->iscommand = false;
+			item->iscommand = true;
 			item->cmd.cmd = 0;
 			item->cmd.cvar = cvar;
-
-			char text[ 256 ];
-			_snprintf( text, sizeof( text ), "%s \"%s\"", cvar->name, cvar->string);
-
-			item->m_text = new CHistoryItem( text );
+			item->m_text = new CHistoryItem(cvar->name, cvar->string);
 		}
 
 		cvar = cvar->next;
 	}
-*/
 
-	bool normalbuild = true;
-
-	// if there is a space in the text, and the command isn't of the type to know how to autocomplet, then command completion is over
-	char *space = strstr( text, " " );
-	if (space)
+	if (m_CompletionList.Base())
 	{
-		char commandname[ 128 ];
-		Q_strncpy( commandname, text, sizeof( commandname ) );
-		// Find first space
-		int spot = space - text;
-		commandname[ spot ] = 0;
-
-		ConCommand *command = FindNamedCommand( commandname );
-		if ( !command || !command->CanAutoComplete() )
-		{
-			return;
-		}
-
-		normalbuild = false;
-
-		char commands[ COMMAND_COMPLETION_MAXITEMS ][ COMMAND_COMPLETION_ITEM_LENGTH ];
-		int count = command->AutoCompleteSuggest( text, commands );
-		int i;
-
-		for ( i = 0; i < count; i++ )
-		{
-			// match found, add to list
-			int node = m_CompletionList.AddToTail();
-			CompletionItem *item = &m_CompletionList[node];
-			item->iscommand = false;
-			item->cmd.cmd = NULL;
-			item->m_text = new CHistoryItem( commands[ i ] );
-		}
+		auto context = (void *)text;
+		qsort_r(m_CompletionList.Base(), m_CompletionList.Count(), sizeof(CompletionItem), SortCompletionItems, context);
 	}
-
-	if ( normalbuild )
-	{
-		// look through the command list for all matches
-		ConCommandBase const *cmd = (ConCommandBase const *)cvar->GetCommands();
-		while (cmd)
-		{
-			if (!strnicmp(text, cmd->GetName(), len))
-			{
-				// match found, add to list
-				int node = m_CompletionList.AddToTail();
-				CompletionItem *item = &m_CompletionList[node];
-				item->iscommand = true;
-				item->cmd.cmd = (ConCommandBase *)cmd;
-				const char *tst = cmd->GetName();
-				if ( ! cmd->IsCommand() )
-				{
-					ConVar *var = ( ConVar * )cmd;
-					item->m_text = new CHistoryItem( var->GetName(), var->GetString() );
-				}
-				else
-				{
-					item->m_text = new CHistoryItem( tst );
-				}
-			}
-
-			cmd = cmd->GetNext();
-		}
-
-		// Now sort the list by command name
-		if ( m_CompletionList.Count() >= 2 )
-		{
-			for ( int i = 0 ; i < m_CompletionList.Count(); i++ )
-			{
-				for ( int j = i + 1; j < m_CompletionList.Count(); j++ )
-				{
-					CompletionItem temp;
-
-					CompletionItem const *i1, *i2;
-
-					ConCommandBase const *c1, *c2;
-
-					i1 = &m_CompletionList[ i ];
-					i2 = &m_CompletionList[ j ];
-
-					c1 = i1->cmd.cmd;
-					c2 = i2->cmd.cmd;
-					Assert( c1 && c2 );
-
-					if ( stricmp( c1->GetName(), c2->GetName() ) > 0 )
-					{
-						temp = m_CompletionList[ i ];
-						m_CompletionList[ i ] = m_CompletionList[ j ];
-						m_CompletionList[ j ] = temp;
-					}
-				}
-			}
-		}
-	}
-
 }
 
 //-----------------------------------------------------------------------------
@@ -575,17 +545,17 @@ void CGameConsoleDialog::OnAutoComplete(bool reverse)
 	// match found, set text
 	char completedText[256];
 	CompletionItem *item = &m_CompletionList[m_iNextCompletion];
-	Assert( item );
+	Assert(item);
 
-	if ( item->cmd.cmd && !item->cmd.cmd->IsCommand() )
+	if (item->iscommand)
 	{
-		strncpy(completedText, item->GetCommand(), sizeof(completedText) - 2 );
+		strncpy(completedText, item->GetCommand(), sizeof(completedText) - 2);
 	}
 	else
 	{
-		strncpy(completedText, item->GetItemText(), sizeof(completedText) - 2 );
+		strncpy(completedText, item->GetItemText(), sizeof(completedText) - 2);
 	}
-	if ( !Q_strstr( completedText, " " ) )
+	if (!Q_strstr(completedText, " "))
 	{
 		strcat(completedText, " ");
 	}
@@ -595,7 +565,6 @@ void CGameConsoleDialog::OnAutoComplete(bool reverse)
 	m_pEntry->GotoTextEnd();
 
 	m_iNextCompletion++;
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -738,49 +707,34 @@ void CGameConsoleDialog::OnKeyCodeTyped(KeyCode code)
 	BaseClass::OnKeyCodeTyped(code);
 
 	// check for processing
-	if (input()->GetFocus() == m_pEntry->GetVPanel())
+	if (vgui2::input()->GetFocus() == m_pEntry->GetVPanel())
 	{
-		if (code == KEY_TAB)
+		if (code == vgui2::KEY_TAB)
 		{
 			bool reverse = false;
-			if (input()->IsKeyDown(KEY_LSHIFT) || input()->IsKeyDown(KEY_RSHIFT))
+			if (vgui2::input()->IsKeyDown(vgui2::KEY_LSHIFT) || vgui2::input()->IsKeyDown(vgui2::KEY_RSHIFT))
 			{
 				reverse = true;
 			}
 
 			// attempt auto-completion
-//			OnAutoComplete(reverse);
+			OnAutoComplete(reverse);
 			m_pEntry->RequestFocus();
 		}
-		else if (code == KEY_DOWN)
+		else if (code == vgui2::KEY_DOWN)
 		{
-//			OnAutoComplete(false);
+			OnAutoComplete(false);
 			//	UpdateCompletionListPosition();
 			//	m_pCompletionList->SetVisible(true);
 
 			m_pEntry->RequestFocus();
 		}
-		else if (code == KEY_UP)
+		else if (code == vgui2::KEY_UP)
 		{
-//			OnAutoComplete(true);
+			OnAutoComplete(true);
 			m_pEntry->RequestFocus();
 		}
-		// HACK: Allow F key bindings to operate even here
-		else if ( code >= KEY_F1 && code <= KEY_F12 )
-		{
-			// See if there is a binding for the FKey
-			int translated = ( code - KEY_F1 ) + K_F1;
-			const char *binding = gameuifuncs->Key_BindingForKey( translated );
-			if ( binding && binding[0] )
-			{
-				// submit the entry as a console commmand
-				char szCommand[256];
-				Q_strncpy( szCommand, binding, sizeof( szCommand ) );
-				gEngfuncs.pfnClientCmd( szCommand );
-			}
-		}
 	}
-
 }
 
 

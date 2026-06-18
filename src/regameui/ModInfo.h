@@ -50,7 +50,8 @@ public:
 	bool UseBots();
 	bool HasHDContent();
 	bool SupportsVR();
-
+	const char *GetTrainMap();
+	const char *GetStartMap();
 	KeyValues *GetHiddenMaps();
 
 private:

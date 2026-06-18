@@ -134,7 +134,6 @@ void CVGuiSystemModuleLoader::LoadPlatformModules(CreateInterfaceFn *factorylist
             *v11 = 0;
         strncat(dllPath, "_linux.so", 512);
         g_pFullFileSystem->GetLocalCopy(dllPath);
-        GetSDL()->ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, dllPath, dllPath);
         // load the dll
         char szDir[512];
 

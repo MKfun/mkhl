@@ -31,7 +31,7 @@ public:
     ~COptionsDialog();
 
     void Run();
-    virtual void Activate();
+	virtual void Activate(int tab = 0);
 
 protected:
     virtual void SetTitle(const char *title, bool surfaceTitle);

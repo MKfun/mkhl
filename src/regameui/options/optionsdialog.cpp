@@ -99,9 +99,10 @@ void COptionsDialog::SetTitle(const char *title, bool surfaceTitle)
 //-----------------------------------------------------------------------------
 // Purpose: Brings the dialog to the fore
 //-----------------------------------------------------------------------------
-void COptionsDialog::Activate()
+void COptionsDialog::Activate(int tab)
 {
-    BaseClass::Activate();
+	SetTabPosition(tab);
+	BaseClass::Activate();
     EnableApplyButton(false);
 }
 

@@ -43,6 +43,25 @@ add_sources(
         options/OptionsSubVideo.cpp
         options/OptionsSubVoice.cpp
 
+        ScriptObject.cpp
+        ScriptObject.h
+        createmultiplayer/CreateMultiplayerGameDialog.cpp
+        createmultiplayer/CreateMultiplayerGameDialog.h
+        createmultiplayer/CreateMultiplayerGameGameplayPage.cpp
+        createmultiplayer/CreateMultiplayerGameGameplayPage.h
+        createmultiplayer/CreateMultiplayerGameServerPage.cpp
+        createmultiplayer/CreateMultiplayerGameServerPage.h
+
+        NewGameDialog.cpp
+        NewGameDialog.h
+        LoadGameDialog.cpp
+        LoadGameDialog.h
+        SaveGameDialog.cpp
+        SaveGameDialog.h
+
+        LoadingDialog.cpp
+        LoadingDialog.h
+
         menuitems/gamemenuitem.cpp
         menuitems/gamemenuitem.h
         menuitems/gameuimenubutton.cpp

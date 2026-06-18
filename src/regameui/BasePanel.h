@@ -4,6 +4,9 @@
 
 #ifndef BASEPANEL_H
 #define BASEPANEL_H
+#include "LoadGameDialog.h"
+#include "SaveGameDialog.h"
+#include "createmultiplayer/CreateMultiplayerGameDialog.h"
 #include "options/optionsdialog.h"
 #include "serverconnectpanel.h"
 #ifdef _WIN32
@@ -15,6 +18,7 @@
 #include "vgui_controls/Button.h"
 #include "GameMenu.h"
 class CBackgroundMenuButton;
+class CNewGameDialog;
 typedef struct {int x; int y;} coord;
 //-----------------------------------------------------------------------------
 // Purpose: The panel at the top of the vgui panel hierarchy
@@ -44,8 +48,8 @@ public:
 
 private:
     void DrawBackgroundImage();
-    void OnOpenOptionsDialog();
-    EBackgroundState m_eBackgroundState;
+	void OnOpenOptionsDialog(int tab = 0);
+	EBackgroundState m_eBackgroundState;
 
 	struct bimage_t
 	{
@@ -53,6 +57,7 @@ private:
 		int x, y;
 		int width, height;
 		bool scaled;
+		bool fit;
 	};
 	CUtlVector<bimage_t> m_ImageID;
 	int m_iBaseResX, m_iBaseResY;
@@ -73,8 +78,13 @@ private:
 
     COptionsDialog *m_hOptionsDialog;
 	ServerConnectPanel *m_hServerConnectDialog;
+	CCreateMultiplayerGameDialog *m_hCreateMultiplayerGameDialog;
+	CNewGameDialog *m_hNewGameDialog;
+	CLoadGameDialog *m_hLoadGameDialog;
+	CSaveGameDialog *m_hSaveGameDialog;
 	// misc
 	void PositionDialog(vgui2::PHandle dlg);
+	void SetupThatFrickinPanel();
 
 	int m_iLoadingImageID;
 	bool m_bLevelLoading;
