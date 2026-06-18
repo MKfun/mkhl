@@ -7,6 +7,7 @@
 
 #ifndef OPTIONSSUBMULTIPLAYER_H
 #define OPTIONSSUBMULTIPLAYER_H
+#include <cstdint>
 #ifdef _WIN32
 #pragma once
 #endif

@@ -136,12 +136,12 @@ void COptionsSubVoice::OnApplyChanges()
 
     m_nMicVolumeValue = m_pMicrophoneVolume->GetValue();
     float fMicVolume = (float) m_nMicVolumeValue / 100.0f;
-    m_pVoiceTweak->SetControlFloat( MicrophoneVolume, fMicVolume );
+	// m_pVoiceTweak->SetControlFloat( MicrophoneVolume, fMicVolume );
 
-    m_bMicBoostSelected = m_pMicBoost->IsSelected();
-    m_pVoiceTweak->SetControlFloat( MicBoost, m_bMicBoostSelected ? 1.0f : 0.0f );
+	// m_bMicBoostSelected = m_pMicBoost->IsSelected();
+	// m_pVoiceTweak->SetControlFloat( MicBoost, m_bMicBoostSelected ? 1.0f : 0.0f );
 
-    m_pReceiveVolume->ApplyChanges();
+	m_pReceiveVolume->ApplyChanges();
     m_fReceiveVolume = m_pReceiveVolume->GetSliderValue();
 
     m_pVoiceEnableCheckButton->ApplyChanges();

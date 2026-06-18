@@ -11,6 +11,7 @@
 #include "MultiplayerAdvancedDialog.h"
 #include <stdio.h>
 
+#include <vector>
 #include <vgui_controls/Button.h>
 #include <vgui_controls/CheckButton.h>
 #include <KeyValues.h>
@@ -68,17 +69,17 @@ static ColorItem_t itemlist[]=
 //-----------------------------------------------------------------------------
 COptionsSubMultiplayer::COptionsSubMultiplayer(vgui2::Panel *parent) : vgui2::PropertyPage(parent, "OptionsSubMultiplayer")
 {
-    Button *cancel = new Button( this, "Cancel", "#GameUI_Cancel" );
-    cancel->SetCommand( "Close" );
+	// Button *cancel = new Button( this, "Cancel", "#GameUI_Cancel" );
+	// cancel->SetCommand( "Close" );
 
-    Button *ok = new Button( this, "OK", "#GameUI_OK" );
-    ok->SetCommand( "Ok" );
+	// Button *ok = new Button( this, "OK", "#GameUI_OK" );
+	// ok->SetCommand( "Ok" );
 
-    Button *apply = new Button( this, "Apply", "#GameUI_Apply" );
-    apply->SetCommand( "Apply" );
+	// Button *apply = new Button( this, "Apply", "#GameUI_Apply" );
+	// apply->SetCommand( "Apply" );
 
-    Button *advanced = new Button( this, "Advanced", "#GameUI_AdvancedEllipsis" );
-    advanced->SetCommand( "Advanced" );
+	Button *advanced = new Button(this, "Advanced", "#GameUI_AdvancedEllipsis");
+	advanced->SetCommand( "Advanced" );
 
     new Label( this, "NameLabel", "#GameUI_PlayerName" );
     m_pNameTextEntry = new CCvarTextEntry( this, "NameEntry", "name" );
@@ -123,10 +124,10 @@ COptionsSubMultiplayer::COptionsSubMultiplayer(vgui2::Panel *parent) : vgui2::Pr
     m_pColorList->SetInitialItem( selected );
     m_pColorList->AddActionSignalTarget( this );
 
-    m_pModelImage = new CBitmapImagePanel( this, "ModelImage", NULL );
-    m_pModelImage->AddActionSignalTarget( this );
+	m_pModelImage = new CBitmapImagePanel(this, "ModelImage", NULL);
+	m_pModelImage->AddActionSignalTarget(this);
 
-    m_pLogoImage = new CBitmapImagePanel( this, "LogoImage", NULL );
+	m_pLogoImage = new CBitmapImagePanel( this, "LogoImage", NULL );
     m_pLogoImage->AddActionSignalTarget( this );
 
     m_nTopColor = DEFAULT_SUIT_HUE;
@@ -219,8 +220,8 @@ void COptionsSubMultiplayer::OnCommand( const char *command )
 //-----------------------------------------------------------------------------
 void COptionsSubMultiplayer::InitLogoList( CLabeledCommandComboBox *cb )
 {
-    /*	// cleanup old remap files
-    filesystem()->RemoveFile( "logos/remapped.bmp", NULL );
+	/*	// cleanup old remap files
+    g_pFullFileSystem->RemoveFile( "logos/remapped.bmp", NULL );
 
     // Find out images
     FileFindHandle_t fh;
@@ -228,7 +229,7 @@ void COptionsSubMultiplayer::InitLogoList( CLabeledCommandComboBox *cb )
 
     const char *logofile = engine->pfnGetCvarString("cl_logofile");
     sprintf( directory, "logos/*.bmp" );
-    const char *fn = filesystem()->FindFirst( directory, &fh );
+    const char *fn = g_pFullFileSystem->FindFirst( directory, &fh );
     int i = 0, initialItem = 0;
     while (fn)
     {
@@ -260,23 +261,23 @@ void COptionsSubMultiplayer::InitLogoList( CLabeledCommandComboBox *cb )
             }
             i++;
         }
-        fn = filesystem()->FindNext( fh );
+        fn = g_pFullFileSystem->FindNext( fh );
     }
 
-    filesystem()->FindClose( fh );
+    g_pFullFileSystem->FindClose( fh );
     cb->SetInitialItem(initialItem);
     */
 
-    // Find out images
-    FileFindHandle_t fh;
-    char directory[ 512 ];
+	// Find out images
+	FileFindHandle_t fh;
+	char directory[512];
 
-    sprintf( directory, "logos/*.bmp" );
+	sprintf(directory, "logos/*.bmp");
 
-    char const *fn = g_pFullFileSystem->FindFirst( directory, &fh );
-    bool AddedItem = false;
+	char const *fn = g_pFullFileSystem->FindFirst(directory, &fh);
+	bool AddedItem = false;
 
-    while ( fn )
+	while ( fn )
     {
         //
         if ( fn[ 0 ] && fn[0] != '.' )
@@ -555,68 +556,100 @@ static void PaletteHueReplace( RGBQUAD *palSrc, int newHue, int Start, int end )
     }
 }
 
+#pragma pack(push, 1)
+struct BitmapFileHeader
+{
+	uint16_t bfType;
+	uint32_t bfSize;
+	uint16_t bfReserved1;
+	uint16_t bfReserved2;
+	uint32_t bfOffBits;
+};
+
+struct BitmapInfoHeader
+{
+	uint32_t biSize;
+	int32_t biWidth;
+	int32_t biHeight;
+	uint16_t biPlanes;
+	uint16_t biBitCount;
+	uint32_t biCompression;
+	uint32_t biSizeImage;
+	int32_t biXPelsPerMeter;
+	int32_t biYPelsPerMeter;
+	uint32_t biClrUsed;
+	uint32_t biClrImportant;
+};
+
+struct RgbQuad
+{
+	uint8_t rgbBlue;
+	uint8_t rgbGreen;
+	uint8_t rgbRed;
+	uint8_t rgbReserved;
+};
+struct BitmapInfo
+{
+	BitmapInfoHeader bmiHeader;
+	RGBQUAD bmiColors[1];
+};
+#pragma pack(pop)
+static const uint16_t BMP_HEADER_MARKER = 0x4D42; // ASCII "BM"
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
 void COptionsSubMultiplayer::RemapPalette( char *filename, int topcolor, int bottomcolor )
 {
-    // char infile[ 256 ];
-    // char outfile[ 256 ];
+	char infile[256];
+	char outfile[256];
 
-    // FileHandle_t file;
-    // CUtlBuffer outbuffer( 16384, 16384, false );
+	FileHandle_t file;
+	CUtlBuffer outbuffer(16384, 16384, false);
 
-    // sprintf( infile, "models/player/%s/%s.bmp", filename, filename );
-    // sprintf( outfile, "models/player/remapped.bmp" );
+	sprintf(infile, "models/player/%s/%s.bmp", filename, filename);
+	sprintf(outfile, "models/player/remapped.bmp");
 
-    // file = g_pFullFileSystem->Open( infile, "rb" );
-    // if ( file == FILESYSTEM_INVALID_HANDLE )
-    //     return;
+	file = g_pFullFileSystem->Open(infile, "rb");
+	if (file == FILESYSTEM_INVALID_HANDLE)
+		return;
 
-    // // Parse bitmap
-    // m_pLogoImage-> bmfHeader;
-    // // DWORD dwBitsSize, dwFileSize;
-    // // LPBITMAPINFO lpbmi;
-    // size_t dwBitsSize, dwFileSize;
-    // dwFileSize = g_pFullFileSystem->Size( file );
+	// Parse bitmap
+	BitmapFileHeader bmfHeader;
+	uint32_t fileSize = g_pFullFileSystem->Size(file);
 
-    // filesystem()->Read( &bmfHeader, sizeof(bmfHeader), file );
+	g_pFullFileSystem->Read(&bmfHeader, sizeof(bmfHeader), file);
 
-    // outbuffer.Put( &bmfHeader, sizeof( bmfHeader ) );
+	outbuffer.Put(&bmfHeader, sizeof(bmfHeader));
 
-    // if (bmfHeader.bfType == DIB_HEADER_MARKER)
-    // {
-    //     dwBitsSize = dwFileSize - sizeof(bmfHeader);
+	if (bmfHeader.bfType == BMP_HEADER_MARKER)
+	{
+		uint32_t bitsSize = fileSize - sizeof(bmfHeader);
 
-    //     HGLOBAL hDIB = GlobalAlloc( GMEM_MOVEABLE | GMEM_ZEROINIT, dwBitsSize );
-    //     char *pDIB = (LPSTR)GlobalLock((HGLOBAL)hDIB);
-    //     {
-    //         filesystem()->Read(pDIB, dwBitsSize, file );
+		std::vector<char> dibStorage(bitsSize, 0);
+		char *pDIB = dibStorage.data();
 
-    //         lpbmi = (LPBITMAPINFO)pDIB;
+		g_pFullFileSystem->Read(pDIB, bitsSize, file);
 
-    //         // Remap palette
-    //         PaletteHueReplace( lpbmi->bmiColors, topcolor, SUIT_HUE_START, SUIT_HUE_END );
-    //         PaletteHueReplace( lpbmi->bmiColors, bottomcolor, PLATE_HUE_START, PLATE_HUE_END );
+		BitmapInfo *lpbmi = (BitmapInfo *)pDIB;
 
-    //         outbuffer.Put( pDIB, dwBitsSize );
-    //     }
+		// Remap palette
+		PaletteHueReplace(lpbmi->bmiColors, topcolor, SUIT_HUE_START, SUIT_HUE_END);
+		PaletteHueReplace(lpbmi->bmiColors, bottomcolor, PLATE_HUE_START, PLATE_HUE_END);
 
-    //     GlobalUnlock( hDIB);
-    //     GlobalFree((HGLOBAL) hDIB);
-    // }
+		outbuffer.Put(pDIB, bitsSize);
+	}
 
-    // filesystem()->Close(file);
+	g_pFullFileSystem->Close(file);
 
-    // filesystem()->RemoveFile( outfile, NULL );
+	g_pFullFileSystem->RemoveFile(outfile, NULL);
 
-    // filesystem()->CreateDirHierarchy("models/player", NULL);
-    // file = filesystem()->Open( outfile, "wb" );
-    // if ( file != FILESYSTEM_INVALID_HANDLE )
-    // {
-    //     filesystem()->Write( outbuffer.Base(), outbuffer.TellPut(), file );
-    //     filesystem()->Close( file );
-    // }
+	g_pFullFileSystem->CreateDirHierarchy("models/player", NULL);
+	file = g_pFullFileSystem->Open(outfile, "wb");
+	if (file != FILESYSTEM_INVALID_HANDLE)
+	{
+		g_pFullFileSystem->Write(outbuffer.Base(), outbuffer.TellPut(), file);
+		g_pFullFileSystem->Close(file);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -645,86 +678,75 @@ void COptionsSubMultiplayer::ColorForName( char const *pszColorName, int&r, int&
 //-----------------------------------------------------------------------------
 void COptionsSubMultiplayer::RemapLogoPalette( char *filename, int r, int g, int b )
 {
-    // char infile[ 256 ];
-    // char outfile[ 256 ];
+	char infile[256];
+	char outfile[256];
 
-    // FileHandle_t file;
-    // CUtlBuffer outbuffer( 16384, 16384, false );
+	FileHandle_t file;
+	CUtlBuffer outbuffer(16384, 16384, false);
 
-    // sprintf(infile, "logos/%s.bmp", filename);
-    // sprintf(outfile, "logos/remapped.bmp");
-    // file = filesystem()->Open(infile, "rb");
-    // if (file == FILESYSTEM_INVALID_HANDLE)
-    //     return;
+	sprintf(infile, "logos/%s.bmp", filename);
+	sprintf(outfile, "logos/remapped.bmp");
+	file = g_pFullFileSystem->Open(infile, "rb");
+	if (file == FILESYSTEM_INVALID_HANDLE)
+		return;
 
-    // // Parse bitmap
-    // BITMAPFILEHEADER bmfHeader;
-    // DWORD dwBitsSize, dwFileSize;
-    // LPBITMAPINFO lpbmi;
-    // LPBITMAPCOREINFO lpbmc;  // pointer to BITMAPCOREINFO structure (old)
+	// Parse bitmap
+	BitmapFileHeader bmfHeader;
+	DWORD dwBitsSize, dwFileSize;
+	BitmapInfo lpbmi;
+	BitmapInfo lpbmc; // pointer to BITMAPCOREINFO structure (old)
 
-    // dwFileSize = filesystem()->Size( file );
+	dwFileSize = g_pFullFileSystem->Size(file);
 
-    // filesystem()->Read( &bmfHeader, sizeof(bmfHeader), file );
+	g_pFullFileSystem->Read(&bmfHeader, sizeof(bmfHeader), file);
 
-    // outbuffer.Put( &bmfHeader, sizeof( bmfHeader ) );
+	outbuffer.Put(&bmfHeader, sizeof(bmfHeader));
 
-    // if (bmfHeader.bfType == DIB_HEADER_MARKER)
-    // {
-    //     dwBitsSize = dwFileSize - sizeof(bmfHeader);
+	if (bmfHeader.bfType == BMP_HEADER_MARKER)
+	{
+		uint32_t bitsSize = dwFileSize - sizeof(bmfHeader);
 
-    //     HGLOBAL hDIB = GlobalAlloc( GMEM_MOVEABLE | GMEM_ZEROINIT, dwBitsSize );
-    //     char *pDIB = (LPSTR)GlobalLock((HGLOBAL)hDIB);
-    //     {
-    //         filesystem()->Read(pDIB, dwBitsSize, file );
+		std::vector<char> dibStorage(bitsSize, 0);
+		char *pDIB = dibStorage.data();
 
-    //         lpbmi = (LPBITMAPINFO)pDIB;
+		g_pFullFileSystem->Read(pDIB, bitsSize, file);
 
-    //         /* get pointer to BITMAPCOREINFO (old 1.x) */
-    //         lpbmc = (LPBITMAPCOREINFO)pDIB;
+		BitmapInfo *lpbmi = (BitmapInfo *)pDIB;
+		bool bWinStyleDIB = true; // IS_WIN30_DIB(lpbi);
 
+		float f = 0;
 
-    //         /* is this a Win 3.0 DIB? */
-    //         bool bWinStyleDIB = true; // IS_WIN30_DIB(lpbi);
+		for (int i = 0; i < 256; i++)
+		{
+			float t = f / 256.0f;
+			if (bWinStyleDIB)
+			{
+				lpbmi->bmiColors[i].rgbRed = (unsigned char)(r * t);
+				lpbmi->bmiColors[i].rgbGreen = (unsigned char)(g * t);
+				lpbmi->bmiColors[i].rgbBlue = (unsigned char)(b * t);
+			}
+			// else
+			// {
+			// 	lpbmc.bmciColors[i].rgbtRed = (unsigned char)(r * t);
+			// 	lpbmc.bmciColors[i].rgbtGreen = (unsigned char)(g * t);
+			// 	lpbmc.bmciColors[i].rgbtBlue  = (unsigned char)(b * t);
+			// }
+			f++;
+		}
+		outbuffer.Put(pDIB, bitsSize);
+	}
 
-    //         float f = 0;
+	g_pFullFileSystem->Close(file);
 
-    //         for (int i = 0; i < 256; i++)
-    //         {
-    //             float t = f/256.0f;
-    //             if (bWinStyleDIB)
-    //             {
-    //                 lpbmi->bmiColors[i].rgbRed = (unsigned char)( r * t );
-    //                 lpbmi->bmiColors[i].rgbGreen = (unsigned char)(g * t);
-    //                 lpbmi->bmiColors[i].rgbBlue = (unsigned char)(b * t);
-    //             }
-    //             else
-    //             {
-    //                 lpbmc->bmciColors[i].rgbtRed = (unsigned char)(r * t);
-    //                 lpbmc->bmciColors[i].rgbtGreen = (unsigned char)(g * t);
-    //                 lpbmc->bmciColors[i].rgbtBlue  = (unsigned char)(b * t);
-    //             }
-    //             f++;
-    //         }
+	g_pFullFileSystem->RemoveFile(outfile, NULL);
 
-    //         outbuffer.Put( pDIB, dwBitsSize );
-    //     }
-
-    //     GlobalUnlock( hDIB);
-    //     GlobalFree((HGLOBAL) hDIB);
-    // }
-
-    // filesystem()->Close(file);
-
-    // filesystem()->RemoveFile( outfile, NULL );
-
-    // filesystem()->CreateDirHierarchy("logos", NULL);
-    // file = filesystem()->Open( outfile, "wb" );
-    // if ( file != FILESYSTEM_INVALID_HANDLE )
-    // {
-    //     filesystem()->Write( outbuffer.Base(), outbuffer.TellPut(), file );
-    //     filesystem()->Close( file );
-    // }
+	g_pFullFileSystem->CreateDirHierarchy("logos", NULL);
+	file = g_pFullFileSystem->Open(outfile, "wb");
+	if (file != FILESYSTEM_INVALID_HANDLE)
+	{
+		g_pFullFileSystem->Write(outbuffer.Base(), outbuffer.TellPut(), file);
+		g_pFullFileSystem->Close(file);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -785,15 +807,15 @@ void COptionsSubMultiplayer::OnApplyChanges()
 
     //     char *pDIB = (LPSTR)GlobalLock((HGLOBAL)hDIB);
     //     {
-    //         filesystem()->Read(pDIB, dwBitsSize, file );
-    //     }
-    //     GlobalUnlock( (HGLOBAL)hDIB );
+	//         g_pFullFileSystem->Read(pDIB, dwBitsSize, file );
+	//     }
+	//     GlobalUnlock( (HGLOBAL)hDIB );
 
-    //     // Create .wad from the raw data
-    //     UpdateLogoWAD( (void *)hDIB, r, g, b );
+	//     // Create .wad from the raw data
+	//     UpdateLogoWAD( (void *)hDIB, r, g, b );
 
-    //     GlobalFree( (HGLOBAL)hDIB );
-    // }
+	//     GlobalFree( (HGLOBAL)hDIB );
+	// }
 
-    g_pFullFileSystem->Close( file );
+	g_pFullFileSystem->Close(file);
 }
