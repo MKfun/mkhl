@@ -333,7 +333,7 @@ bool CGameUI::FindPlatformDirectory(char *platformDir, int bufferSize)
 				V_AppendSlash( platformDir, bufferSize );
 				return true;
 			}
-            printf(platformDir);
+			//printf(platformDir);
 #endif
 		}
 
