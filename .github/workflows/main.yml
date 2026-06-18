@@ -18,8 +18,8 @@ jobs:
   build:
     strategy:
       matrix:
-        runs-on: [windows-2022, ubuntu-latest]
-        target: [client] #now we need client only cuz ReGameUI
+        runs-on: [windows-latest, ubuntu-latest]
+        target: [client, server] #now we need client only cuz ReGameUI
     
     # The type of runner that the job will run on
     runs-on: ${{ matrix.runs-on }}
