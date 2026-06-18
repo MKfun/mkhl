@@ -134,9 +134,10 @@ void CSaveGameDialog::CreateSavedGamesList(void)
 	// m_pGameList->SetSortFunc(3, TimeStampSortFunc);
 	m_pGameList->SetSortColumn(3);
 }
-
+#ifndef MAKEID
+#undef MAKEID
 #define MAKEID(d, c, b, a) (((int)(a) << 24) | ((int)(b) << 16) | ((int)(c) << 8) | ((int)(d)))
-
+#endif
 int SaveReadNameAndComment(FileHandle_t f, char *name, char *comment)
 {
 	int i, tag, size, tokenSize, tokenCount;

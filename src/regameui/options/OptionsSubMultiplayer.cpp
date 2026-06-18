@@ -689,10 +689,10 @@ void COptionsSubMultiplayer::RemapLogoPalette( char *filename, int r, int g, int
 	file = g_pFullFileSystem->Open(infile, "rb");
 	if (file == FILESYSTEM_INVALID_HANDLE)
 		return;
-
+#if 0
 	// Parse bitmap
 	BitmapFileHeader bmfHeader;
-	DWORD dwBitsSize, dwFileSize;
+	// DWORD dwBitsSize, dwFileSize;
 	BitmapInfo lpbmi;
 	BitmapInfo lpbmc; // pointer to BITMAPCOREINFO structure (old)
 
@@ -735,7 +735,6 @@ void COptionsSubMultiplayer::RemapLogoPalette( char *filename, int r, int g, int
 		}
 		outbuffer.Put(pDIB, bitsSize);
 	}
-
 	g_pFullFileSystem->Close(file);
 
 	g_pFullFileSystem->RemoveFile(outfile, NULL);
@@ -747,6 +746,7 @@ void COptionsSubMultiplayer::RemapLogoPalette( char *filename, int r, int g, int
 		g_pFullFileSystem->Write(outbuffer.Base(), outbuffer.TellPut(), file);
 		g_pFullFileSystem->Close(file);
 	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -794,16 +794,16 @@ void COptionsSubMultiplayer::OnApplyChanges()
 
     // Parse bitmap
     // BITMAPFILEHEADER bmfHeader;
-    DWORD dwBitsSize, dwFileSize;
+	// DWORD dwBitsSize, dwFileSize;
 
-    dwFileSize = g_pFullFileSystem->Size( file );
+	// dwFileSize = g_pFullFileSystem->Size( file );
 
-    // g_pFullFileSystem->Read( &bmfHeader, sizeof(bmfHeader), file );
-    // if (bmfHeader.bfType == DIB_HEADER_MARKER)
-    // {
-    //     dwBitsSize = dwFileSize - sizeof(bmfHeader);
+	// g_pFullFileSystem->Read( &bmfHeader, sizeof(bmfHeader), file );
+	// if (bmfHeader.bfType == DIB_HEADER_MARKER)
+	// {
+	//     dwBitsSize = dwFileSize - sizeof(bmfHeader);
 
-    //     HGLOBAL hDIB = GlobalAlloc( GMEM_MOVEABLE | GMEM_ZEROINIT, dwBitsSize );
+	//     HGLOBAL hDIB = GlobalAlloc( GMEM_MOVEABLE | GMEM_ZEROINIT, dwBitsSize );
 
     //     char *pDIB = (LPSTR)GlobalLock((HGLOBAL)hDIB);
     //     {
