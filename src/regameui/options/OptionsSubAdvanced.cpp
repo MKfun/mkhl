@@ -18,6 +18,8 @@
 #include <vgui_controls/RadioButton.h>
 #include <vgui_controls/TextEntry.h>
 #include "../CvarToggleCheckButton.h"
+#include "../EngineInterface.h"
+#include "IGameUIFuncs.h"
 // #include "ContentControlDialog.h"
 
 using namespace vgui2;
@@ -89,10 +91,27 @@ COptionsSubAdvanced::COptionsSubAdvanced(vgui2::Panel *parent) : PropertyPage(pa
     m_pContentCheckButton = new vgui2::CheckButton( this, "ContentlockButton", "#GameUI_ContentLock" );
     m_pContentCheckButton->SetCommand( "ContentControl" );
     //	vgui2::Label *l2 = new vgui2::Label( this, "ContentlockLabel", "#GameUI_ContentLockLabel" );
+	m_pAddonCheckButton = new vgui2::CheckButton(this, "AddonsFolder", "#GameUI_AddonsFolder");
+	m_pOriginalModelsCheckButton = new vgui2::CheckButton(this, "OriginalModels", "#GameUI_OriginalModels");
+	m_pDetailTexturesCheckButton = new CCvarToggleCheckButton(this, "DetailTextures", "#GameUI_DetailTextures", "r_detailtextures");
 
-    LoadControlSettings("Resource\\OptionsSubAdvanced.res");
+	// Read current addons_folder and HD models state from the renderer settings
+	m_iOrigAddonsFolder = 0;
+	m_iOrigHDModels = 0;
+	if ( gameuifuncs )
+	{
+		char szRenderer[128];
+		int iWindowed = 0, iVidLevel = 0;
+		gameuifuncs->GetCurrentRenderer( szRenderer, sizeof(szRenderer),
+			&iWindowed, &m_iOrigHDModels, &m_iOrigAddonsFolder, &iVidLevel );
+	}
+	m_pAddonCheckButton->SetSelected( m_iOrigAddonsFolder != 0 );
+	// "Original models" = HD models OFF
+	m_pOriginalModelsCheckButton->SetSelected( m_iOrigHDModels == 0 );
 
-    // set up the content control dialog
+	LoadControlSettings("Resource\\OptionsSubAdvanced.res");
+
+	// set up the content control dialog
     // m_pContentControlDialog = new CContentControlDialog(this);
     // m_pContentControlDialog->AddActionSignalTarget(this);
 
@@ -146,6 +165,21 @@ void COptionsSubAdvanced::OnResetData()
 {
     // m_pContentControlDialog->ResetPassword();
     // m_pContentCheckButton->SetSelected( m_pContentControlDialog->IsPasswordEnabled() );
+
+	// Re-read addons_folder and HD models from the renderer
+	m_iOrigAddonsFolder = 0;
+	m_iOrigHDModels = 0;
+	if ( gameuifuncs )
+	{
+		char szRenderer[128];
+		int iWindowed = 0, iVidLevel = 0;
+		gameuifuncs->GetCurrentRenderer( szRenderer, sizeof(szRenderer),
+			&iWindowed, &m_iOrigHDModels, &m_iOrigAddonsFolder, &iVidLevel );
+	}
+	m_pAddonCheckButton->SetSelected( m_iOrigAddonsFolder != 0 );
+	m_pOriginalModelsCheckButton->SetSelected( m_iOrigHDModels == 0 );
+
+	m_pDetailTexturesCheckButton->Reset();
 }
 
 //-----------------------------------------------------------------------------
@@ -154,6 +188,40 @@ void COptionsSubAdvanced::OnResetData()
 void COptionsSubAdvanced::OnApplyChanges()
 {
     // m_pContentControlDialog->ApplyPassword();
+
+	// Apply detail textures (simple cvar)
+	m_pDetailTexturesCheckButton->ApplyChanges();
+
+	if ( !gameuifuncs )
+		return;
+
+	int iNewAddons = m_pAddonCheckButton->IsSelected() ? 1 : 0;
+	// "Original models" checked = HD models OFF
+	int iNewHDModels = m_pOriginalModelsCheckButton->IsSelected() ? 0 : 1;
+
+	// Only call _setrenderer if either changed
+	if ( iNewAddons == m_iOrigAddonsFolder && iNewHDModels == m_iOrigHDModels )
+		return;
+
+	// Read current renderer settings so we don't overwrite windowed/renderer
+	char szRenderer[128];
+	int iWindowed = 0, iHDModels = 0, iAddons = 0, iVidLevel = 0;
+	gameuifuncs->GetCurrentRenderer( szRenderer, sizeof(szRenderer),
+		&iWindowed, &iHDModels, &iAddons, &iVidLevel );
+
+	char szCmd[256];
+	Q_snprintf( szCmd, sizeof(szCmd), "_setrenderer %s %s %s %s\n",
+		szRenderer,
+		iWindowed ? "windowed" : "fullscreen",
+		iNewHDModels ? "hdmodels" : "nohdmodels",
+		iNewAddons ? "addons" : "noaddons" );
+	gEngfuncs.pfnClientCmd( szCmd );
+
+	// Engine needs a restart to apply filesystem changes
+	gEngfuncs.pfnClientCmd( "_restart\n" );
+
+	m_iOrigAddonsFolder = iNewAddons;
+	m_iOrigHDModels = iNewHDModels;
 }
 
 //-----------------------------------------------------------------------------

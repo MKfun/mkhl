@@ -61,12 +61,12 @@ COptionsDialog::COptionsDialog(vgui2::Panel *parent) : PropertyDialog(parent, "O
     AddPage(new COptionsSubAudio(this), "#GameUI_Audio");
     AddPage(new COptionsSubVideo(this), "#GameUI_Video");
     AddPage(new COptionsSubVoice(this), "#GameUI_Voice");
-    AddPage(new COptionsSubAdvanced(this), "#GameUI_Advanced");
+	AddPage(new COptionsSubAdvanced(this), "#GameUI_AdvancedNoEllipsis");
 
-    //	double s5 = system()->GetCurrentTime();
-    //	ivgui()->DPrintf("COptionsDialog::COptionsDialog(): %.3fms\n", (float)(s5 - s4) * 1000.0f);
+	//	double s5 = system()->GetCurrentTime();
+	//	ivgui()->DPrintf("COptionsDialog::COptionsDialog(): %.3fms\n", (float)(s5 - s4) * 1000.0f);
 
-    if ( ModInfo().IsSinglePlayerOnly() )
+	if ( ModInfo().IsSinglePlayerOnly() )
     {
         AddPage(new CMultiplayerAdvancedPage(this), "#GameUI_AdvancedNoEllipsis");
     }

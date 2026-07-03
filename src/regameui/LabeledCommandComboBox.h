@@ -1,10 +1,3 @@
-//========= Copyright � 1996-2001, Valve LLC, All rights reserved. ============
-//
-// Purpose:
-//
-// $NoKeywords: $
-//=============================================================================
-
 #ifndef LABELEDCOMMANDCOMBOBOX_H
 #define LABELEDCOMMANDCOMBOBOX_H
 #ifdef _WIN32
@@ -18,44 +11,46 @@
 
 class CLabeledCommandComboBox : public vgui2::ComboBox
 {
+	DECLARE_CLASS_SIMPLE(CLabeledCommandComboBox, vgui2::ComboBox);
+
 public:
-    CLabeledCommandComboBox(vgui2::Panel *parent, const char *panelName);
-    ~CLabeledCommandComboBox();
+	CLabeledCommandComboBox(vgui2::Panel *parent, const char *panelName);
+	~CLabeledCommandComboBox(void);
 
-    virtual void DeleteAllItems();
-    virtual void AddItem(char const *text, char const *engineCommand);
-    virtual void ActivateItem(int itemIndex);
-    const char *GetActiveItemCommand();
+public:
+	virtual void DeleteAllItems(void);
+	virtual void AddItem(char const *text, char const *engineCommand);
+	virtual void ActivateItem(int itemIndex);
 
-    void SetInitialItem(int itemIndex);
+public:
+	const char *GetActiveItemCommand(void);
+	void SetInitialItem(int itemIndex);
+	void ApplyChanges(void);
+	void Reset(void);
+	bool HasBeenModified(void);
 
-    void			ApplyChanges();
-    void			Reset();
-    bool			HasBeenModified();
-
-    enum
-    {
-        MAX_NAME_LEN = 256,
-        MAX_COMMAND_LEN = 256
-    };
-
-    DECLARE_PANELMAP();
+public:
+	enum
+	{
+		MAX_NAME_LEN = 256,
+		MAX_COMMAND_LEN = 256
+	};
 
 private:
-    typedef vgui2::ComboBox BaseClass;
+	MESSAGE_FUNC_CHARPTR(OnTextChanged, "TextChanged", text);
 
-    void OnTextChanged( char const *text );
+private:
+	struct COMMANDITEM
+	{
+		char name[MAX_NAME_LEN];
+		char command[MAX_COMMAND_LEN];
+		int comboBoxID;
+	};
 
-    struct COMMANDITEM
-    {
-        char			name[ MAX_NAME_LEN ];
-        char			command[ MAX_COMMAND_LEN ];
-        int				comboBoxID;
-    };
-
-    CUtlVector< COMMANDITEM >	m_Items;
-    int		m_iCurrentSelection;
-    int		m_iStartSelection;
+private:
+	CUtlVector<COMMANDITEM> m_Items;
+	int m_iCurrentSelection;
+	int m_iStartSelection;
 };
 
-#endif // LABELEDCOMMANDCOMBOBOX_H
+#endif

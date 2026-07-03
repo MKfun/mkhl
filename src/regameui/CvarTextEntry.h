@@ -1,9 +1,9 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+//========= Copyright ?1996-2001, Valve LLC, All rights reserved. ============
 //
 // Purpose:
 //
 // $NoKeywords: $
-//=============================================================================//
+//=============================================================================
 
 #ifndef CVARTEXTENTRY_H
 #define CVARTEXTENTRY_H
@@ -15,21 +15,25 @@
 
 class CCvarTextEntry : public vgui2::TextEntry
 {
-    DECLARE_CLASS_SIMPLE( CCvarTextEntry, vgui2::TextEntry );
+	static const int MAX_CVAR_TEXT = 64;
 
 public:
-    CCvarTextEntry( vgui2::Panel *parent, const char *panelName, char const *cvarname );
-    ~CCvarTextEntry();
+	CCvarTextEntry(vgui2::Panel *parent, const char *panelName, char const *cvarname);
+	~CCvarTextEntry();
 
-    MESSAGE_FUNC( OnTextChanged, "TextChanged" );
-    void			ApplyChanges(  bool immediate = false );
-    virtual void	ApplySchemeSettings(vgui2::IScheme *pScheme);
-    void            Reset();
-    bool            HasBeenModified();
+	void OnTextChanged();
+	void ApplyChanges(bool immediate = false);
+	virtual void ApplySchemeSettings(vgui2::IScheme *pScheme);
+	void Reset();
+	bool HasBeenModified();
+
+	DECLARE_PANELMAP();
 
 private:
-    char			*m_pszCvarName;
-    char			m_pszStartValue[64];
+	typedef vgui2::TextEntry BaseClass;
+
+	char *m_pszCvarName;
+	char m_pszStartValue[MAX_CVAR_TEXT];
 };
 
 #endif // CVARTEXTENTRY_H

@@ -1,26 +1,35 @@
-#ifndef CCVARCHECKBUTTON_H
-#define CCVARCHECKBUTTON_H
-#include <vgui_controls/CheckButton.h>
+#ifndef CVARTOGGLECHECKBUTTON_H
+#define CVARTOGGLECHECKBUTTON_H
+#ifdef _WIN32
+#pragma once
+#endif
 
-typedef struct cvar_s cvar_t;
+#include <vgui_controls/CheckButton.h>
 
 class CCvarToggleCheckButton : public vgui2::CheckButton
 {
 	DECLARE_CLASS_SIMPLE(CCvarToggleCheckButton, vgui2::CheckButton);
 
 public:
-	CCvarToggleCheckButton(vgui2::Panel *parent, const char *panelName, const char *text, const char *cvarName, bool inverse = false);
-	//void ResetData();
-	void ApplyChanges();
+	CCvarToggleCheckButton(vgui2::Panel *parent, const char *panelName, const char *text, char const *cvarname);
+	~CCvarToggleCheckButton(void);
 
-	// vgui2::CheckButton
-	virtual void SetSelected(bool state) override;
-	virtual void Reset();
+public:
+	virtual void SetSelected(bool state);
+	virtual void Paint(void);
+
+public:
+	void Reset(void);
+	void ApplyChanges(void);
+	bool HasBeenModified(void);
+	void ApplySettings(KeyValues *inResourceData);
 
 private:
-	cvar_t *m_pCvar = nullptr;
-	bool m_bInverse = false;
-	bool m_bPendingChange = false;
+	MESSAGE_FUNC(OnButtonChecked, "CheckButtonChecked");
+
+private:
+	char *m_pszCvarName;
+	bool m_bStartValue;
 };
 
 #endif

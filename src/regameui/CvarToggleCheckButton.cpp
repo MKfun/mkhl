@@ -1,49 +1,104 @@
-#include <KeyValues.h>
-#include "CvarToggleCheckButton.h"
 #include "EngineInterface.h"
-CCvarToggleCheckButton::CCvarToggleCheckButton(vgui2::Panel *parent, const char *panelName, const char *text, const char *cvarName, bool inverse)
-    : vgui2::CheckButton(parent, panelName, text)
+#include "GameUI_Interface.h"
+#include "CvarToggleCheckButton.h"
+#include <vgui/IVGui.h>
+#include "tier1/KeyValues.h"
+#include "IGameUIFuncs.h"
+
+#include <tier0/memdbgon.h>
+
+vgui2::Panel *CvarToggleCheckButton_Factory(void)
 {
-	m_pCvar = gEngfuncs.pfnGetCvarPointer(cvarName);
-	m_bInverse = inverse;
-	if (!m_pCvar)
-	{
-		Msg("%s [CCvarCheckButton]: cvar '%s' not found.\n", panelName, cvarName);
-	}
-	Reset();
+	return new CCvarToggleCheckButton(NULL, NULL, "CvarToggleCheckButton", NULL);
 }
 
-void CCvarToggleCheckButton::Reset()
-{
-	if (m_pCvar)
-	{
-		bool val = !!m_pCvar->value;
-		if (m_bInverse)
-			val = !val;
+DECLARE_BUILD_FACTORY_CUSTOM(CCvarToggleCheckButton, CvarToggleCheckButton_Factory);
 
-		SetSelected(val);
-		m_bPendingChange = false;
-	}
+CCvarToggleCheckButton::CCvarToggleCheckButton(Panel *parent, const char *panelName, const char *text, char const *cvarname)
+    : CheckButton(parent, panelName, text)
+{
+	m_pszCvarName = cvarname ? strdup(cvarname) : NULL;
+
+	if (m_pszCvarName)
+		Reset();
+
+	AddActionSignalTarget(this);
 }
 
-void CCvarToggleCheckButton::ApplyChanges()
+CCvarToggleCheckButton::~CCvarToggleCheckButton(void)
 {
-	if (m_pCvar && m_bPendingChange)
-	{
-		char buf[256];
-		bool val = IsSelected();
-		if (m_bInverse)
-			val = !val;
-
-		snprintf(buf, sizeof(buf), "%s \"%s\"", m_pCvar->name, (val ? "1" : "0"));
-		gEngfuncs.pfnClientCmd(buf);
-		m_bPendingChange = false;
-	}
+	free(m_pszCvarName);
 }
+
+void CCvarToggleCheckButton::Paint(void)
+{
+	if (!m_pszCvarName || !m_pszCvarName[0])
+	{
+		BaseClass::Paint();
+		return;
+	}
+
+	bool value = gEngfuncs.pfnGetCvarFloat(m_pszCvarName) > 0.0f ? true : false;
+
+	if (value != m_bStartValue)
+	{
+		SetSelected(value);
+		m_bStartValue = value;
+	}
+
+	BaseClass::Paint();
+}
+
+void CCvarToggleCheckButton::ApplyChanges(void)
+{
+	m_bStartValue = IsSelected();
+	gEngfuncs.Cvar_SetValue(m_pszCvarName, m_bStartValue ? 1.0f : 0.0f);
+}
+
+void CCvarToggleCheckButton::Reset(void)
+{
+	m_bStartValue = gEngfuncs.pfnGetCvarFloat(m_pszCvarName) > 0.0f ? true : false;
+	SetSelected(m_bStartValue);
+}
+
+bool CCvarToggleCheckButton::HasBeenModified(void)
+{
+	return IsSelected() != m_bStartValue;
+}
+
 void CCvarToggleCheckButton::SetSelected(bool state)
 {
 	BaseClass::SetSelected(state);
+}
 
-	if (IsCheckButtonCheckable())
-		m_bPendingChange = true;
+void CCvarToggleCheckButton::OnButtonChecked(void)
+{
+	if (HasBeenModified())
+		PostActionSignal(new KeyValues("ControlModified"));
+}
+
+void CCvarToggleCheckButton::ApplySettings(KeyValues *inResourceData)
+{
+	BaseClass::ApplySettings(inResourceData);
+
+	const char *cvarName = inResourceData->GetString("cvar_name", "");
+	const char *cvarValue = inResourceData->GetString("cvar_value", "");
+
+	if (Q_stricmp(cvarName, "") == 0)
+		return;
+
+	if (m_pszCvarName)
+		free(m_pszCvarName);
+
+	m_pszCvarName = cvarName ? strdup(cvarName) : NULL;
+
+	if (Q_stricmp(cvarValue, "1") == 0)
+		m_bStartValue = true;
+	else
+		m_bStartValue = false;
+
+	if (gEngfuncs.pfnGetCvarFloat(m_pszCvarName) != 0)
+		SetSelected(true);
+	else
+		SetSelected(false);
 }

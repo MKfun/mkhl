@@ -1,141 +1,114 @@
-//========= Copyright � 1996-2002, Valve LLC, All rights reserved. ============
-//
-// Purpose:
-//
-// $NoKeywords: $
-//=============================================================================
-
-#include "LabeledCommandComboBox.h"
 #include "EngineInterface.h"
+#include "GameUI_Interface.h"
+#include "LabeledCommandComboBox.h"
 #include <KeyValues.h>
 #include <vgui/ILocalize.h>
 
-// memdbgon must be the last include file in a .cpp file!!!
-#include <tier0/memdbgon.h>
-
-using namespace vgui2;
-
-CLabeledCommandComboBox::CLabeledCommandComboBox( vgui2::Panel *parent, const char *panelName ) : vgui2::ComboBox( parent, panelName, 6, false )
+CLabeledCommandComboBox::CLabeledCommandComboBox(vgui2::Panel *parent, const char *panelName)
+    : vgui2::ComboBox(parent, panelName, 6, false)
 {
-    AddActionSignalTarget(this);
-    m_iCurrentSelection = -1;
-    m_iStartSelection = -1;
+	AddActionSignalTarget(this);
+	m_iCurrentSelection = -1;
+	m_iStartSelection = -1;
 }
 
-CLabeledCommandComboBox::~CLabeledCommandComboBox( void )
+CLabeledCommandComboBox::~CLabeledCommandComboBox(void)
 {
 }
 
-void CLabeledCommandComboBox::DeleteAllItems()
+void CLabeledCommandComboBox::DeleteAllItems(void)
 {
-    BaseClass::DeleteAllItems();
-    m_Items.RemoveAll();
+	BaseClass::DeleteAllItems();
+	m_Items.RemoveAll();
 }
 
-void CLabeledCommandComboBox::AddItem( char const *text, char const *engineCommand )
+void CLabeledCommandComboBox::AddItem(char const *text, char const *engineCommand)
 {
-    int idx = m_Items.AddToTail();
-    COMMANDITEM *item = &m_Items[ idx ];
+	int idx = m_Items.AddToTail();
+	COMMANDITEM *item = &m_Items[idx];
 
-    item->comboBoxID = BaseClass::AddItem( text, NULL );
+	item->comboBoxID = BaseClass::AddItem(text, NULL);
 
-    strcpy( item->name, text );
+	Q_strncpy(item->name, text, sizeof(item->name));
 
-    if (text[0] == '#')
-    {
-        // need to localize the string
-        wchar_t *localized = g_pVGuiLocalize->Find(text);
-        if (localized)
-        {
-            g_pVGuiLocalize->ConvertUnicodeToANSI(localized, item->name, sizeof(item->name));
-        }
-    }
+	if (text[0] == '#')
+	{
+		wchar_t *localized = g_pVGuiLocalize->Find(text);
 
-    strcpy( item->command, engineCommand );
+		if (localized)
+			g_pVGuiLocalize->ConvertUnicodeToANSI(localized, item->name, sizeof(item->name));
+	}
+
+	Q_strncpy(item->command, engineCommand, sizeof(item->command));
 }
 
 void CLabeledCommandComboBox::ActivateItem(int index)
 {
-    if ( index< m_Items.Count() )
-    {
-        int comboBoxID = m_Items[index].comboBoxID;
-        BaseClass::ActivateItem(comboBoxID);
-        m_iCurrentSelection = index;
-    }
+	if (index < m_Items.Count())
+	{
+		int comboBoxID = m_Items[index].comboBoxID;
+		BaseClass::ActivateItem(comboBoxID);
+		m_iCurrentSelection = index;
+	}
 }
 
 void CLabeledCommandComboBox::SetInitialItem(int index)
 {
-    if ( index< m_Items.Count() )
-    {
-        m_iStartSelection = index;
-        int comboBoxID = m_Items[index].comboBoxID;
-        ActivateItem(comboBoxID);
-    }
+	if (index < m_Items.Count())
+	{
+		m_iStartSelection = index;
+		int comboBoxID = m_Items[index].comboBoxID;
+		ActivateItem(comboBoxID);
+	}
 }
 
-void CLabeledCommandComboBox::OnTextChanged( char const *text )
+void CLabeledCommandComboBox::OnTextChanged(char const *text)
 {
-    int i;
-    for ( i = 0; i < m_Items.Size(); i++ )
-    {
-        COMMANDITEM *item = &m_Items[ i ];
-        if ( !stricmp( item->name, text ) )
-        {
-            //	engine->pfnClientCmd( item->command );
-            m_iCurrentSelection = i;
-            break;
-        }
-    }
+	for (int i = 0; i < m_Items.Size(); i++)
+	{
+		COMMANDITEM *item = &m_Items[i];
 
-    if (HasBeenModified())
-    {
-        PostActionSignal(new KeyValues("ControlModified"));
-    }
-    //	PostMessage( GetParent()->GetVPanel(), new vgui2::KeyValues( "TextChanged", "text", text ) );
+		if (!stricmp(item->name, text))
+		{
+			m_iCurrentSelection = i;
+			break;
+		}
+	}
+
+	if (HasBeenModified())
+		PostActionSignal(new KeyValues("ControlModified"));
 }
 
-const char *CLabeledCommandComboBox::GetActiveItemCommand()
+const char *CLabeledCommandComboBox::GetActiveItemCommand(void)
 {
-    if (m_iCurrentSelection == -1)
-        return NULL;
+	if (m_iCurrentSelection == -1)
+		return NULL;
 
-    COMMANDITEM *item = &m_Items[ m_iCurrentSelection ];
-    return item->command;
+	COMMANDITEM *item = &m_Items[m_iCurrentSelection];
+	return item->command;
 }
 
-void CLabeledCommandComboBox::ApplyChanges()
+void CLabeledCommandComboBox::ApplyChanges(void)
 {
-    if (m_iCurrentSelection == -1)
-        return;
-    if (m_Items.Size() < 1)
-        return;
+	if (m_iCurrentSelection == -1)
+		return;
 
-    assert( m_iCurrentSelection < m_Items.Size() );
-    COMMANDITEM *item = &m_Items[ m_iCurrentSelection ];
-    gEngfuncs.pfnClientCmd( item->command );
-    m_iStartSelection = m_iCurrentSelection;
+	if (m_Items.Size() < 1)
+		return;
+
+	Assert(m_iCurrentSelection < m_Items.Size());
+	COMMANDITEM *item = &m_Items[m_iCurrentSelection];
+	gEngfuncs.pfnClientCmd(item->command);
+	m_iStartSelection = m_iCurrentSelection;
 }
 
-bool CLabeledCommandComboBox::HasBeenModified()
+bool CLabeledCommandComboBox::HasBeenModified(void)
 {
-    return m_iStartSelection != m_iCurrentSelection;
+	return m_iStartSelection != m_iCurrentSelection;
 }
 
-void CLabeledCommandComboBox::Reset()
+void CLabeledCommandComboBox::Reset(void)
 {
-    if (m_iStartSelection != -1)
-    {
-        ActivateItem(m_iStartSelection);
-    }
+	if (m_iStartSelection != -1)
+		ActivateItem(m_iStartSelection);
 }
-
-//-----------------------------------------------------------------------------
-// Purpose: Message mapping
-//-----------------------------------------------------------------------------
-vgui2::MessageMapItem_t CLabeledCommandComboBox::m_MessageMap[] =
-    {
-        MAP_MESSAGE_CONSTCHARPTR( CLabeledCommandComboBox, "TextChanged", OnTextChanged, "text" ),	// custom message
-    };
-
-IMPLEMENT_PANELMAP( CLabeledCommandComboBox, BaseClass );
