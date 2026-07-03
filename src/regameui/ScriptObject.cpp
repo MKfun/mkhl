@@ -327,7 +327,7 @@ void CScriptObject::WriteToConfig(void)
 		break;
 	}
 
-	char command[256];
+	char command[2500];
 	if (bSetInfo)
 	{
 		sprintf(command, "setinfo %s %s\n", pszKey, szValue);
