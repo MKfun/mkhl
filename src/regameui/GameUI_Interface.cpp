@@ -1,6 +1,7 @@
 //
 // Created by den4ik on 01.12.25.
 //
+#include <winsani_in.h>
 #include "GameConsole.h"
 #include "LoadingDialog.h"
 #include "sdl_rt.h"
@@ -51,7 +52,7 @@
 #include "tier0/vcrmode.h"
 
 #include <tier0/memdbgon.h>
-
+#include <winsani_out.h>
 IGameUIFuncs *gameuifuncs = NULL;
 IEngineVGui *enginevguifuncs = NULL;
 vgui2::ISurface *enginesurfacefuncs = NULL;
