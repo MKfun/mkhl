@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 20.0.0, 2026-07-03T14:41:32. -->
+<!-- Written by QtCreator 20.0.0, 2026-07-05T19:18:08. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -71,7 +71,7 @@
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{f254ac8f-3c9b-4f5c-8db0-b978ea702454}</value>
    <value type="qlonglong" key="ProjectExplorer.Target.ActiveBuildConfiguration">0</value>
    <value type="qlonglong" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
-   <value type="qlonglong" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>
+   <value type="qlonglong" key="ProjectExplorer.Target.ActiveRunConfiguration">2</value>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
     <value type="QString" key="CMake.Build.Type">Debug</value>
     <value type="int" key="CMake.Configure.BaseEnvironment">2</value>
@@ -134,7 +134,7 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Debug (imported)</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeBuildConfiguration</value>
     <value type="qlonglong" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
-    <value type="qlonglong" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>
+    <value type="qlonglong" key="ProjectExplorer.Target.ActiveRunConfiguration">2</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.Target.DeployConfiguration.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
       <value type="qlonglong" key="ProjectExplorer.BuildStepList.StepsCount">0</value>
@@ -197,13 +197,18 @@
      <valuelist type="QVariantList" key="Analyzer.Valgrind.SuppressionFiles"/>
      <valuelist type="QVariantList" key="CustomOutputParsers"/>
      <value type="int" key="PE.EnvironmentAspect.Base">2</value>
-     <value type="UnknownType" key="PE.EnvironmentAspect.Changes"></value>
+     <valuemap type="QVariantMap" key="PE.EnvironmentAspect.Changes">
+      <value type="QString" key="File"></value>
+      <valuelist type="QVariantList" key="UserItems">
+       <value type="QString">LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/pinned_libs_32:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/pinned_libs_64:/usr/lib/x86_64-linux-gnu/libfakeroot:/lib/i386-linux-gnu:/usr/local/lib:/lib/x86_64-linux-gnu:/lib32:/libx32:/lib:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/lib/i386-linux-gnu:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/usr/lib/i386-linux-gnu:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/lib/x86_64-linux-gnu:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/usr/lib/x86_64-linux-gnu:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/lib:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/usr/lib:/home/den4ik/.local/share/Steam/steamapps/common/Half-Life:.</value>
+      </valuelist>
+     </valuemap>
      <value type="bool" key="PE.EnvironmentAspect.PrintOnRun">false</value>
      <value type="QString" key="PerfRecordArgsId">-e cpu-cycles --call-graph dwarf,4096 -F 250</value>
      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
      <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration.</value>
      <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">test_client</value>
-     <value type="bool" key="ProjectExplorer.RunConfiguration.Customized">false</value>
+     <value type="bool" key="ProjectExplorer.RunConfiguration.Customized">true</value>
      <value type="QString" key="ProjectExplorer.RunConfiguration.UniqueId"></value>
      <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
      <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>
@@ -231,7 +236,34 @@
      <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
      <value type="QString" key="RunConfiguration.WorkingDirectory.default">%{RunConfig:Executable:Path}</value>
     </valuemap>
-    <value type="qlonglong" key="ProjectExplorer.Target.RunConfigurationCount">2</value>
+    <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.2">
+     <value type="bool" key="Analyzer.Perf.Settings.UseGlobalSettings">true</value>
+     <value type="bool" key="Analyzer.QmlProfiler.Settings.UseGlobalSettings">true</value>
+     <value type="int" key="Analyzer.Valgrind.Callgrind.CostFormat">0</value>
+     <value type="bool" key="Analyzer.Valgrind.Settings.UseGlobalSettings">true</value>
+     <valuelist type="QVariantList" key="Analyzer.Valgrind.SuppressionFiles"/>
+     <valuelist type="QVariantList" key="CustomOutputParsers"/>
+     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
+     <valuemap type="QVariantMap" key="PE.EnvironmentAspect.Changes">
+      <value type="QString" key="File"></value>
+      <valuelist type="QVariantList" key="UserItems">
+       <value type="QString">LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/pinned_libs_32:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/pinned_libs_64:/usr/lib/x86_64-linux-gnu/libfakeroot:/lib/i386-linux-gnu:/usr/local/lib:/lib/x86_64-linux-gnu:/lib32:/libx32:/lib:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/lib/i386-linux-gnu:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/usr/lib/i386-linux-gnu:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/lib/x86_64-linux-gnu:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/usr/lib/x86_64-linux-gnu:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/lib:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/usr/lib:/home/den4ik/.local/share/Steam/steamapps/common/Half-Life:.</value>
+      </valuelist>
+     </valuemap>
+     <value type="bool" key="PE.EnvironmentAspect.PrintOnRun">false</value>
+     <value type="QString" key="PerfRecordArgsId">-e cpu-cycles --call-graph dwarf,4096 -F 250</value>
+     <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Executable">/home/den4ik/mnt/SteamLibrary/steamapps/common/Half-Life/hl_linux</value>
+     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
+     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.CustomExecutableRunConfiguration</value>
+     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey"></value>
+     <value type="bool" key="ProjectExplorer.RunConfiguration.Customized">true</value>
+     <value type="QString" key="ProjectExplorer.RunConfiguration.UniqueId">{cb3218f6-4955-4e58-bece-77908e43398a}</value>
+     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
+     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
+     <value type="QString" key="RunConfiguration.WorkingDirectory">/home/den4ik/mnt/SteamLibrary/steamapps/common/Half-Life</value>
+     <value type="QString" key="RunConfiguration.WorkingDirectory.default">%{RunConfig:Executable:Path}</value>
+    </valuemap>
+    <value type="qlonglong" key="ProjectExplorer.Target.RunConfigurationCount">3</value>
    </valuemap>
    <value type="qlonglong" key="ProjectExplorer.Target.BuildConfigurationCount">1</value>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.DeployConfiguration.0">
@@ -290,13 +322,18 @@
     <valuelist type="QVariantList" key="Analyzer.Valgrind.SuppressionFiles"/>
     <valuelist type="QVariantList" key="CustomOutputParsers"/>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
-    <value type="UnknownType" key="PE.EnvironmentAspect.Changes"></value>
+    <valuemap type="QVariantMap" key="PE.EnvironmentAspect.Changes">
+     <value type="QString" key="File"></value>
+     <valuelist type="QVariantList" key="UserItems">
+      <value type="QString">LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/pinned_libs_32:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/pinned_libs_64:/usr/lib/x86_64-linux-gnu/libfakeroot:/lib/i386-linux-gnu:/usr/local/lib:/lib/x86_64-linux-gnu:/lib32:/libx32:/lib:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/lib/i386-linux-gnu:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/usr/lib/i386-linux-gnu:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/lib/x86_64-linux-gnu:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/usr/lib/x86_64-linux-gnu:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/lib:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/usr/lib:/home/den4ik/.local/share/Steam/steamapps/common/Half-Life:.</value>
+     </valuelist>
+    </valuemap>
     <value type="bool" key="PE.EnvironmentAspect.PrintOnRun">false</value>
     <value type="QString" key="PerfRecordArgsId">-e cpu-cycles --call-graph dwarf,4096 -F 250</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration.</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">test_client</value>
-    <value type="bool" key="ProjectExplorer.RunConfiguration.Customized">false</value>
+    <value type="bool" key="ProjectExplorer.RunConfiguration.Customized">true</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.UniqueId"></value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
     <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>
@@ -324,7 +361,34 @@
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory.default">%{RunConfig:Executable:Path}</value>
    </valuemap>
-   <value type="qlonglong" key="ProjectExplorer.Target.RunConfigurationCount">2</value>
+   <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.2">
+    <value type="bool" key="Analyzer.Perf.Settings.UseGlobalSettings">true</value>
+    <value type="bool" key="Analyzer.QmlProfiler.Settings.UseGlobalSettings">true</value>
+    <value type="int" key="Analyzer.Valgrind.Callgrind.CostFormat">0</value>
+    <value type="bool" key="Analyzer.Valgrind.Settings.UseGlobalSettings">true</value>
+    <valuelist type="QVariantList" key="Analyzer.Valgrind.SuppressionFiles"/>
+    <valuelist type="QVariantList" key="CustomOutputParsers"/>
+    <value type="int" key="PE.EnvironmentAspect.Base">2</value>
+    <valuemap type="QVariantMap" key="PE.EnvironmentAspect.Changes">
+     <value type="QString" key="File"></value>
+     <valuelist type="QVariantList" key="UserItems">
+      <value type="QString">LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/pinned_libs_32:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/pinned_libs_64:/usr/lib/x86_64-linux-gnu/libfakeroot:/lib/i386-linux-gnu:/usr/local/lib:/lib/x86_64-linux-gnu:/lib32:/libx32:/lib:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/lib/i386-linux-gnu:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/usr/lib/i386-linux-gnu:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/lib/x86_64-linux-gnu:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/usr/lib/x86_64-linux-gnu:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/lib:/home/den4ik/.local/share/Steam/ubuntu12_32/steam-runtime/usr/lib:/home/den4ik/.local/share/Steam/steamapps/common/Half-Life:.</value>
+     </valuelist>
+    </valuemap>
+    <value type="bool" key="PE.EnvironmentAspect.PrintOnRun">false</value>
+    <value type="QString" key="PerfRecordArgsId">-e cpu-cycles --call-graph dwarf,4096 -F 250</value>
+    <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Executable">/home/den4ik/mnt/SteamLibrary/steamapps/common/Half-Life/hl_linux</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.CustomExecutableRunConfiguration</value>
+    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey"></value>
+    <value type="bool" key="ProjectExplorer.RunConfiguration.Customized">true</value>
+    <value type="QString" key="ProjectExplorer.RunConfiguration.UniqueId">{cb3218f6-4955-4e58-bece-77908e43398a}</value>
+    <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
+    <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory">/home/den4ik/mnt/SteamLibrary/steamapps/common/Half-Life</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">%{RunConfig:Executable:Path}</value>
+   </valuemap>
+   <value type="qlonglong" key="ProjectExplorer.Target.RunConfigurationCount">3</value>
   </valuemap>
  </data>
  <data>

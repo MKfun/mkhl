@@ -101,7 +101,7 @@ void CVGuiSystemModuleLoader::InitializeAllModules(CreateInterfaceFn *factorylis
 #ifdef GAMEUI_EXPORTS
         m_Modules[i].moduleInterface->SetParent(GetGameUIBasePanel());
 #else
-        m_Modules[i].moduleInterface->SetParent(GetGameUIBasePanel());
+		[i].moduleInterface->SetParent(g_pMainPanel->GetVPanel());
 #endif
 	}
 
@@ -275,24 +275,6 @@ bool CVGuiSystemModuleLoader::ActivateModule(int moduleIndex)
 
 	m_Modules[moduleIndex].moduleInterface->Activate();
 
-#ifdef GAMEUI_EXPORTS
-    // if (g_pTaskbar)
-    {
-        wchar_t *wTitle;
-        wchar_t w_szTitle[1024];
-
-        wTitle = g_pVGuiLocalize->Find(m_Modules[moduleIndex].data->GetName());
-
-        if(!wTitle)
-        {
-            g_pVGuiLocalize->ConvertANSIToUnicode(m_Modules[moduleIndex].data->GetName(),w_szTitle,sizeof(w_szTitle));
-            wTitle = w_szTitle;
-        }
-
-        // g_pTaskbar->SetTitle(m_Modules[moduleIndex].moduleInterface->GetPanel(),wTitle);
-    }
-#endif
-
 	return true;
 }
 
@@ -320,7 +302,6 @@ CreateInterfaceFn CVGuiSystemModuleLoader::GetModuleFactory(int moduleIndex)
 {
 	return Sys_GetFactory(m_Modules[moduleIndex].module);
 }
-
 
 //-----------------------------------------------------------------------------
 // Purpose:

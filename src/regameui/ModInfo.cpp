@@ -1,19 +1,18 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+//========= Copyright ?1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose:
 //
 // $NoKeywords: $
-//=============================================================================//
-
+//=============================================================================
+#include <cstring>
+#include <malloc.h>
 
 #include "ModInfo.h"
-#include "KeyValues.h"
-#include "vgui_controls/Controls.h"
-//#include "filesystem.h"
+#include <KeyValues.h>
+#include <vgui_controls/Controls.h>
+#include <FileSystem.h>
 #include "EngineInterface.h"
-
-// memdbgon must be the last include file in a .cpp file!!!
-#include <tier0/memdbgon.h>
+#include "GameUI_Interface.h"
 
 //-----------------------------------------------------------------------------
 // Purpose: singleton accessor
@@ -30,15 +29,6 @@ CModInfo &ModInfo()
 CModInfo::CModInfo()
 {
 	m_pModData = new KeyValues("ModData");
-	m_wcsGameTitle[0] = 0;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Destructor
-//-----------------------------------------------------------------------------
-CModInfo::~CModInfo()
-{
-	FreeModInfo();
 }
 
 //-----------------------------------------------------------------------------
@@ -56,114 +46,38 @@ void CModInfo::FreeModInfo()
 //-----------------------------------------------------------------------------
 // Purpose: data accessor
 //-----------------------------------------------------------------------------
+const char *CModInfo::GetStartMap()
+{
+	return m_pModData->GetString("startmap", "c0a0");
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: data accessor
+//-----------------------------------------------------------------------------
+const char *CModInfo::GetTrainMap()
+{
+	return m_pModData->GetString("trainmap", "t0a0");
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: data accessor
+//-----------------------------------------------------------------------------
 bool CModInfo::IsMultiplayerOnly()
 {
 	return (stricmp(m_pModData->GetString("type", ""), "multiplayer_only") == 0);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: data accessor
-//-----------------------------------------------------------------------------
 bool CModInfo::IsSinglePlayerOnly()
 {
-#ifndef _XBOX
 	return (stricmp(m_pModData->GetString("type", ""), "singleplayer_only") == 0);
-#else
-	// xboxissue - no support for disparate mounted content
-	return true;
-#endif
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: data accessor
-//-----------------------------------------------------------------------------
-const char *CModInfo::GetFallbackDir()
+bool CModInfo::BShowSimpleLoadingDialog()
 {
-	return m_pModData->GetString("fallback_dir", "");
-}
+	if (IsSinglePlayerOnly())
+		return true;
 
-//-----------------------------------------------------------------------------
-// Purpose: data accessor
-//-----------------------------------------------------------------------------
-const wchar_t *CModInfo::GetGameTitle()
-{
-	if (!m_wcsGameTitle[0])
-	{
-		// for some reason, the standard ILocalize::ConvertANSIToUnicode() strips off
-		// the '�' character in 'HALF-LIFE�' - so just do a straight upconvert to unicode
-		const char *title = m_pModData->GetString("title", "");
-		int i = 0;
-		for (; title[i] != 0; ++i)
-		{
-			m_wcsGameTitle[i] = (wchar_t)title[i];
-		}
-		m_wcsGameTitle[i] = 0;
-	}
-
-	return m_wcsGameTitle;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: data accessor
-//-----------------------------------------------------------------------------
-const wchar_t *CModInfo::GetGameTitle2()
-{
-	if (!m_wcsGameTitle2[0])
-	{
-		// for some reason, the standard ILocalize::ConvertANSIToUnicode() strips off
-		// the '�' character in 'HALF-LIFE�' - so just do a straight upconvert to unicode
-		const char *title2 = m_pModData->GetString("title2", "");
-		int i = 0;
-		for (; title2[i] != 0; ++i)
-		{
-			m_wcsGameTitle2[i] = (wchar_t)title2[i];
-		}
-		m_wcsGameTitle2[i] = 0;
-	}
-
-	return m_wcsGameTitle2;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: data accessor
-//-----------------------------------------------------------------------------
-const char *CModInfo::GetGameName()
-{
-	return m_pModData->GetString("game", "");
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: data accessor
-//-----------------------------------------------------------------------------
-KeyValues *CModInfo::GetHiddenMaps()
-{
-	return m_pModData->FindKey( "hidden_maps" );
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: data accessor
-//-----------------------------------------------------------------------------
-bool CModInfo::HasPortals()
-{
-	return (stricmp(m_pModData->GetString("hasportals", "0"), "1") == 0);
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: data accessor
-//-----------------------------------------------------------------------------
-bool CModInfo::HasHDContent()
-{
-	return (stricmp(m_pModData->GetString("hashdcontent", "0"), "1") == 0);
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: data accessor
-//-----------------------------------------------------------------------------
-bool CModInfo::NoDifficulty()
-{
-	return (stricmp(m_pModData->GetString("nodifficulty", "0"), "1") == 0);
+	return (stricmp(m_pModData->GetString("game", "0"), "Opposing Force") == 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -185,76 +99,89 @@ bool CModInfo::NoHiModel()
 //-----------------------------------------------------------------------------
 // Purpose: data accessor
 //-----------------------------------------------------------------------------
-bool CModInfo::NoCrosshair()
+const char *CModInfo::GetGameDescription()
 {
-	return (stricmp(m_pModData->GetString("nocrosshair", "1"), "1") == 0);
+	return m_pModData->GetString("game", "Half-Life");
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: data accessor
 //-----------------------------------------------------------------------------
-bool CModInfo::AdvCrosshair()
+const char *CModInfo::GetFallbackDir()
 {
-	return ( m_pModData->GetInt( "advcrosshair" ) > 0 );
+	return m_pModData->GetString("fallback_dir", "");
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: data accessor
 //-----------------------------------------------------------------------------
-int CModInfo::AdvCrosshairLevel()
+bool CModInfo::GetDetailedTexture()
 {
-	return m_pModData->GetInt( "advcrosshair" );
+	return (stricmp(m_pModData->GetString("detailed_textures", "0"), "1") == 0);
 }
 
-const char *CModInfo::GetTrainMap()
+//-----------------------------------------------------------------------------
+// Purpose: data accessor
+//-----------------------------------------------------------------------------
+bool CModInfo::UseFallbackDirMaps()
 {
-	return m_pModData->GetString("trainmap", "t0a0");
+	return (stricmp(m_pModData->GetString("fallback_maps", "0"), "1") == 0);
 }
 
-const char *CModInfo::GetStartMap()
+//-----------------------------------------------------------------------------
+// Purpose: data accessor
+//-----------------------------------------------------------------------------
+const char *CModInfo::GetMPFilter()
 {
-	return m_pModData->GetString("startmap", "c0a0");
+	return m_pModData->GetString("mpfilter", "");
 }
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
 void CModInfo::LoadCurrentGameInfo()
 {
-	// Load up gameinfo for the current mod
-	char const *filename = "gameinfo.txt";
-	m_pModData->LoadFromFile( g_pFullFileSystem, filename );
+	// Load up liblist.gam for the current mod
+	char const *filename = "liblist.gam";
+
+	// walk through and add the key/value pairs to the keyvalues object
+	FileHandle_t fh = g_pFullFileSystem->Open(filename, "rb");
+	if (fh != FILESYSTEM_INVALID_HANDLE)
+	{
+		int len = g_pFullFileSystem->Size(fh);
+		if (len > 0)
+		{
+			char *buf = (char *)_alloca(len + 1);
+			g_pFullFileSystem->Read(buf, len, fh);
+			buf[len] = 0;
+			LoadGameInfoFromBuffer(buf, len);
+		}
+
+		g_pFullFileSystem->Close(fh);
+	}
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: loads file from null-terminated buffer
+// Purpose:
 //-----------------------------------------------------------------------------
-void CModInfo::LoadGameInfoFromBuffer( const char *buffer )
+void CModInfo::LoadGameInfoFromBuffer(const char *buffer, int bufferSize)
 {
-	// Load up gameinfo.txt for the current mod
-	m_pModData->LoadFromBuffer( "", buffer );
-}
+	char token[1024];
+	bool done = false;
+	char *p = (char *)buffer;
+	while (!done && p)
+	{
+		char key[256];
+		char value[256];
 
-//-----------------------------------------------------------------------------
-// Purpose: data accessor
-//-----------------------------------------------------------------------------
-bool CModInfo::UseGameLogo()
-{
-	return ( Q_stricmp( m_pModData->GetString( "gamelogo", "0" ), "1" ) == 0 );
-}
+		p = gEngfuncs.COM_ParseFile(p, token);
+		if (strlen(token) <= 0)
+			break;
+		strcpy(key, token);
 
-//-----------------------------------------------------------------------------
-// Purpose: data accessor
-//-----------------------------------------------------------------------------
-bool CModInfo::UseBots()
-{
-	return ( Q_stricmp( m_pModData->GetString( "bots", "0" ), "1" ) == 0 );
-}
+		p = gEngfuncs.COM_ParseFile(p, token);
+		strcpy(value, token);
 
-
-//-----------------------------------------------------------------------------
-// Purpose: data accessor
-//-----------------------------------------------------------------------------
-bool CModInfo::SupportsVR()
-{
-	return (m_pModData->GetInt( "supportsvr" ) > 0);
+		m_pModData->SetString(key, value);
+	}
 }

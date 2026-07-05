@@ -57,7 +57,7 @@ CCreateMultiplayerGameServerPage::CCreateMultiplayerGameServerPage(vgui2::Panel 
 	}
 
 	// initialize hostname
-	SetControlString("ServerNameEdit", ModInfo().GetGameName()); //GetGameDescription()); //szHostName);
+	SetControlString("ServerNameEdit", ModInfo().GetGameDescription()); //GetGameDescription()); //szHostName);
 
 	// initialize password
 	//	SetControlString("PasswordEdit", gEngfuncs.pfnGetCvarString("sv_password"));
@@ -106,7 +106,7 @@ void CCreateMultiplayerGameServerPage::LoadMaps(const char *pszPathID)
 {
 	FileFindHandle_t findHandle = NULL;
 
-	KeyValues *hiddenMaps = ModInfo().GetHiddenMaps();
+	// KeyValues *hiddenMaps = ModInfo().GetHidden();
 
 	const char *pszFilename = g_pFullFileSystem->FindFirst("maps/*.bsp", &findHandle, pszPathID);
 	while (pszFilename)
@@ -159,7 +159,7 @@ void CCreateMultiplayerGameServerPage::LoadMapList()
 	// clear the current list (if any)
 	m_pMapList->DeleteAllItems();
 
-	KeyValues *hiddenMaps = ModInfo().GetHiddenMaps();
+	// KeyValues *hiddenMaps = ModInfo().GetHiddenMaps();
 	// add special "name" to represent loading a randomly selected map
 	m_pMapList->AddItem(new KeyValues("data", "mapname", RANDOM_MAP), 0, false, false);
 
@@ -167,7 +167,7 @@ void CCreateMultiplayerGameServerPage::LoadMapList()
 	// UNDONE: steam wants this done in a special way, need to support that
 	FileFindHandle_t findHandle = NULL;
 	const char *pathID = "GAME";
-	if (!stricmp(ModInfo().GetGameName(), "Half-Life"))
+	if (!stricmp(ModInfo().GetGameDescription(), "Half-Life"))
 	{
 		pathID = NULL; // hl is the base dir
 	}
@@ -198,13 +198,13 @@ void CCreateMultiplayerGameServerPage::LoadMapList()
 		}
 
 		// strip out maps that shouldn't be displayed
-		if (hiddenMaps)
-		{
-			if (hiddenMaps->GetInt(mapname, 0))
-			{
-				goto nextFile;
-			}
-		}
+		// if (hiddenMaps)
+		// {
+		// 	if (hiddenMaps->GetInt(mapname, 0))
+		// 	{
+		// 		goto nextFile;
+		// 	}
+		// }
 
 		// add to the map list
 		m_pMapList->AddItem(new KeyValues("data", "mapname", mapname), 0, false, false);

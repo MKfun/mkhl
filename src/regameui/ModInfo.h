@@ -1,9 +1,9 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+//========= Copyright ?1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose:
 //
 // $NoKeywords: $
-//=============================================================================//
+//=============================================================================
 
 #ifndef MODINFO_H
 #define MODINFO_H
@@ -14,52 +14,37 @@
 class KeyValues;
 
 //-----------------------------------------------------------------------------
-// Purpose: contains all the data entered about a mod in gameinfo.txt
+// Purpose: contains all the data entered about a mod in liblist.gam
 //-----------------------------------------------------------------------------
 class CModInfo
 {
 public:
 	CModInfo();
-	~CModInfo();
 	void FreeModInfo();
 
-	// loads mod info from gameinfo.txt
+	// loads mod info from liblist.gam
 	void LoadCurrentGameInfo();
-
-	// loads gameinfo from null-terminated string
-	void LoadGameInfoFromBuffer( const char *buffer );
+	// loads mod info from previously loaded liblist.gam
+	void LoadGameInfoFromBuffer(const char *buffer, int bufferSize);
 
 	// data accessors
-	const wchar_t *GetGameTitle();
-	const wchar_t *GetGameTitle2();
-	const char *GetGameName();
-
+	const char *GetStartMap();
+	const char *GetTrainMap();
 	bool IsMultiplayerOnly();
 	bool IsSinglePlayerOnly();
-
-	bool HasPortals();
-
-	bool NoDifficulty();
+	bool BShowSimpleLoadingDialog();
 	bool NoModels();
 	bool NoHiModel();
-	bool NoCrosshair();
-	bool AdvCrosshair();
-	int AdvCrosshairLevel();
+	const char *GetGameDescription();
 	const char *GetFallbackDir();
-	bool UseGameLogo();
-	bool UseBots();
-	bool HasHDContent();
-	bool SupportsVR();
-	const char *GetTrainMap();
-	const char *GetStartMap();
-	KeyValues *GetHiddenMaps();
+	bool GetDetailedTexture();
+	bool UseFallbackDirMaps();
+
+	const char *GetMPFilter();
 
 private:
-	wchar_t m_wcsGameTitle[128];
-	wchar_t m_wcsGameTitle2[128];
 	KeyValues *m_pModData;
 };
-
 
 // singleton accessor
 extern CModInfo &ModInfo();

@@ -3,6 +3,7 @@
 //
 #include <winsani_in.h>
 #include "GameConsole.h"
+#include "IRunGameEngine.h"
 #include "LoadingDialog.h"
 #include "sdl_rt.h"
 #ifdef WIN32
@@ -57,6 +58,7 @@ IGameUIFuncs *gameuifuncs = NULL;
 IEngineVGui *enginevguifuncs = NULL;
 vgui2::ISurface *enginesurfacefuncs = NULL;
 IBaseUI *baseuifuncs = NULL;
+IRunGameEngine *rungameengine = NULL;
 //IFriendsUser *g_pFriendsUser = NULL;
 cl_enginefunc_t gEngfuncs;
 #include "tier0/dbg.h"
@@ -67,7 +69,7 @@ cl_enginefunc_t gEngfuncs;
 #include "VGuiSystemModuleLoader.h"
 #include "Sys_Utils.h"
 //#include "engine/.h"
-cl_enginefunc_t *engine = NULL;
+// cl_enginefunc_t *engine = &gEngfuncs;
 ICvar *cvar = NULL;
 
 
@@ -204,8 +206,8 @@ void CGameUI::InternalInitialize()
 	enginesurfacefuncs = g_pVGuiSurface;
 	gameuifuncs = (IGameUIFuncs *)s_pFactory(IGAMEUIFUNCS_NAME, NULL);
 	baseuifuncs = (IBaseUI *)s_pFactory(IBASEUI_NAME, NULL);
-
-//	xboxsystem = (IXboxSystem *)s_pFactory(XBOXSYSTEM_INTERFACE_VERSION, NULL);
+	rungameengine = (IRunGameEngine *)s_pFactory(RUNGAMEENGINE_INTERFACE_VERSION, NULL);
+	//	xboxsystem = (IXboxSystem *)s_pFactory(XBOXSYSTEM_INTERFACE_VERSION, NULL);
 	bFailed = !enginesurfacefuncs || !gameuifuncs || !enginevguifuncs;
 	if (bFailed)
 	{
@@ -300,8 +302,13 @@ void CGameUI::InternalStart()
 		// Play the start-up music
 //		PlayGameStartupSound();
 
-		// now we are set up to check every frame to see if we can friends/server browser
-        m_bTryingToLoadTracker = true;
+// now we are set up to check every frame to see if we can friends/server browser
+if (g_pServerBrowser)
+{
+	// g_pServerBrowser->ActiveGameName(ModInfo().GetGameDescription(), engine->pfnGetGameDirectory());
+	// g_pServerBrowser->Reactivate();
+}
+m_bTryingToLoadTracker = true;
 //		m_iFriendsLoadPauseFrames = 1;
 	}
 }

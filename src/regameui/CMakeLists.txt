@@ -68,4 +68,7 @@ add_sources(
         menuitems/gameuimenubutton.h
         serverconnectpanel.cpp
         serverconnectpanel.h
+
+        RunGameEngine.cpp
+        IRunGameEngine.h
 )

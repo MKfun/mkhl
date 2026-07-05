@@ -24,7 +24,7 @@
 
 // engine interface singleton accessor
 extern cl_enginefunc_t gEngfuncs;
-
+//#define engine &gEngfuncs;
 extern class IGameUIFuncs *gameuifuncs;
 extern class IEngineSound *enginesound;
 
