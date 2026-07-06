@@ -15,10 +15,9 @@ Roadmap
 - [x] Multiplayer dialog
 - [x] Singleplayer dialog
 - [x] Nice menu (not vanilla)
-- [ ] FIXUP Options frame
-- [ ] FIXUP ServerBrowser scheme
+- [x] FIXUP ServerBrowser scheme
 - [ ] Builds on windows
-- [ ] ifdefs for MKHL
+- [x] ifdefs for MKHL
 
 Bonus roadmap
 --------------
