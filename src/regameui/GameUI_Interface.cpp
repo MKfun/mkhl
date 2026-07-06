@@ -194,12 +194,13 @@ void CGameUI::InternalInitialize()
 
 	// load localization file
 	g_pVGuiLocalize->AddFile(g_pFullFileSystem, "resource/gameui_%language%.txt");
-
 	// load mod info
-	ModInfo().LoadCurrentGameInfo();
+	ModInfo()
+	    .LoadCurrentGameInfo();
 
 	// load localization file for kb_act.lst
 	g_pVGuiLocalize->AddFile(g_pFullFileSystem, "resource/valve_%language%.txt");
+	g_pVGuiLocalize->AddFile(g_pFullFileSystem, "resource/regameui_%language%.txt");
 
 	bool bFailed = false;
 	enginevguifuncs = (IEngineVGui *)s_pFactory(VENGINE_VGUI_VERSION, NULL);
@@ -265,7 +266,8 @@ void CGameUI::InternalStart()
 	// localization
 	g_pVGuiLocalize->AddFile(g_pFullFileSystem, "Resource/platform_%language%.txt");
 	g_pVGuiLocalize->AddFile(g_pFullFileSystem, "Resource/vgui_%language%.txt");
-    g_VModuleLoader.LoadPlatformModules(&s_pFactory, 1, false);
+	g_pVGuiLocalize->AddFile(g_pFullFileSystem, "Resource/regameui_%language%.txt");
+	g_VModuleLoader.LoadPlatformModules(&s_pFactory, 1, false);
 	Sys_SetLastError(0L);
 	if (IsPC())
 	{
@@ -432,6 +434,8 @@ int CGameUI::ActivateGameUI()
 
 	// hide/show the main panel to Activate all game ui
 	GetUiBaseModPanelClass().SetVisible(true);
+	// tell our panel that we're activated;
+	GetUiBaseModPanelClass().OnGameUIActivated();
 	// pause the game
 	gEngfuncs.pfnClientCmd("setpause");
     GetUiBaseModPanelClass().SetMouseInputEnabled(true);

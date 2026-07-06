@@ -64,32 +64,50 @@ CBasePanel::CBasePanel() : EditablePanel(NULL, "BaseGameUIPanel")
 
     SetProportional(true);
     LoadControlSettings("resource/mainmenu.res");
-    m_pMenuBar = new vgui2::MenuBar(this, "MainMenuBar");
-    m_pMenuBar->SetParent( this );
-    m_pMenuBar->SetSize( w, MENU_HEIGHT );
-    m_pMenuBar->SetMouseInputEnabled(true);
+	m_pMenuBar = new CGameMenuBar(this);
+	m_pMenuBar->SetParent(this);
+	m_pMenuBar->SetSize(w, MENU_HEIGHT);
+	m_pMenuBar->SetMouseInputEnabled(true);
 	vgui2::Menu *pGameMenu = new vgui2::Menu(m_pMenuBar, "GameMenu");
-	m_pMenuBar->AddMenu("Game", pGameMenu);
-	pGameMenu->AddMenuItem("Start a new game", "NewGameDialog", this);
-	pGameMenu->AddMenuItem("Save game", "SaveGameDialog", this);
-	pGameMenu->AddMenuItem("Load game", "LoadGameDialog", this);
+	m_pMenuBar->AddMenuEx("#ReGameUI_Singleplayer", pGameMenu, 0);
+	pGameMenu->AddMenuItem("#GameUI_GameMenu_NewGame", "NewGameDialog", this, new KeyValues("ItemData", "OnlyInMenu", 1));
+	pGameMenu->AddMenuItem("#GameUI_GameMenu_SaveGame", "SaveGameDialog", this, new KeyValues("ItemData", "notmulti", 1, "OnlyInGame", 1));
+	pGameMenu->AddMenuItem("#GameUI_LoadGame", "LoadGameDialog", this, new KeyValues(""));
 
 	vgui2::Menu *pMultiplayerMenu = new vgui2::Menu(m_pMenuBar, "MuliplayerMenu");
-	m_pMenuBar->AddMenu("Multiplayer", pMultiplayerMenu);
-	pMultiplayerMenu->AddMenuItem("Create a server", "CreateServerDialog", this);
-	pMultiplayerMenu->AddMenuItem("Connect to a server", "ConnectDialog", this);
+	m_pMenuBar->AddMenuEx("#GameUI_Multiplayer", pMultiplayerMenu, 0);
+	pMultiplayerMenu->AddMenuItem("#ReGameUI_CreateServer", "CreateServerDialog", this);
+	pMultiplayerMenu->AddSeparator();
+	pMultiplayerMenu->AddMenuItem("#ReGameUI_FastConnect", "FastConnectDialog", this);
+	pMultiplayerMenu->AddMenuItem("#ReGameUI_OpenServerBrowser", "OpenServerBrowser", this);
+
 	vgui2::Menu *pOptionsMenu = new vgui2::Menu(m_pMenuBar, "OptionsMenu");
-	m_pMenuBar->AddMenu("Options", pOptionsMenu);
-	pOptionsMenu->AddMenuItem("Multiplayer options", ("OpenOptionsDialog"), this, new KeyValues("Multiplayer"));
-	pOptionsMenu->AddMenuItem("Video settings", "OpenOptionsDialog", this, new KeyValues("Video"));
-	pOptionsMenu->AddMenuItem("Audio settings", "OpenOptionsDialog", this, new KeyValues("Audio"));
+	m_pMenuBar->AddMenuEx("Options", pOptionsMenu, 0);
+	pOptionsMenu->AddMenuItem("#GameUI_Multiplayer", ("OpenOptionsDialog"), this, new KeyValues("Multiplayer"));
+	pOptionsMenu->AddMenuItem("#GameUI_Video", "OpenOptionsDialog", this, new KeyValues("Video"));
+	pOptionsMenu->AddMenuItem("#GameUI_Audio", "OpenOptionsDialog", this, new KeyValues("Audio"));
+
+	// hack to support BugfixedHL (MKHL in our case :))
+	ConVarRef typicalbhlcvar("hud_deathnotice_vgui");
+	if (typicalbhlcvar.IsValid())
+	{
+		vgui2::Menu *pAdvOptionsMenu = new vgui2::Menu(m_pMenuBar, "AdvOptionsMenu");
+		m_pMenuBar->AddMenuEx("#ReGameUI_Advanced", pAdvOptionsMenu, 0);
+		pAdvOptionsMenu->AddMenuItem("#ReGameUI_BufgixedSettings", "AdvOptionsDialog", this);
+	}
+	vgui2::Menu *pExitMenu = new vgui2::Menu(m_pMenuBar, "ExitMenu");
+
+	m_pMenuBar->AddMenuEx("#ReGameUI_ExitMenu", pExitMenu, 1);
+	pExitMenu->AddMenuItem("#ReGameUI_DisconnectOrLeave", "OnDisconnect", this, new KeyValues("ItemData", "OnlyInGame", 1));
+	pExitMenu->AddMenuItem("#ReGameUI_Minimize", "OnMinimize", this);
+	pExitMenu->AddSeparator();
+	pExitMenu->AddMenuItem("#ReGameUI_OpenConsole", "OpenConsoleDialog", this);
+	pExitMenu->AddMenuItem("#GameUI_Quit", "OnQuitGame", this);
+
 	// m_hOptionsDialog = new COptionsDialog(this);
 	// m_hOptionsDialog->Activate();
-	// OnOpenOptionsDialog();
-	vgui2::Menu *pAdvOptionsMenu = new vgui2::Menu(m_pMenuBar, "AdvOptionsMenu");
-	m_pMenuBar->AddMenu("Advanced Options", pAdvOptionsMenu);
-	pAdvOptionsMenu->AddMenuItem("Addon settings", "AdvOptionsDialog", this);
 	SetBackgroundRenderState(BACKGROUND_DESKTOPIMAGE);
+	m_bEverActivated = false;
 	// DLLHACKHACKHACK: So, if we dont have active frames at this point,
 	// we are loosing mouse input on WHOOOLE BasePanel, so just setup that
 	// "invisible" frame to force our dear VGUI2 think that we have some frame
@@ -150,15 +168,20 @@ void CBasePanel::PaintBackground()
 	case BACKGROUND_BLACK:
 	{
         // if the loading dialog is visible, draw the background black
-        int swide, stall;
-        surface()->GetScreenSize(swide, stall);
+		int swide, stall;
+		surface()->GetScreenSize(swide, stall);
 		surface()->DrawSetColor(0, 0, 0, 128);
 		surface()->DrawFilledRect(0, 0, swide, stall);
+		break;
 	}
-	break;
 
 	case BACKGROUND_LOADING:
-		DrawBackgroundImage();
+		// DrawBackgroundImage();
+		int swide, stall;
+		surface()->GetScreenSize(swide, stall);
+		surface()->DrawSetColor(0, 0, 0, 128);
+		surface()->DrawFilledRect(0, 0, swide, stall);
+
 		break;
 
 	case BACKGROUND_DESKTOPIMAGE:
@@ -167,6 +190,10 @@ void CBasePanel::PaintBackground()
 
 	case BACKGROUND_LOADINGTRANSITION:
 	{
+		int swide, stall;
+		surface()->GetScreenSize(swide, stall);
+		surface()->DrawSetColor(0, 0, 0, 128);
+		surface()->DrawFilledRect(0, 0, swide, stall);
 	}
 	break;
 
@@ -183,28 +210,6 @@ void CBasePanel::ApplySchemeSettings(IScheme *pScheme)
 	int wide, tall;
 	surface()->GetScreenSize(wide, tall);
 	bool hardwareFilter = false; //(wide != 800);
-
-//	bimage_t &bimage = m_ImageID[0][0];
-//	bimage.imageID = surface()->CreateNewTextureID();
-
-//	char filename[512];
-//	sprintf(filename, "console/console_background" );
-//	surface()->DrawSetTextureFile(bimage.imageID, filename, hardwareFilter, false);
-//	surface()->DrawGetTextureSize(bimage.imageID, bimage.width, bimage.height);
-
-	// for (int y = 0; y < BACKGROUND_ROWS; y++)
-	// {
-	// 	for (int x = 0; x < BACKGROUND_COLUMNS; x++)
-	// 	{
-	// 		bimage_t &bimage = m_ImageID[y][x];
-	// 		bimage.imageID = surface()->CreateNewTextureID();
-
-	// 		char filename[512];
-	// 		sprintf(filename, "resource/background/800_%d_%c_loading", y + 1, 'a' + x);
-	// 		surface()->DrawSetTextureFile(bimage.imageID, filename, hardwareFilter, false);
-	// 		surface()->DrawGetTextureSize(bimage.imageID, bimage.width, bimage.height);
-	// 	}
-	// }
 
 	SetBgColor(Color(0, 0, 0, 0));
 
@@ -278,6 +283,16 @@ void CBasePanel::SetBackgroundRenderState(EBackgroundState state)
 	m_eBackgroundState = state;
 }
 
+void CBasePanel::OnGameUIActivated()
+{
+	if (!m_bEverActivated)
+	{
+		// Layout the first time to avoid focus issues (setting menus visible will grab focus)
+		UpdateGameMenus();
+		m_bEverActivated = true;
+	}
+}
+
 void CBasePanel::DrawBackgroundImage(void)
 {
 	int wide, tall;
@@ -345,26 +360,6 @@ void CBasePanel::DrawBackgroundImage(void)
 void CBasePanel::RunFrame()
 {
 	InvalidateLayout();
-//	vgui2::GetAnimationController()->UpdateAnimations( engine->Time() );
-
-//	UpdateBackgroundState();
-
-//	if ( !m_bPlatformMenuInitialized )
-//	{
-//		// check to see if the platform is ready to load yet
-//		if ( IsX360() || g_VModuleLoader.IsPlatformReady() )
-//		{
-//			m_bPlatformMenuInitialized = true;
-//		}
-//	}
-
-	// Check to see if a pending async task has already finished
-//	if ( m_pAsyncJob && !m_pAsyncJob->m_hThreadHandle )
-//	{
-//		m_pAsyncJob->Completed();
-//		delete m_pAsyncJob;
-//		m_pAsyncJob = NULL;
-//	}
 }
 void CBasePanel::CreateGameMenu()
 {
@@ -399,22 +394,23 @@ void CBasePanel::UpdateGameMenus()
 //	bool isVRActive = UseVR();
 
 	// iterate all the menu items
-	m_pGameMenu->UpdateMenuItemState( isInGame, isMulti, false, false, false );
+	// m_pMenuBar->UpdateMenuItemState(isInGame, isMulti, false, false, false);
 
-//	if ( m_hMainMenuOverridePanel )
-//	{
-//		vgui2::ivgui()->PostMessage( m_hMainMenuOverridePanel, new KeyValues( "UpdateMenu" ), NULL );
-//	}
+	//	if ( m_hMainMenuOverridePanel )
+	//	{
+	//		vgui2::ivgui()->PostMessage( m_hMainMenuOverridePanel, new KeyValues( "UpdateMenu" ), NULL );
+	//	}
 
 	// position the menu
+	m_pMenuBar->UpdateMenuItemState(isInGame, isMulti);
 	InvalidateLayout();
-	m_pGameMenu->SetVisible( true );
+	// m_pGameMenu->SetVisible( true );
 }
 void CBasePanel::PerformLayout()
 {
     // m_pGameMenu->SetPos(300, 300);
-    // UpdateGameMenus();
-    BaseClass::PerformLayout();
+	BaseClass::PerformLayout();
+	UpdateGameMenus();
 }
 CGameMenu *CBasePanel::RecursiveLoadGameMenu(KeyValues *datafile)
 {
@@ -467,7 +463,12 @@ void CBasePanel::OnCommand(const char* command)
 
 		OnOpenOptionsDialog();
 	}
-	else if (!V_strcmp(command, "ConnectDialog"))
+	else if (!V_stricmp(command, "OpenServerBrowser"))
+	{
+		g_VModuleLoader.ActivateModule(0);
+		g_VModuleLoader.ActivateModule(1);
+	}
+	else if (!V_strcmp(command, "FastConnectDialog"))
 	{
 		if (!m_hServerConnectDialog.Get())
 		{
@@ -475,9 +476,6 @@ void CBasePanel::OnCommand(const char* command)
 		}
 		m_hServerConnectDialog.Get()->Activate();
 		PositionDialog(m_hServerConnectDialog);
-
-		g_VModuleLoader.ActivateModule(0);
-		g_VModuleLoader.ActivateModule(1);
 	}
 	else if (!V_strcmp(command, "AdvOptionsDialog"))
 	{
@@ -511,7 +509,18 @@ void CBasePanel::OnCommand(const char* command)
 		m_hSaveGameDialog.Get()->Activate();
 		PositionDialog(m_hSaveGameDialog);
 	}
-
+	else if (!V_strcmp(command, "OpenConsoleDialog"))
+	{
+		GameConsole().Activate();
+	}
+	else if (!V_strcmp(command, "OnDisconnect"))
+	{
+		gEngfuncs.pfnClientCmd("disconnect");
+	}
+	else if (!V_strcmp(command, "OnQuitGame"))
+	{
+		gEngfuncs.pfnClientCmd("exit");
+	}
 	BaseClass::OnCommand(command);
 }
 void CBasePanel::PositionDialog(vgui2::PHandle dlg)

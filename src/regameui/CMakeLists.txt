@@ -29,6 +29,9 @@ add_sources(
         LabeledCommandComboBox.cpp
         CvarNegateCheckButton.cpp
         CvarTextEntry.cpp
+        GameMenuBar.cpp
+        GameMenuBar.h
+
         # misc
         ../common/convar.cpp
         ../game/client/sdl_rt.cpp

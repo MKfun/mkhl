@@ -4,6 +4,7 @@
 
 #ifndef BASEPANEL_H
 #define BASEPANEL_H
+#include "GameMenuBar.h"
 #include "LoadGameDialog.h"
 #include "SaveGameDialog.h"
 #include "createmultiplayer/CreateMultiplayerGameDialog.h"
@@ -42,7 +43,7 @@ public:
 	};
 
 	void SetBackgroundRenderState(EBackgroundState state);
-
+	void OnGameUIActivated();
 	virtual void RunFrame();
 	virtual void PerformLayout();
 
@@ -73,8 +74,8 @@ private:
 	void UpdateGameMenus();
     //Controls
     CGameMenu *m_pGameMenu;
-    vgui2::MenuBar *m_pMenuBar;
-    CGameMenuItem *m_pGameMenuButton;
+	CGameMenuBar *m_pMenuBar;
+	CGameMenuItem *m_pGameMenuButton;
 
 	vgui2::DHANDLE<COptionsDialog> m_hOptionsDialog;
 	vgui2::DHANDLE<ServerConnectPanel> m_hServerConnectDialog;
