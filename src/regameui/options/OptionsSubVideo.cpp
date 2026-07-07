@@ -81,8 +81,8 @@ COptionsSubVideo::COptionsSubVideo(vgui2::Panel *parent) : PropertyPage(parent, 
     m_pColorDepth = new ComboBox( this, "ColorDepth", 2, false );
     m_pColorDepth->AddItem("Medium (16 bit)", NULL);
     m_pColorDepth->AddItem("Highest (32 bit)", NULL);
-
-    SetCurrentRendererComboItem();
+	m_pColorDepth->SetVisible(0);
+	SetCurrentRendererComboItem();
 
     m_pWindowed = new vgui2::CheckButton( this, "Windowed", "#GameUI_Windowed" );
     m_pWindowed->SetSelected( m_CurrentSettings.windowed ? true : false);

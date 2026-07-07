@@ -37,32 +37,32 @@ COptionsSubMouse::COptionsSubMouse(vgui2::Panel *parent) : PropertyPage(parent, 
         "#GameUI_MouseFilter",
         "m_filter" );
 
-    m_pJoystickCheckBox = new CCvarToggleCheckButton(
-        this,
-        "Joystick",
-        "#GameUI_Joystick",
-        "joystick" );
+	m_pJoystickCheckBox = new CCvarToggleCheckButton(
+	    this,
+	    "Joystick",
+	    "#GameUI_Joystick",
+	    "joystick");
 
-    m_pJoystickLookCheckBox = new CKeyToggleCheckButton(
-        this,
-        "JoystickLook",
-        "#GameUI_JoystickLook",
-        "in_jlook",
-        "jlook" );
+	m_pJoystickLookCheckBox = new CKeyToggleCheckButton(
+	    this,
+	    "JoystickLook",
+	    "#GameUI_JoystickLook",
+	    "in_jlook",
+	    "jlook");
 
-    m_pMouseSensitivitySlider = new CCvarSlider( this, "Slider", "#GameUI_MouseSensitivity",
-        1.0f, 20.0f, "sensitivity", true );
+	m_pMouseSensitivitySlider = new CCvarSlider(this, "Slider", "#GameUI_MouseSensitivity",
+	    1.0f, 20.0f, "sensitivity", true);
 
-    m_pMouseSensitivityLabel = new TextEntry(this, "SensitivityLabel");
-    m_pMouseSensitivityLabel->AddActionSignalTarget(this);
+	m_pMouseSensitivityLabel = new TextEntry(this, "SensitivityLabel");
+	m_pMouseSensitivityLabel->AddActionSignalTarget(this);
 
-    m_pAutoAimCheckBox = new CCvarToggleCheckButton(
-        this,
-        "Auto-Aim",
-        "#GameUI_AutoAim",
-        "sv_aim" );
+	m_pAutoAimCheckBox = new CCvarToggleCheckButton(
+	    this,
+	    "Auto-Aim",
+	    "#GameUI_AutoAim",
+	    "sv_aim");
 
-    //	vgui2::Label *l1 = new vgui2::Label( this, "AutoaimLabel", "#GameUI_AutoAimLabel" );
+	//	vgui2::Label *l1 = new vgui2::Label( this, "AutoaimLabel", "#GameUI_AutoAimLabel" );
 
     LoadControlSettings("Resource\\OptionsSubMouse.res");
 
@@ -72,9 +72,11 @@ COptionsSubMouse::COptionsSubMouse(vgui2::Panel *parent) : PropertyPage(parent, 
         return;
 
     float sensitivity = var.GetFloat();
-
-    char buf[64];
-    _snprintf(buf, sizeof(buf) - 1, " %.1f", sensitivity);
+	m_pJoystickCheckBox->SetVisible(false);
+	m_pJoystickLookCheckBox->SetVisible(false);
+	m_pMouseLookCheckBox->SetVisible(false);
+	char buf[64];
+	_snprintf(buf, sizeof(buf) - 1, " %.1f", sensitivity);
     buf[sizeof(buf) - 1] = 0;
     m_pMouseSensitivityLabel->SetText(buf);
 }

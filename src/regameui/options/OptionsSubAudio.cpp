@@ -53,11 +53,12 @@ COptionsSubAudio::COptionsSubAudio(vgui2::Panel *parent) : PropertyPage(parent, 
         m_pSoundQualityCombo->SetInitialItem( var->GetBool() != 0 ? 0: 1 );
     }
 
+	m_pA3DCheckButton->SetVisible(false);
+	m_pEAXCheckButton->SetVisible(0);
 
+	LoadControlSettings("Resource\\OptionsSubAudio.res");
 
-    LoadControlSettings("Resource\\OptionsSubAudio.res");
-
-    // override, hide the HEV suit volume when not in half-life
+	// override, hide the HEV suit volume when not in half-life
     if (ModInfo().IsMultiplayerOnly())
     {
         Panel *child = FindChildByName("suit label");

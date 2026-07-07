@@ -34,8 +34,8 @@ COptionsSubVoice::COptionsSubVoice(vgui2::Panel *parent) : PropertyPage(parent, 
     m_pMicrophoneVolume = new Slider( this, "#GameUI_MicrophoneVolume" );
     m_pMicrophoneVolume->SetRange( 0, 100 );
     m_pMicrophoneVolume->AddActionSignalTarget( this );
-
-    m_pVoiceEnableCheckButton = new CCvarToggleCheckButton( this, "voice_modenable", "#GameUI_EnableVoice", "voice_modenable" );
+	m_pMicrophoneVolume->SetVisible(0);
+	m_pVoiceEnableCheckButton = new CCvarToggleCheckButton( this, "voice_modenable", "#GameUI_EnableVoice", "voice_modenable" );
 
     m_pMicBoost = new CheckButton(this, "MicBoost", "#GameUI_BoostMicrophone" );
     m_pMicBoost->AddActionSignalTarget( this );

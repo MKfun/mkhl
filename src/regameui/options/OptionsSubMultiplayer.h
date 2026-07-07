@@ -83,4 +83,34 @@ private:
     vgui2::DHANDLE<CMultiplayerAdvancedDialog> m_hMultiplayerAdvancedDialog;
 };
 
+#pragma pack(push, 1)
+
+struct BMP_FILEHEADER
+{
+	uint16 bfType;
+	uint32 bfSize;
+	uint16 bfReserved1;
+	uint16 bfReserved2;
+	uint32 bfOffBits;
+};
+
+struct BMP_RGBQUAD
+{
+	byte rgbBlue;
+	byte rgbGreen;
+	byte rgbRed;
+	byte rgbReserved;
+};
+
+struct BMP_RGBTRIPLE
+{
+	byte rgbtBlue;
+	byte rgbtGreen;
+	byte rgbtRed;
+};
+
+#pragma pack(pop)
+
+//const uint16 DIB_HEADER_MARKER = 0x4D42; // 'BM'
+
 #endif // OPTIONSSUBMULTIPLAYER_H

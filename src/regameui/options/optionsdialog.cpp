@@ -66,13 +66,13 @@ COptionsDialog::COptionsDialog(vgui2::Panel *parent) : PropertyDialog(parent, "O
 	//	double s5 = system()->GetCurrentTime();
 	//	ivgui()->DPrintf("COptionsDialog::COptionsDialog(): %.3fms\n", (float)(s5 - s4) * 1000.0f);
 
-	if ( ModInfo().IsSinglePlayerOnly() )
-    {
-        AddPage(new CMultiplayerAdvancedPage(this), "#GameUI_AdvancedNoEllipsis");
-    }
+	// if ( ModInfo().IsSinglePlayerOnly() )
+	// {
+	// AddPage(new CMultiplayerAdvancedPage(this), "#GameUI_AdvancedNoEllipsis");
+	// }
 
-    if (!ModInfo().IsMultiplayerOnly() && !ModInfo().IsSinglePlayerOnly() )
-    {
+	if (/*!ModInfo().IsMultiplayerOnly() && !ModInfo().IsSinglePlayerOnly() */ 1)
+	{
         AddPage(new COptionsSubMultiplayer(this), "#GameUI_Multiplayer");
     }
 
