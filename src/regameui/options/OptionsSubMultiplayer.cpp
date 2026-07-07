@@ -117,9 +117,10 @@ COptionsSubMultiplayer::COptionsSubMultiplayer(vgui2::Panel *parent)
 	// m_pModelImage->
 	m_pLogoImage = new CBitmapImagePanel(this, "LogoImage", NULL);
 	m_pLogoImage->AddActionSignalTarget(this);
-
-	m_nTopColor = DEFAULT_SUIT_HUE;
-	m_nBottomColor = DEFAULT_PLATE_HUE;
+	ConVarRef topcolorcvar("topcolor");
+	m_nTopColor = topcolorcvar.GetInt();
+	ConVarRef bottomcolorcvar("bottomcolor");
+	m_nBottomColor = bottomcolorcvar.GetInt();
 	m_nLogoR = 255;
 	m_nLogoG = 255;
 	m_nLogoB = 255;
@@ -408,7 +409,7 @@ void COptionsSubMultiplayer::RemapModel()
 //-----------------------------------------------------------------------------
 // Purpose: Called whenever model name changes
 //-----------------------------------------------------------------------------
-void COptionsSubMultiplayer::OnTextChanged(vgui2::Panel *panel)
+void COptionsSubMultiplayer::OnTextChanged(Panel *panel)
 {
 	if (panel == m_pNameTextEntry)
 	{
@@ -422,7 +423,7 @@ void COptionsSubMultiplayer::OnTextChanged(vgui2::Panel *panel)
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-void COptionsSubMultiplayer::OnSliderMoved(KeyValues *data)
+void COptionsSubMultiplayer::OnSliderMoved()
 {
 	m_nTopColor = (int)m_pPrimaryColorSlider->GetSliderValue();
 	m_nBottomColor = (int)m_pSecondaryColorSlider->GetSliderValue();

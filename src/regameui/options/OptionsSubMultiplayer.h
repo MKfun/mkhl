@@ -30,6 +30,7 @@ class COptionsSubMultiplayer : public vgui2::PropertyPage
 public:
     COptionsSubMultiplayer(vgui2::Panel *parent);
     ~COptionsSubMultiplayer();
+	DECLARE_CLASS_SIMPLE(COptionsSubMultiplayer, vgui2::PropertyPage);
 
 protected:
     virtual void OnCommand(const char *command);
@@ -42,19 +43,21 @@ protected:
     DECLARE_PANELMAP();
 
 private:
-    typedef vgui2::PropertyPage BaseClass;
+	MESSAGE_FUNC(OnSliderMoved, "SliderMoved");
+	// MESSAGE_FUNC(OnTextChanged, "TextChanged");
+	// typedef vgui2::PropertyPage BaseClass;
 
-    void InitModelList(CLabeledCommandComboBox *cb);
-    void InitLogoList(CLabeledCommandComboBox *cb);
+	void InitModelList(CLabeledCommandComboBox *cb);
+	void InitLogoList(CLabeledCommandComboBox *cb);
 
-    void RemapModel();
+	void RemapModel();
     void RemapLogo();
 
-    void OnTextChanged(vgui2::Panel *panel);
-    void OnSliderMoved(KeyValues *data);
-    void OnApplyButtonEnable();
+	void OnTextChanged(vgui2::Panel *panel);
+	// void OnSliderMoved(KeyValues *data);
+	void OnApplyButtonEnable();
 
-    void RemapPalette(char *filename, int topcolor, int bottomcolor);
+	void RemapPalette(char *filename, int topcolor, int bottomcolor);
     void RemapLogoPalette(char *filename, int r, int g, int b);
 
     void ColorForName(char const *pszColorName, int &r, int &g, int &b);
