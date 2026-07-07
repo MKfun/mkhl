@@ -53,7 +53,7 @@
 #include "tier0/vcrmode.h"
 
 #include <tier0/memdbgon.h>
-#include <winsani_out.h>
+// #include <winsani_out.h>
 IGameUIFuncs *gameuifuncs = NULL;
 IEngineVGui *enginevguifuncs = NULL;
 vgui2::ISurface *enginesurfacefuncs = NULL;
@@ -71,7 +71,7 @@ cl_enginefunc_t gEngfuncs;
 //#include "engine/.h"
 // cl_enginefunc_t *engine = &gEngfuncs;
 ICvar *cvar = NULL;
-
+#include <winsani_out.h>
 
 class CGameUI;
 extern CGameUI *g_pGameUI;

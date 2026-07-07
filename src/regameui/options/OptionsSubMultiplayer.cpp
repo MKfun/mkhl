@@ -452,7 +452,7 @@ IMPLEMENT_PANELMAP(COptionsSubMultiplayer, BaseClass);
 
 //#include <windows.h>
 
-#define DIB_HEADER_MARKER ((WORD)('M' << 8) | 'B')
+#define DIB_HEADER_MARKER ((unsigned short)('M' << 8) | 'B')
 #define SUIT_HUE_START    192
 #define SUIT_HUE_END      223
 #define PLATE_HUE_START   160
@@ -553,7 +553,7 @@ void COptionsSubMultiplayer::RemapPalette(char *filename, int topcolor, int bott
 
 	// Parse bitmap
 	BMP_FILEHEADER bmfHeader;
-	DWORD dwBitsSize, dwFileSize;
+	unsigned int dwBitsSize, dwFileSize;
 	BMP_RGBTRIPLE lpbmi;
 
 	dwFileSize = g_pFullFileSystem->Size(file);
@@ -642,7 +642,7 @@ void COptionsSubMultiplayer::RemapLogoPalette(char *filename, int r, int g, int 
 
 	// Parse bitmap
 	BMP_FILEHEADER bmfHeader;
-	DWORD dwBitsSize, dwFileSize;
+	unsigned int dwBitsSize, dwFileSize;
 	// LPBITMAPINFO lpbmi;
 	// LPBITMAPCOREINFO lpbmc; // pointer to BITMAPCOREINFO structure (old)
 
@@ -759,7 +759,7 @@ void COptionsSubMultiplayer::OnApplyChanges()
 
 	// Parse bitmap
 	BMP_FILEHEADER bmfHeader;
-	DWORD dwBitsSize, dwFileSize;
+	unsigned int dwBitsSize, dwFileSize;
 
 	dwFileSize = g_pFullFileSystem->Size(file);
 
