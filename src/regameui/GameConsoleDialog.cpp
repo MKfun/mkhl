@@ -6,6 +6,7 @@
 //=============================================================================
 
 #include "GameConsoleDialog.h"
+#include "GameUI_Interface.h"
 #include "IBaseUI.h"
 
 #include <vgui/IInput.h>
@@ -252,7 +253,7 @@ CGameConsoleDialog::CGameConsoleDialog() : CTaskFrame(NULL, "GameConsole")
 CGameConsoleDialog::~CGameConsoleDialog()
 {
 }
-
+extern CGameUI *g_pGameUI;
 //-----------------------------------------------------------------------------
 // Purpose: brings dialog to the fore
 //-----------------------------------------------------------------------------
@@ -260,6 +261,7 @@ void CGameConsoleDialog::Activate()
 {
 	BaseClass::Activate();
 	m_pEntry->RequestFocus();
+	g_pGameUI->ActivateGameUI();
 }
 
 //-----------------------------------------------------------------------------
