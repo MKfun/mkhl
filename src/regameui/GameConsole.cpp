@@ -70,7 +70,7 @@ void CGameConsole::Initialize()
 	);
 	m_bInitialized = true;
 }
-extern CGameUI *g_pGameUI;
+extern IGameUI *g_pGameUI;
 //-----------------------------------------------------------------------------
 // Purpose: activates the console, makes it visible and brings it to the foreground
 //-----------------------------------------------------------------------------

@@ -1,17 +1,19 @@
 //
 // Created by den4ik on 01.12.25.
 //
-#include <winsani_in.h>
 #include "GameConsole.h"
 #include "IRunGameEngine.h"
 #include "LoadingDialog.h"
 #include "sdl_rt.h"
 #ifdef WIN32
+#include <winsani_in.h>
+
 #if !defined( _X360 )
 #include <windows.h>
 #endif
 #include <io.h>
 #include <direct.h>
+#include <winsani_out.h>
 #elif defined( __GNUC__ )
 #include <sys/time.h>
 #else
@@ -71,10 +73,9 @@ cl_enginefunc_t gEngfuncs;
 //#include "engine/.h"
 // cl_enginefunc_t *engine = &gEngfuncs;
 ICvar *cvar = NULL;
-#include <winsani_out.h>
 
 class CGameUI;
-extern CGameUI *g_pGameUI;
+extern IGameUI *g_pGameUI;
 
 
 class CLoadingDialog;

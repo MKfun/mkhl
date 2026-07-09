@@ -76,7 +76,7 @@ void CSDLRuntime::InitWindows()
 
 		if (!var)
 		{
-			ConPrintf(ConColor::Red, "SDL2: %s not found.\n", sym);
+			gEngfuncs.pfnConsolePrint("SDL2: some symbol wasnt not found.\n");
 			return false;
 		}
 
@@ -98,7 +98,7 @@ void CSDLRuntime::InitWindows()
 
 	if (!m_bIsGood)
 	{
-		ConPrintf(ConColor::Red, "Failed to link with SDL2 in runtime.\n");
+		gEngfuncs.pfnConsolePrint("Failed to link with SDL2 in runtime.\n");
 	}
 #endif
 }

@@ -253,7 +253,7 @@ CGameConsoleDialog::CGameConsoleDialog() : CTaskFrame(NULL, "GameConsole")
 CGameConsoleDialog::~CGameConsoleDialog()
 {
 }
-extern CGameUI *g_pGameUI;
+extern IGameUI *g_pGameUI;
 //-----------------------------------------------------------------------------
 // Purpose: brings dialog to the fore
 //-----------------------------------------------------------------------------
@@ -506,7 +506,12 @@ void CGameConsoleDialog::RebuildCompletionList(const char *text)
 	if (m_CompletionList.Base())
 	{
 		auto context = (void *)text;
-		qsort_r(m_CompletionList.Base(), m_CompletionList.Count(), sizeof(CompletionItem), SortCompletionItems, context);
+#ifndef WIN32		
+		qsort_r
+#else
+		qsort_s
+#endif
+		(m_CompletionList.Base(), m_CompletionList.Count(), sizeof(CompletionItem), SortCompletionItems, context);
 	}
 }
 

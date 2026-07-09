@@ -33,7 +33,7 @@ class CGameMenuItem : public CToolMenuButton
     DECLARE_CLASS_SIMPLE( CGameMenuItem, CToolMenuButton);
 public:
     CGameMenuItem( vgui2::Panel *pParent, const char *panelName, const char *text, vgui2::Panel *pActionSignalTarget, IFileMenuCallbacks *pFileMenuCallback );
-    virtual void OnShowMenu( vgui2::Menu *menu );
+    //virtual void OnShowMenu( vgui2::Menu *menu );
 private:
     IFileMenuCallbacks *m_pFileMenuCallback;
 };

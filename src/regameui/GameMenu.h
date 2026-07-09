@@ -75,7 +75,6 @@ public:
 			DeleteAllItems();
 		}
 	}
-
 	virtual void SetVisible(bool state)
 	{
 		if ( m_hMainMenuOverridePanel )
