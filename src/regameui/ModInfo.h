@@ -39,7 +39,7 @@ public:
 	const char *GetFallbackDir();
 	bool GetDetailedTexture();
 	bool UseFallbackDirMaps();
-
+	bool IsHDBackground();
 	const char *GetMPFilter();
 
 private:

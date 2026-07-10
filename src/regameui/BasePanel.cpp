@@ -69,11 +69,13 @@ CBasePanel::CBasePanel() : EditablePanel(NULL, "BaseGameUIPanel")
 	m_pMenuBar->SetSize(w, MENU_HEIGHT);
 	m_pMenuBar->SetMouseInputEnabled(true);
 	vgui2::Menu *pGameMenu = new vgui2::Menu(m_pMenuBar, "GameMenu");
-	m_pMenuBar->AddMenuEx("#ReGameUI_Singleplayer", pGameMenu, 0);
-	pGameMenu->AddMenuItem("#GameUI_GameMenu_NewGame", "NewGameDialog", this, new KeyValues("ItemData", "OnlyInMenu", 1));
-	pGameMenu->AddMenuItem("#GameUI_GameMenu_SaveGame", "SaveGameDialog", this, new KeyValues("ItemData", "notmulti", 1, "OnlyInGame", 1));
-	pGameMenu->AddMenuItem("#GameUI_LoadGame", "LoadGameDialog", this, new KeyValues(""));
-
+	if (!ModInfo().IsMultiplayerOnly())
+	{
+		m_pMenuBar->AddMenuEx("#ReGameUI_Singleplayer", pGameMenu, 0);
+		pGameMenu->AddMenuItem("#GameUI_GameMenu_NewGame", "NewGameDialog", this, new KeyValues("ItemData", "OnlyInMenu", 1));
+		pGameMenu->AddMenuItem("#GameUI_GameMenu_SaveGame", "SaveGameDialog", this, new KeyValues("ItemData", "notmulti", 1, "OnlyInGame", 1));
+		pGameMenu->AddMenuItem("#GameUI_LoadGame", "LoadGameDialog", this, new KeyValues(""));
+	}
 	vgui2::Menu *pMultiplayerMenu = new vgui2::Menu(m_pMenuBar, "MuliplayerMenu");
 	m_pMenuBar->AddMenuEx("#GameUI_Multiplayer", pMultiplayerMenu, 0);
 	pMultiplayerMenu->AddMenuItem("#ReGameUI_CreateServer", "CreateServerDialog", this);
@@ -104,8 +106,6 @@ CBasePanel::CBasePanel() : EditablePanel(NULL, "BaseGameUIPanel")
 	pExitMenu->AddMenuItem("#ReGameUI_OpenConsole", "OpenConsoleDialog", this);
 	pExitMenu->AddMenuItem("#GameUI_Quit", "OnQuitGame", this);
 
-	// m_hOptionsDialog = new COptionsDialog(this);
-	// m_hOptionsDialog->Activate();
 	SetBackgroundRenderState(BACKGROUND_DESKTOPIMAGE);
 	m_bEverActivated = false;
 	// DLLHACKHACKHACK: So, if we dont have active frames at this point,
@@ -221,7 +221,15 @@ void CBasePanel::ApplySchemeSettings(IScheme *pScheme)
 
 	float aspectRatio = (float)screenWide / (float)screenTall;
 	bool bIsWidescreen = aspectRatio >= 1.5999f;
-	FileHandle_t file = g_pFullFileSystem->Open("resource/HD_BackgroundLayout.txt", "rt");
+	FileHandle_t file;
+	if (ModInfo().IsHDBackground())
+	{
+		file = g_pFullFileSystem->Open("resource/HD_BackgroundLayout.txt", "rt");
+	}
+	else
+	{
+		file = g_pFullFileSystem->Open("resource/BackgroundLayout.txt", "rt");
+	}
 	if (!file)
 		return;
 
@@ -461,7 +469,7 @@ void CBasePanel::OnCommand(const char* command)
     if (!stricmp(command, "OpenOptionsDialog"))
 	{
 
-		OnOpenOptionsDialog();
+		OnOpenOptionsDialog(0);
 	}
 	else if (!V_stricmp(command, "OpenServerBrowser"))
 	{

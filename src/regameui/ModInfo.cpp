@@ -120,6 +120,10 @@ bool CModInfo::GetDetailedTexture()
 	return (stricmp(m_pModData->GetString("detailed_textures", "0"), "1") == 0);
 }
 
+bool CModInfo::IsHDBackground()
+{
+	return (stricmp(m_pModData->GetString("hd_background", "0"), "1") == 0);
+}
 //-----------------------------------------------------------------------------
 // Purpose: data accessor
 //-----------------------------------------------------------------------------
