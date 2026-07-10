@@ -21,7 +21,6 @@ using namespace vgui2;
 #include "FileSystem.h"
 #include <vgui_controls/PanelListPanel.h>
 #include "../ScriptObject.h"
-#include <tier0/vcrmode.h>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
@@ -337,8 +336,9 @@ CServerDescription::CServerDescription(vgui2::PanelListPanel *panel)
 void CServerDescription::WriteScriptHeader(FileHandle_t fp)
 {
 	char am_pm[] = "AM";
-	tm newtime;
-	g_pVCR->Hook_LocalTime(&newtime);
+	time_t rawtime;
+	time(&rawtime);
+	tm newtime = *localtime(&rawtime);
 
 	if (newtime.tm_hour > 12) /* Set up extension. */
 		strcpy(am_pm, "PM");
@@ -365,8 +365,9 @@ void CServerDescription::WriteScriptHeader(FileHandle_t fp)
 void CServerDescription::WriteFileHeader(FileHandle_t fp)
 {
 	char am_pm[] = "AM";
-	tm newtime;
-	g_pVCR->Hook_LocalTime(&newtime);
+	time_t rawtime;
+	time(&rawtime);
+	tm newtime = *localtime(&rawtime);
 
 	if (newtime.tm_hour > 12) /* Set up extension. */
 		strcpy(am_pm, "PM");
