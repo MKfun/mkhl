@@ -1,5 +1,6 @@
 #ifndef OPTIONS_HUD_ROOT_H
 #define OPTIONS_HUD_ROOT_H
+#include "gameui/options/options_hud_rocket.h"
 #include <vgui_controls/PropertySheet.h>
 
 class CHudSubOptions;
@@ -15,6 +16,7 @@ public:
 private:
 	CHudSubOptions *m_pOptions = nullptr;
 	CHudSubOptionsColors *m_pColors = nullptr;
+	CRocketHudSettings *m_pRocketSettings = nullptr;
 
 	MESSAGE_FUNC(OnResetData, "ResetData");
 	MESSAGE_FUNC(OnApplyChanges, "ApplyChanges");

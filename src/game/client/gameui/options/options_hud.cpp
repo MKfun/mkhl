@@ -37,7 +37,7 @@ CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
 	m_pJumpSpeedCrossCheckbox = new CCvarCheckButton(this, "JumpSpeedCrossCheckbox", "#BHL_AdvOptions_HUD_JumpSpeedCross", "hud_jumpspeed_below_cross");
 
 	m_pDeathnoticeVGui = new CCvarCheckButton(this, "DeathnoticeCheckbox", "#BHL_AdvOptions_HUD_Deathnotice", "hud_deathnotice_vgui");
-
+	m_pVGuiHud = new CCvarCheckButton(this, "VGuiHud", "#BHL_VGuiHud", "hud_custom");
 	m_pTimerBox = new CCVarComboBox(this, "TimerBox", "hud_timer");
 	m_pTimerBox->AddItem("#BHL_AdvOptions_Hud_Timer0", "0");
 	m_pTimerBox->AddItem("#BHL_AdvOptions_Hud_Timer1", "1");
@@ -89,10 +89,15 @@ void CHudSubOptions::OnResetData()
 	m_pJumpSpeedCrossCheckbox->ResetData();
 
 	if (m_pDeathnoticeVGui->IsEnabled())
+	{
 		m_pDeathnoticeVGui->ResetData();
+		m_pVGuiHud->ResetData();
+	}
 	else
+	{
 		m_pDeathnoticeVGui->SetSelected(false);
-
+		m_pVGuiHud->SetSelected(0);
+	}
 	m_pTimerBox->ResetData();
 	m_pScaleBox->ResetData();
 }
@@ -114,8 +119,10 @@ void CHudSubOptions::OnApplyChanges()
 	m_pJumpSpeedCrossCheckbox->ApplyChanges();
 
 	if (m_pDeathnoticeVGui->IsEnabled())
+	{
 		m_pDeathnoticeVGui->ApplyChanges();
-
+		m_pVGuiHud->ApplyChanges();
+	}
 	m_pTimerBox->ApplyChanges();
 	m_pScaleBox->ApplyChanges();
 }

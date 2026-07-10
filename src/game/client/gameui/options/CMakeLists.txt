@@ -27,6 +27,8 @@ add_sources(
 	options_hud.h
 	options_hud_colors.cpp
 	options_hud_colors.h
+	options_hud_rocket.cpp
+	options_hud_rocket.h
 	options_hud_root.cpp
 	options_hud_root.h
 	options_models.cpp

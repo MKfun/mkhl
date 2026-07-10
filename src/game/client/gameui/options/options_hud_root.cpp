@@ -9,16 +9,19 @@ CHudSubOptionsRoot::CHudSubOptionsRoot(vgui2::Panel *parent)
 
 	AddPage((m_pOptions = new CHudSubOptions(this)), "Options");
 	AddPage((m_pColors = new CHudSubOptionsColors(this)), "Colors");
+	AddPage((m_pRocketSettings = new CRocketHudSettings(this, "OptionsSubRocket")), "Rocket hud");
 }
 
 void CHudSubOptionsRoot::OnResetData()
 {
 	m_pOptions->OnResetData();
 	m_pColors->OnResetData();
+	m_pRocketSettings->OnResetData();
 }
 
 void CHudSubOptionsRoot::OnApplyChanges()
 {
 	m_pOptions->OnApplyChanges();
 	m_pColors->OnApplyChanges();
+	m_pRocketSettings->OnApplyChanges();
 }

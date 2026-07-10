@@ -1,5 +1,5 @@
-#ifndef CCVARTEXTENTRY_H
-#define CCVARTEXTENTRY_H
+#ifndef CCVARSLIDER_H
+#define CCVARSLIDER_H
 #include <vgui_controls/Slider.h>
 
 typedef struct cvar_s cvar_t;

@@ -41,7 +41,7 @@ private:
 	CCvarCheckButton *m_pJumpSpeedCrossCheckbox = nullptr;
 
 	CCvarCheckButton *m_pDeathnoticeVGui = nullptr;
-
+	CCvarCheckButton *m_pVGuiHud = nullptr;
 	CCVarComboBox *m_pTimerBox = nullptr;
 	CCVarComboBox *m_pScaleBox = nullptr;
 
