@@ -15,7 +15,6 @@
 #include <vgui/ISurface.h>
 #include <vgui/ISystem.h>
 #include <vgui/IVGui.h>
-#include <vgui_controls/PropertySheet.h>
 
 #include "OptionsSubKeyboard.h"
 #include "OptionsSubMouse.h"

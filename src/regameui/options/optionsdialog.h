@@ -19,6 +19,7 @@ class CheckButton;
 class Label;
 };
 
+#include <vgui_controls/PropertySheet.h>
 #include <vgui_controls/PropertyDialog.h>
 
 //-----------------------------------------------------------------------------
