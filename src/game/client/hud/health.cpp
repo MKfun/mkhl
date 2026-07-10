@@ -245,6 +245,8 @@ void CHudHealth::Draw(float flTime)
 		}
 		if (rocket_enable.GetBool())
 		{
+			DrawDamage(flTime);
+			DrawPain(flTime);
 			return;
 			// do nothing because we draw in other method
 		}

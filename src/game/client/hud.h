@@ -33,7 +33,7 @@
 #include "hud/base.h"
 #include "player_info.h"
 #include "rainbow.h"
-
+#include "rmlui/rkhud_elem_interface.h"
 #define RGB_YELLOWISH 0x00FFA000 //255,160,0
 #define RGB_REDISH    0x00FF1010 //255,160,0
 #define RGB_GREENISH  0x0000A000 //0,160,0
@@ -278,6 +278,7 @@ private:
 	float m_flMouseSensitivity;
 	int m_iConcussionEffect;
 	std::vector<CHudElem *> m_HudList;
+	std::vector<CRocketHudElem *> m_rkHudList;
 	std::unordered_map<int, int> m_CharWidths;
 	char m_szEngineVersion[128];
 	int m_iEngineBuildNumber = 0;
@@ -318,6 +319,13 @@ private:
 	{
 		T *p = new T();
 		m_HudList.push_back(p);
+		return p;
+	}
+	template <typename T>
+	inline T *RegisterRocketHudElem()
+	{
+		T *p = &T::m_Instance;
+		m_rkHudList.push_back(p);
 		return p;
 	}
 };

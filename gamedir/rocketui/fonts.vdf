@@ -2,5 +2,6 @@
 {
     "Lato"  "rocketui/fonts/Lato-Black.ttf"
     "Counter-Strike"  "rocketui/fonts/cstrike.ttf"
+    "Ubuntu Sans"	"rocketui/fonts/UbuntuSans.ttf"
     //"BoxRocket"       "rocketui/fonts/boxrocket-fixed.ttf" //fix this later
 }

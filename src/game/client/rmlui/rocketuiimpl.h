@@ -158,8 +158,6 @@ public:
         m_pRocketUI->SetScreenSize( width, height );
     }
 };
-
-
-
+Rml::ElementDocument *LoadDocumentFile(Rml::Context *ctx, const char *tag, const char *pPath, const char *filepath);
 
 #endif //KISAKSTRIKE_ROCKETUI_H

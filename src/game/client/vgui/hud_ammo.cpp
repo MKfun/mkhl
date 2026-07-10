@@ -186,6 +186,9 @@ void CHudAmmoPanel::Reset()
 void CHudAmmoPanel::OnThink()
 {
 	int r, g, b;
+	g = 255;
+	r = 255;
+	b = 255;
 	// Does weapon have any ammo at all?
 	if (m_iAmmoType > 0)
 	{
@@ -269,6 +272,10 @@ void CHudAmmoPanel::OnThink()
     }
 	// Show glow effect when dimmed, if not, set full alpha and hide glow digits
 	auto [a1, a2] = gHUD.GetHudDimAlphas(m_pHudDim.GetBool(), m_fFade, gHUD.m_flTimeDelta);
+	// a1 = 255;
+	// a2 = 255;
+	// a1 = gHUD.GetHudDimAlphas(m_pHudDim.GetBool(), m_fFade, gHUD.m_flTimeDelta).first;
+	// a2 = gHUD.GetHudDimAlphas(m_pHudDim.GetBool(), m_fFade, gHUD.m_flTimeDelta).second;
 	// Set colors for glow and normal digits
 	m_hudCurrentColor = Color(r, g, b, a1);
 	m_pDigitRightLabelGlow->SetFgColor(m_hudCurrentColor);

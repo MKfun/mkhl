@@ -137,6 +137,7 @@ void CSatchelCharge ::SatchelThink(void)
 {
 	// There is no model animation so commented this out to prevent net traffic
 	//StudioFrameAdvance( );
+#ifndef CLIENT_DLL // Broken on windows. Why?
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	if (!IsInWorld())
@@ -160,6 +161,7 @@ void CSatchelCharge ::SatchelThink(void)
 	{
 		pev->velocity.z -= 8;
 	}
+#endif
 }
 
 void CSatchelCharge ::Precache(void)

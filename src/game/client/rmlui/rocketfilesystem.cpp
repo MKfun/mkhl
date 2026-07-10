@@ -12,7 +12,7 @@ Rml::FileHandle RocketFileSystem::Open(const Rml::String &path)
 {
     Rml::String rocketPath = "rocketui/";
     rocketPath += path;
-    return (Rml::FileHandle)g_pFullFileSystem->Open( rocketPath.c_str(), "r", "GAME" );
+	return (Rml::FileHandle)g_pFullFileSystem->Open(rocketPath.c_str(), "rb", "GAME");
 }
 
 void RocketFileSystem::Close(Rml::FileHandle file)

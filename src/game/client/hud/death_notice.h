@@ -2,6 +2,14 @@
 #define HUD_DEATH_NOTICE_H
 #include "base.h"
 
+enum KillRarity
+{
+	KILLRARITY_HEADSHOT = 0x001, // The killer player kills the victim with a headshot
+	KILLRARITY_NOSCOPE = 0x002, // The killer player kills the victim with a sniper rifle with no scope
+	KILLRARITY_PENETRATED = 0x004, // The killer player kills the victim through walls
+	KILLRARITY_INAIR = 0x008
+};
+
 class CHudDeathNotice : public CHudElemBase<CHudDeathNotice>
 {
 public:

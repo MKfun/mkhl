@@ -22,6 +22,7 @@ freely, subject to the following restrictions:
 */
 #include <stdio.h>
 #include <stdlib.h>
+#include "sdl_rt.h"
 extern "C" {
 #include <backtrace.h>
 }
@@ -48,10 +49,11 @@ static int bt_full(
 	    filename ? filename : "??",
 	    lineno,
 	    (unsigned long)pc);
-	sprintf(buffer, "BacktraceD at: %s (%s:%d) [0x%lx]\n",  	    function ? function : "??",
+	sprintf(buffer, "BacktraceD at: %s (%s:%d) [0x%lx]\n", function ? function : "??",
 	    filename ? filename : "??",
 	    lineno,
 	    (unsigned long)pc);
+	strcat(outbuf, buffer);
 	return 0;
 }
 
@@ -66,12 +68,11 @@ void HL_DumpBacktrace()
 		    NULL
 		);
 	}
-
 	backtrace_full(
 	    bt_state,
 	    0,
 	    bt_full,
 	    bt_error,
-	    NULL
-	);
+	    NULL);
+	GetSDL()->ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "U r crashed!", outbuf);
 }

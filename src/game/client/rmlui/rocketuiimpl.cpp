@@ -3,8 +3,6 @@
 #include "KeyValues.h"
 #include "sdl_rt.h"
 #include "utlbuffer.h"
-#include <GL/gl.h>
-
 #ifdef Debugger
 #undef Debugger
 #endif
@@ -22,11 +20,12 @@
 
 #include "rocketkeys.h"
 
+#define GL_ALR_INCLUDED
 RocketUIImpl RocketUIImpl::m_Instance;
 // EXPOSE_SINGLE_INTERFACE_GLOBALVAR( RocketUIImpl, IRocketUI, ROCKETUI_INTERFACE_VERSION, RocketUIImpl::m_Instance )
 
 ConVar rocket_enable( "rocket_enable", "1", 0, "Enables RocketUI" );
-
+ConVar rocket_hud_scale("rocket_hud_scale", "1.0", FCVAR_ARCHIVE, "Hud scale modifier");
 CON_COMMAND( rocket_reload, "Reloads all RocketUI Documents" )
 {
     if( RocketUIImpl::m_Instance.ReloadDocuments() )
@@ -154,7 +153,7 @@ bool RocketUIImpl::LoadFonts()
     }
     return fontsOK;
 }
-static Rml::ElementDocument *LoadDocumentFile( Rml::Context *ctx, const char *tag, const char *pPath, const char *filepath )
+Rml::ElementDocument *LoadDocumentFile(Rml::Context *ctx, const char *tag, const char *pPath, const char *filepath)
 {
     static char documentBuffer[ 4 * 1024 * 1024 ]; //4mb
     std::string documentStr;
@@ -277,6 +276,17 @@ void RocketUIImpl::RunFrame(float time)
     // I am calling it 1x per frame here instead of all over the place for simplicity and no overlap.
     if( m_ctxCurrent )
         m_ctxCurrent->Update();
+
+	// DLLHACKHACKHACK: if we can't set DPI at ::Init(),
+	// lets just observe convar there, the most hacky way.
+	// But this has good side: u dont even need to rocket_reload
+	// when changing scale, cuz this convar is observed.
+	static float oldDP = 0;
+	if (oldDP != rocket_hud_scale.GetFloat())
+	{
+		oldDP = rocket_hud_scale.GetFloat();
+		AccessHudContext()->SetDensityIndependentPixelRatio(oldDP);
+	}
 }
 
 void RocketUIImpl::DenyInputToGame( bool value, const char *why )
@@ -337,9 +347,9 @@ bool RocketUIImpl::HandleInputEvent(bool keyDown, int keyNumber, const char *bin
         return false;
 
     // Always get the mouse location.
-    int mx, my;
-    GetSDL()->GetMouseState(&mx, &my);
-    static Vector2D mousePos(0, 0);
+	int mx = 0, my = 0;
+	GetSDL()->GetMouseState(&mx, &my);
+	static Vector2D mousePos(0, 0);
     if(mousePos != Vector2D(mx, my))
     {
         // TODO update this with keymodifiers
@@ -446,29 +456,8 @@ bool RocketUIImpl::HandleInputEvent(bool keyDown, int keyNumber, const char *bin
     return IsConsumingInput();
 }
 
-void SaveGLState()
-{
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
-    glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
-
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-}
-void RestoreGLState()
-{
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-
-    glPopClientAttrib();
-
-    glPopAttrib();
-}
+void SaveGLState();
+void RestoreGLState();
 void RocketUIImpl::RenderHUDFrame()
 {
     if( !rocket_enable.GetBool() )
@@ -496,7 +485,7 @@ void RocketUIImpl::RenderMenuFrame()
 
     SaveGLState();
     RocketRender::m_Instance.PrepareGLState();
-    glActiveTexture(GL_TEXTURE0);
+    //glActiveTexture(GL_TEXTURE0);
     //TODO: don't update here. update only after input or new elements
     //m_ctxMenu->Update();
 

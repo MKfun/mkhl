@@ -13,102 +13,6 @@
 
 // Struct layout for data-binding model.
 
-
-// static void UpdateInfoFromPlayer( const C_CSPlayer &pPlayer )
-// void UpdateInfoFromPlayer() {
-//     infoBarData.hp = pPlayer.GetHealth();
-//     infoBarData.armor = pPlayer.ArmorValue();
-//     infoBarData.hasHelmet = false;
-//     if( pPlayer.HasHelmet() )
-//         infoBarData.hasHelmet = true;
-
-//     infoBarData.fireModeString = " ";
-//     infoBarData.primaryString = " ";
-//     infoBarData.secondaryString = " ";
-//     infoBarData.knifeString = " ";
-//     infoBarData.hasGrenade = false;
-//     //infoBarData.hasFlash = false;
-//     //infoBarData.hasFlashPair = false;
-//     infoBarData.hasSmoke = false;
-//     infoBarData.hasFire = false;
-//     infoBarData.hasC4 = false;
-
-//     int flashbangAmount = 0;
-//     for( int i = 0; i < MAX_WEAPONS; i++ )
-//     {
-//         CWeaponCSBase *weapon = (CWeaponCSBase*)pPlayer.GetWeapon(i);
-//         if( !weapon )
-//             continue;
-
-//         int slot = weapon->GetSlot();
-//         const char *name;
-
-//         switch( slot )
-//         {
-//         case WEAPON_SLOT_RIFLE:
-//             name = V_strstr(weapon->GetName(), "_");
-//             if( name && name[0] )
-//                 infoBarData.primaryString = name+1;
-//             break;
-//         case WEAPON_SLOT_PISTOL:
-//             name = V_strstr(weapon->GetName(), "_");
-//             if( name && name[0] )
-//                 infoBarData.secondaryString = name+1;
-//             break;
-//         case WEAPON_SLOT_KNIFE:
-//             name = V_strstr(weapon->GetName(), "_");
-//             if( name && name[0] )
-//                 infoBarData.knifeString = name+1;
-//             break;
-//         case WEAPON_SLOT_GRENADES:
-//         {
-//             int weaponID = weapon->GetCSWeaponID();
-//             switch( weaponID )
-//             {
-//             case WEAPON_HEGRENADE:
-//                 infoBarData.hasGrenade = true;
-//                 break;
-//             case WEAPON_FLASHBANG:
-//                 flashbangAmount++;
-//                 break;
-//             case WEAPON_SMOKEGRENADE:
-//                 infoBarData.hasSmoke = true;
-//                 break;
-//             case WEAPON_MOLOTOV:
-//                 infoBarData.hasFire = true;
-//                 break;
-//             case WEAPON_INCGRENADE:
-//                 infoBarData.hasFire = true;
-//                 break;
-//             default:
-//                 break;
-//             }
-//             break;
-//         }
-//         case WEAPON_SLOT_C4:
-//             infoBarData.hasC4 = true;
-//             break;
-//         default:
-//             break;
-//         }
-//     }
-//     infoBarData.hasFlash = ( flashbangAmount == 1 );
-//     infoBarData.hasFlashPair = ( flashbangAmount == 2 );
-
-//     CWeaponCSBase *activeWeapon = pPlayer.GetActiveCSWeapon();
-//     if( activeWeapon )
-//     {
-//         infoBarData.ammo = activeWeapon->Clip1();
-//         infoBarData.ammoReserve = activeWeapon->GetReserveAmmoCount( AMMO_POSITION_PRIMARY );
-//         if( activeWeapon->IsFullAuto() )
-//             infoBarData.fireModeString = "AUTO";
-//         else if( activeWeapon->IsInBurstMode() )
-//             infoBarData.fireModeString = "BURST";
-//         else
-//             infoBarData.fireModeString = "SINGLE";
-//     }
-// }
-
 documentReloadFuncs docReloadFuncs;
 
 RkHudInfoBar RkHudInfoBar::m_Instance = RkHudInfoBar("hud_infopanel");
@@ -116,36 +20,6 @@ RkHudInfoBar::InfoBarData RkHudInfoBar::infoBarData = {
 	0, 0, 0, 0, 0,
 	"0", "0", "0", "0", 0, 255, 255, 255, 0
 };
-// void UnloadRkInfoBar()
-// {
-//     RkHudInfoBar pInfoBar = RkHudInfoBar::m_Instance;
-//     // if( !pInfoBar )
-//     // {
-//     //     return;
-//     // }
-
-//     // Not loaded
-//     if( !pInfoBar.m_pInstance )
-//     {
-//         Warning( "Couldn't grab RkHudInfoBar element to unload!\n");
-//         return;
-//     }
-
-//     Rml::Context *hudCtx = RocketUIImpl::m_Instance.AccessHudContext();
-//     if( hudCtx )
-//     {
-//         hudCtx->RemoveDataModel("infobar_model");
-//         pInfoBar.m_dataModel = nullptr;
-//     }
-//     else
-//     {
-//         Warning("Couldn't access hudCtx to unload infobar datamodel\n");
-//     }
-
-//     // pInfoBar.m_pInstance->Close();
-//     pInfoBar.m_pInstance = nullptr;
-// }
-
 
 void UnloadRkInfoBar()
 {

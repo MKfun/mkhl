@@ -46,7 +46,7 @@ class PlatformWindows:
             args.extend(['-A', 'Win32'])
 
         args.extend(['-T', self.script.vs_toolset])
-
+        args.extend(["-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake", "-DVCPKG_TARGET_TRIPLET=x86-windows-static"])
         return args
     
     def get_cmake_build_args(self):

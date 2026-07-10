@@ -730,58 +730,45 @@ void CHalfLifeMultiplay ::PlayerKilled(CBasePlayer *pVictim, entvars_t *pKiller,
 	}
 }
 
+int GetRarityOfKill(CBaseEntity *pKiller, CBasePlayer *pVictim, CBasePlayer *pAssister, const char *killerWeaponName, bool bFlashAssist)
+{
+	int iRarity = 0;
+
+	// The killer player kills the victim with a headshot
+	if (pVictim->m_bHeadshotKilled)
+		iRarity |= KILLRARITY_HEADSHOT;
+
+	CBasePlayer *pKillerPlayer = static_cast<CBasePlayer *>(pKiller);
+	if (pKillerPlayer && pKillerPlayer->IsPlayer() && pKillerPlayer != pVictim)
+	{
+		// WeaponClassType weaponClass = AliasToWeaponClass(killerWeaponName);
+		// if (weaponClass != WEAPONCLASS_NONE && weaponClass != WEAPONCLASS_KNIFE && weaponClass != WEAPONCLASS_GRENADE)
+		{
+			// The killer player kills the victim through the walls
+#ifdef PENETRATION // just remove this for now.
+			if (pVictim->GetDmgPenetrationLevel() > 0)
+				iRarity |= KILLRARITY_PENETRATED;
+#endif
+			// // The killer player kills the victim with a sniper rifle with no scope
+			// if (weaponClass == WEAPONCLASS_SNIPERRIFLE && pKillerPlayer->m_iClientFOV == DEFAULT_FOV)
+			// 	iRarity |= KILLRARITY_NOSCOPE;
+
+			// // The killer player kills the victim through smoke
+			// const Vector inEyePos = pKillerPlayer->EyePosition();
+			// if (TheCSBots()->IsLineBlockedBySmoke(&inEyePos, &pVictim->pev->origin))
+			// 	iRarity |= KILLRARITY_THRUSMOKE;
+
+			// The killer player kills the victim while in air
+			if (!(pKillerPlayer->pev->flags & FL_ONGROUND))
+				iRarity |= KILLRARITY_INAIR;
+		}
+	}
+
+	return iRarity;
+}
 //=========================================================
 // Deathnotice.
 //=========================================================
-#ifdef KILLFEED
-void CHalfLifeMultiplay::SendDeathMessage(CBaseEntity *pKiller, CBasePlayer *pVictim, CBasePlayer *pAssister, entvars_t *pevInflictor, const char *killerWeaponName, int iDeathMessageFlags, int iRarityOfKill)
-{
-	#ifdef REGAMEDLL_ADD
-	iDeathMessageFlags &= (int)deathmsg_flags.value; // leave only allowed bitsums for extra info
-	#endif
-
-	CBasePlayer *pKillerPlayer = (pKiller && pKiller->IsPlayer()) ? static_cast<CBasePlayer *>(pKiller) : nullptr;
-
-	for (int i = 1; i <= gpGlobals->maxClients; i++)
-	{
-		CBasePlayer *pPlayer = (CBasePlayer *)UTIL_PlayerByIndex(i);
-		if (!pPlayer || FNullEnt(pPlayer->edict()))
-			continue;
-
-
-		int iSendDeathMessageFlags = iDeathMessageFlags;
-
-		// An recipient a client is a victim that involved in this kill
-		if (pPlayer == pVictim && pVictim != pKillerPlayer)
-		{
-			// Sets a domination kill for recipient of the victim once until revenge
-			int iKillsUnanswered = pVictim->m_iNumKilledByUnanswered[pKillerPlayer->entindex() - 1];
-			if (iKillsUnanswered >= CS_KILLS_FOR_DOMINATION)
-				iRarityOfKill &= ~KILLRARITY_DOMINATION;
-		}
-
-		MESSAGE_BEGIN(MSG_ONE, gmsgDeathMsg, nullptr, pPlayer->pev);
-		WRITE_BYTE((pKiller && pKiller->IsPlayer()) ? pKiller->entindex() : 0);	// the killer
-		WRITE_BYTE(pVictim->entindex());					// the victim
-		WRITE_STRING(killerWeaponName);						// what they were killed by (should this be a string?)
-		WRITE_BYTE(pVictim->m_bHeadshotKilled);				// is killed headshot
-		if (iSendDeathMessageFlags > 0)
-		{
-			WRITE_LONG(iSendDeathMessageFlags);
-
-			// Writes the index of the teammate who assisted in the kill
-			// if (iSendDeathMessageFlags & PLAYERDEATH_ASSISTANT)
-				// WRITE_BYTE(pAssister->entindex());
-
-			// Writes the rarity classification of the kill
-			if (iSendDeathMessageFlags & PLAYERDEATH_KILLRARITY)
-				WRITE_LONG(iRarityOfKill);
-		}
-
-		MESSAGE_END();
-	}
-}
-#endif
 void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor, int iDeathMessageFlags, int iRarityOfKill)
 {
 	// Work out what killed the player, and send a message to all clients about it
@@ -789,7 +776,14 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, e
 	CBasePlayer *plKiller = (CBasePlayer *)CBasePlayer::Instance(pKiller);
 	const char *killer_weapon_name = "world"; // by default, the player is killed by the world
 	int killer_index = 0;
-
+	int RarityOfKill = GetRarityOfKill(plKiller, pVictim, NULL, NULL, false);
+	// CBasePlayer *pAssister = nullptr;
+	// if ((pAssister = CheckAssistsToKill(pKiller, pVictim, 0)))
+	// {
+	// 	// Add a flag indicating the presence of an assistant who assisted in the kill
+	// 	iDeathMessageFlags |= PLAYERDEATH_ASSISTANT;
+	// }
+	// pVictim->GetAutoaimVector();
 	// Hack to fix name change
 	char *tau = "tau_cannon";
 	char *gluon = "gluon gun";
@@ -837,23 +831,13 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, e
 	// An recipient a client is a victim that involved in this kill
 	if (pPlayer == pVictim && pVictim != Killer)
 	{
-		// Sets a domination kill for recipient of the victim once until revenge
-		int iKillsUnanswered = pVictim->m_iNumKilledByUnanswered[Killer->entindex() - 1];
-		if (iKillsUnanswered >= CS_KILLS_FOR_DOMINATION)
-			iRarityOfKill &= ~KILLRARITY_DOMINATION;
 	int iSendDeathMessageFlags = iDeathMessageFlags;
 	MESSAGE_BEGIN(MSG_ALL, gmsgDeathMsg);
 	WRITE_BYTE(killer_index); // the killer
 	WRITE_BYTE(ENTINDEX(pVictim->edict())); // the victim
 	WRITE_STRING(killer_weapon_name); // what they were killed by (should this be a string?)
-	WRITE_BYTE(pVictim->m_bHeadshotKilled); //Headshot
-	// if (strcmp(plKiller->m_pActiveItem->pszName(), "weapon_357") == 0 || strcmp(plKiller->m_pActiveItem->pszName(), "weapon_python") == 0 || strcmp(plKiller->m_pActiveItem->pszName(), "weapon_crossbow") == 0) {
-		// CPython *pyth = (CPython *)plKiller->m_pActiveItem;
-		// CCrossbow *cross = (CCrossbow *)plKiller->m_pActiveItem;
-		// WRITE_BYTE( pyth->m_fInZoom == 0 || cross->m_fInZoom == 0); // Noscope
-	// }
-	// else
-		WRITE_BYTE(false);
+	WRITE_LONG(RarityOfKill); //Headshot
+	WRITE_BYTE(false);
 	if (iSendDeathMessageFlags > 0)
 	{
 		WRITE_LONG(iSendDeathMessageFlags);
@@ -1010,7 +994,7 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, e
 */
 
 	}
-}
+	}
 }
 
 //=========================================================

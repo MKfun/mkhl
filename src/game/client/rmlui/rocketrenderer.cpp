@@ -1,23 +1,27 @@
-
-
 #include "rocketrenderer.h"
 #pragma push_macro("Assert")
 #undef Assert
 #include <RmlUi/Core.h>
 
-#if defined RMLUI_PLATFORM_WIN32
-#include <win32/IncludeWindows.h>
-#include <gl/Gl.h>
-#include <gl/Glu.h>
-#elif defined RMLUI_PLATFORM_MACOSX
-#include <AGL/agl.h>
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#include <OpenGL/glext.h>
-#elif defined RMLUI_PLATFORM_UNIX
+#if defined _WIN32
+#if _MSC_VER >= 1500 // MSVC++ 9.0 (Visual Studio 2008)
+#pragma push_macro("ARRAYSIZE")
+#ifdef ARRAYSIZE
+#undef ARRAYSIZE
+#endif
+#define HSPRITE WINDOWS_HSPRITE
+#endif
+#pragma comment(lib, "opengl32.lib")
 #define GL_GLEXT_PROTOTYPES 1
-#include <GL/gl.h>
-#include <GL/glext.h>
+#include <windows.h>
+#include "glad/glad.h"
+
+//#endif
+#elif defined POSIX
+#include "glad/glad.h"
+// #define GL_GLEXT_PROTOTYPES 1
+// #include <GL/gl.h>
+// #include <GL/glext.h>
 // #include <GL/glu.h>
 // #include <GLES/gl.h>
 // #include <GLES2/gl2.h>
@@ -27,7 +31,29 @@
 #undef None
 #endif
 #endif
+void SaveGLState()
+{
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
 
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+}
+void RestoreGLState()
+{
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+
+    glPopClientAttrib();
+
+    glPopAttrib();
+}
 RocketRender RocketRender::m_Instance;
 
 RocketRender::RocketRender() { }
@@ -277,11 +303,10 @@ Rml::TextureHandle RocketRender::LoadTexture(Rml::Vector2i& texture_dimensions, 
     texture_dimensions.x = header.width;
     texture_dimensions.y = header.height;
     // bool success = GenerateTexture(Rml::Span<const Rml::byte>(image_dest, image_size), texture_dimensions);
-
-    delete [] image_dest;
-    delete [] buffer;
-
-    return GenerateTexture(Rml::Span<const Rml::byte>(image_dest, image_size), texture_dimensions);
+	Rml::TextureHandle result = GenerateTexture(Rml::Span<const Rml::byte>(image_dest, image_size), texture_dimensions);
+	delete[] image_dest;
+	delete [] buffer;
+	return result;
 }
 
 Rml::TextureHandle RocketRender::GenerateTexture(Rml::Span<const Rml::byte> source, Rml::Vector2i source_dimensions)

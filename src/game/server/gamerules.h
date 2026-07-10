@@ -77,14 +77,10 @@ enum DeathMessageFlags
 
 enum KillRarity
 {
-	KILLRARITY_HEADSHOT      = 0x001, // The killer player kills the victim with a headshot
-	KILLRARITY_KILLER_BLIND  = 0x002, // The killer player was blind
-	KILLRARITY_NOSCOPE       = 0x004, // The killer player kills the victim with a sniper rifle with no scope
-	KILLRARITY_PENETRATED    = 0x008, // The killer player kills the victim through walls
-	KILLRARITY_THROUGH_SMOKE = 0x010, // The killer player kills the victim through smoke
-	KILLRARITY_ASSIST_FLASH  = 0x020, // The killer player kills the victim with an assistant flashbang grenade
-	KILLRARITY_DOMINATION    = 0x040, // The killer player dominates the victim
-	KILLRARITY_REVENGE       = 0x080  // The killer player got revenge on the victim
+	KILLRARITY_HEADSHOT = 0x001, // The killer player kills the victim with a headshot
+	KILLRARITY_NOSCOPE = 0x002, // The killer player kills the victim with a sniper rifle with no scope
+	KILLRARITY_PENETRATED = 0x004, // The killer player kills the victim through walls
+	KILLRARITY_INAIR = 0x008
 };
 
 class CGameRules

@@ -5,32 +5,90 @@
 			{
 				font-family: Lato;
 				top: 0%;
-				left: 84%;
-				width: 12%;
+				right:0;
+				padding-right: 10dp;
+				padding-top: 10dp;
+                
 				max-height: 50%;
 				text-align: center;
 				position: absolute;
-				decorator: gradient( vertical #2B2C2C #030506 );
+				border-radius:16dp;
+                font-size: 14dp;
 			}
-			.killfeed-entry
+		    svg {
+                image-color: #ffffff;
+            }
+
+            .killfeed-entry {
+                background-color: rgba(0,0,0,166);
+                border-radius: 3dp;
+                transition: opacity 1.0s quadratic-out;
+                display: flex;
+
+                align-items: center;
+                justify-content: center; 
+
+                height: 26dp;
+                line-height: 26dp; 
+                margin-bottom: 3dp;
+            }
+			.killedyou
 			{
-				display: block;
-				font-size: 14px;
-				border: 1px #D89D74;
+			    background-color: rgba(168,19,19, 150);
+			}
+			.youkilled
+			{
+			    border: 2dp rgba(225,0,0,166);
+			}
+			.weapon {
+                margin: 0 6dp;
+                height: 16dp; 
+                width: auto;
+            }
+			.paddingstub
+			{
+			    display: block;
+			    height: 3dp;
+			}
+		    .attacker-name .victim-name
+			{
+			    display: inline-block;
+                margin: 0;
+                padding: 0 5dp;
+
+			}
+			.headshot
+			{
+			    margin-right: 6dp;
+			}
+
+			.inair
+			{
+			    padding-left: 5dp;
+			}
+			.attacker-name
+			{
+		        padding-left: 5dp;
+			}
+			.victim-name
+			{
+		        padding-right: 5dp;
 			}
 		</style>
 	</head>
 	<body>
 		<div id="killfeed-lines" data-model="killfeed_model">
 			<div data-for="entry : killfeed_entries">
-				<div class="killfeed-entry">
-					<div class="attacker-name">{{ entry.attacker_name }}</div>
-					<div class="weapon"> [{{ entry.gun_name }}] </div>
-					<div class="headshot" data-if="entry.headshot"> Headshot! </div>
-					<div class="wallbang" data-if="entry.wallbang"> ---||-> </div>
-					<div class="victim-name"> {{ entry.victim_name }}</div>
-					<br/>
+				<div class="killfeed-entry" data-class-youkilled="entry.you_killed" data-class-killedyou="entry.killed_you">
+				        <svg src="images/killfeed/icon_inair.svg" width="24" height="24" class="inair" data-if="entry.inair" />
+					    <p class="attacker-name">{{ entry.attacker_name }}</p>
+					    <svg data-attr-src="entry.gun_name" class="weapon" />
+					    <svg src="images/killfeed/icon_headshot.svg" width="24" height="24" class="headshot" data-if="entry.headshot" />
+					    <p class="wallbang" data-if="entry.wallbang"> ---||-> </p>
+					    <p class="victim-name"> {{ entry.victim_name }}</p>
+					    <br/>
 				</div>
+				<div class="paddingstub" />
 			</div>
 		</div>
 	</body>

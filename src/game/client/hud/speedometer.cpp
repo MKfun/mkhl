@@ -3,7 +3,7 @@
 #include "cl_util.h"
 #include "parsemsg.h"
 #include "speedometer.h"
-
+#include "rmlui/rkhud_speedometer.h"
 extern ConVar hud_jumpspeed;
 extern ConVar hud_jumpspeed_below_cross;
 ConVar hud_speedometer("hud_speedometer", "0", FCVAR_BHL_ARCHIVE, "Enable speedometer");
@@ -24,7 +24,11 @@ void CHudSpeedometer::Draw(float time)
 {
 	if ((gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH) || gEngfuncs.IsSpectateOnly())
 		return;
-
+	if (RkHudSpeedometer::m_Instance.m_pInstance)
+	{
+		RkHudSpeedometer::m_Instance.ShowPanel(true, 1);
+		return;
+	}
 	if (!hud_speedometer.GetBool())
 		return;
 
@@ -75,5 +79,9 @@ void CHudSpeedometer::Draw(float time)
 
 void CHudSpeedometer::UpdateSpeed(const float velocity[2])
 {
+	if (RkHudSpeedometer::m_Instance.m_pInstance)
+	{
+		RkHudSpeedometer::m_Instance.m_iSpeed = m_iSpeed;
+	}
 	m_iSpeed = std::round(std::hypot(velocity[0], velocity[1]));
 }
