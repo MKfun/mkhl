@@ -19,7 +19,6 @@
 #include <vgui/ISurface.h>
 #include <vgui/ISystem.h>
 #include <vgui/IVGui.h>
-#include "vcrmode.h"
 #include "GameMenu.h"
 #include "UtlSortVector.h"
 //#include "tier1/CommandBuffer.h"

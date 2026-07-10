@@ -52,8 +52,6 @@
 #include <vgui_controls/Menu.h>
 #include <vgui_controls/PHandle.h>
 
-#include "tier0/vcrmode.h"
-
 #include <tier0/memdbgon.h>
 // #include <winsani_out.h>
 IGameUIFuncs *gameuifuncs = NULL;
