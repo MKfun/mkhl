@@ -139,7 +139,7 @@ void CVGuiSystemModuleLoader::LoadPlatformModules(CreateInterfaceFn *factorylist
         // load the dll
         char szDir[512];
 
-        if (!g_pFullFileSystem->GetLocalPath(dllPath, szDir, 1000))
+        if (!g_pFullFileSystem->GetLocalPath(dllPath, szDir, sizeof(szDir)))
         {
             printf("Platform Error: couldn't find %s, not loading\n", it->GetString("dll"));
             continue;
