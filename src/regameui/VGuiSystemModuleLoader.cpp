@@ -127,13 +127,15 @@ void CVGuiSystemModuleLoader::LoadPlatformModules(CreateInterfaceFn *factorylist
         if (!useSteamModules && it->GetInt("SteamApp"))
             continue;
 
-        // get copy out of steam cache
-        strcpy(dllPath, it->GetString("dll"));
-        char* v11 = strrchr(dllPath, 46);
-        if ( v11 )
+		// get copy out of steam cache
+		strcpy(dllPath, it->GetString("dll"));
+#ifndef WIN32
+		char *v11 = strrchr(dllPath, 46);
+		if ( v11 )
             *v11 = 0;
         strncat(dllPath, "_linux.so", 512);
-        g_pFullFileSystem->GetLocalCopy(dllPath);
+#endif
+		g_pFullFileSystem->GetLocalCopy(dllPath);
         // load the dll
         char szDir[512];
 
