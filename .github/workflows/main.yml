@@ -62,7 +62,7 @@ jobs:
         if: matrix.runs-on == 'windows-latest'
         id: build-win
         run: |
-          python ./scripts/BuildRelease.py --target ${{ matrix.target }} --build-type release --vs 2022 --toolset v143 --linux-compiler gcc-9 --out-dir ./_build_out --cmake-args="-DWARNINGS_ARE_ERRORS=ON -DCMAKE_TOOLCHAIN_FILE=${{env.VCPKG_ROOT}}/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows-static" --github-actions
+          python ./scripts/BuildRelease.py --target ${{ matrix.target }} --build-type release --vs 2026 --toolset v143 --linux-compiler gcc-9 --out-dir ./_build_out --cmake-args="-DWARNINGS_ARE_ERRORS=ON -DCMAKE_TOOLCHAIN_FILE=${{env.VCPKG_ROOT}}/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows-static" --github-actions
 
       - name: Build linux release
         if: matrix.runs-on == 'ubuntu-latest'
