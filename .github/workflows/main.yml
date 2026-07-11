@@ -1,5 +1,4 @@
 # This is a basic workflow to help you get started with Actions
-
 name: CI
 
 # Controls when the action will run. Triggers the workflow on push, pull request or manual events
@@ -24,7 +23,7 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ${{ matrix.runs-on }}
 
-env:
+    env:
       VCPKG_ROOT: '${{github.workspace}}/vcpkg'
       VCPKG_DEFAULT_TRIPLET: 'x86-windows-static'
       VCPKG_DEFAULT_HOST_TRIPLET: 'x86-windows-static'
