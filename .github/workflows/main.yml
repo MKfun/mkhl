@@ -56,7 +56,7 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt update || true
-          sudo apt install -y libc6:i386 cmake ninja-build gcc-9-multilib g++-9-multilib libssl-dev:i386 zlib1g-dev:i386 libfreetype-dev:i386
+          sudo apt install -y libc6:i386 cmake ninja-build gcc-9-multilib g++-9-multilib libgl-dev:i386 libssl-dev:i386 zlib1g-dev:i386 libfreetype-dev:i386
 
       - name: Build windows release
         if: matrix.runs-on == 'windows-latest'
