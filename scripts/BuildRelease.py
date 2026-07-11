@@ -44,6 +44,9 @@ class PlatformWindows:
         elif self.script.vs_version == '2022':
             args.extend(['-G', 'Visual Studio 17 2022'])
             args.extend(['-A', 'Win32'])
+        elif self.script.vs_version == '2026':
+            args.extend(['-G', 'Visual Studio 18 2026'])
+            args.extend(['-A', 'Win32'])
 
         args.extend(['-T', self.script.vs_toolset])
         args.extend(["-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake", "-DVCPKG_TARGET_TRIPLET=x86-windows-static"])
