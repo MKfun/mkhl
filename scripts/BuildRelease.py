@@ -191,7 +191,7 @@ class BuildScript:
     allowed_targets = ['client', 'server']
     allowed_build_types = ['debug', 'release']
 
-    allowed_vs_versions = ['2017', '2019', '2022']
+    allowed_vs_versions = ['2017', '2019', '2022', '2026']
     allowed_vs_toolsets = ['v141', 'v141_xp', 'v142', 'v143']
 
     allowed_linux_compilers = ['gcc', 'gcc-8', 'gcc-9']
