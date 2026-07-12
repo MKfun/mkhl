@@ -15,10 +15,7 @@ void UnloadRkRoundTimer()
 {
 	RkHudRoundTimer &pTimer = RkHudRoundTimer::m_Instance;
 	if (!pTimer.m_pInstance)
-	{
-		Warning("Couldn't grab RkHudRoundTimer element to unload!\n");
-		return;
-	}
+		return; // Not loaded, nothing to unload
 
 	Rml::Context *hudCtx = RocketUIImpl::m_Instance.AccessHudContext();
 	if (hudCtx)

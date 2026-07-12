@@ -19,8 +19,8 @@ public:
 	virtual void SetActive(bool bActive);
     virtual bool ShouldDraw(void);
     void ShowPanel(bool bShow, bool force);
-
-    static void UnloadRkInfoBar();
+	void DispatchKillAnimation();
+	static void UnloadRkInfoBar();
     static void LoadRkInfoBar();
 	Rml::ElementDocument *m_pInstance = nullptr;
 	bool		m_bVisible;

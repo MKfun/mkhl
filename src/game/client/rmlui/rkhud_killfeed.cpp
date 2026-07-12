@@ -95,14 +95,8 @@ void UnloadRkKillFeed()
 {
 	RkHudKillfeed &pKillFeed = RkHudKillfeed::m_Instance;
 	if (!pKillFeed.m_pInstance)
-	{
-		Warning("Couldn't grab hud killfeed to load!\n");
-		return;
-	}
+		return; // Not loaded, nothing to unload
 
-	// Not loaded.
-	if (!pKillFeed.m_pInstance)
-		return;
 
 	Rml::Context *hudCtx = RocketUIImpl::m_Instance.AccessHudContext();
 	if (hudCtx)

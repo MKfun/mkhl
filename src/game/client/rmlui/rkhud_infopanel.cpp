@@ -116,7 +116,18 @@ RkHudInfoBar::~RkHudInfoBar() noexcept
     // void UnloadRkInfoBar();
     // UnloadRkInfoBar();
 }
-
+CON_COMMAND(rocket_dispatch_killanim, "")
+{
+	RkHudInfoBar::m_Instance.DispatchKillAnimation();
+}
+void RkHudInfoBar::DispatchKillAnimation()
+{
+	if (Rml::Element *element = m_pInstance->GetElementById("killAnim"))
+	{
+		element->SetClass("kill-anim", false);
+		element->SetClass("kill-anim", true);
+	}
+}
 void RkHudInfoBar::LevelInit()
 {
     void LoadRkInfoBar();

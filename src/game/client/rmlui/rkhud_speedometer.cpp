@@ -13,10 +13,7 @@ void UnloadRkSpeedometer()
 {
 	RkHudSpeedometer &pSpdMeter = RkHudSpeedometer::m_Instance;
 	if (!pSpdMeter.m_pInstance)
-	{
-		Warning("Couldn't grab RkHudSpeedometer element to unload!\n");
-		return;
-	}
+		return; // Not loaded, nothing to unload
 
 	Rml::Context *hudCtx = RocketUIImpl::m_Instance.AccessHudContext();
 	if (hudCtx)
