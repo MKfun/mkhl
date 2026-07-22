@@ -11,6 +11,12 @@
 #pragma once
 #endif
 
+namespace vgui2
+{
+	class PropertyDialog;
+	class PropertySheet;
+}
+
 #include <vgui_controls/PropertyDialog.h>
 
 class CCreateMultiplayerGameServerPage;

@@ -14,7 +14,8 @@
 
 namespace vgui2
 {
-class PropertySheet;
+	class PropertySheet;
+	class PropertyDialog;
 }
 
 #include <vgui_controls/PropertyDialog.h>
