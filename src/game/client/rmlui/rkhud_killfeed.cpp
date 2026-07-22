@@ -81,12 +81,24 @@ void RkHudKillfeed::CheckForOldEntries()
 	if (killFeedData.entries.empty())
 		return;
 
-	// pop off the first guy, then we're done. This gets called often enough to not matter about the rest.
-	if ((gHUD.m_flTime - killFeedData.entries.front().noticeSpawnTime) > rocket_hud_killfeed_linger_time.GetFloat())
+	bool bChanged = false;
+	while (!killFeedData.entries.empty() && (gHUD.m_flTime - killFeedData.entries.front().noticeSpawnTime) > rocket_hud_killfeed_linger_time.GetFloat())
 	{
 		killFeedData.entries.pop_front();
+		bChanged = true;
+	}
+
+	if (bChanged)
+	{
 		m_dataModel.DirtyVariable("killfeed_entries");
-		// m_dataModel.Update();
+	}
+}
+
+void RkHudKillfeed::Update(void)
+{
+	if (m_bVisible)
+	{
+		CheckForOldEntries();
 	}
 }
 

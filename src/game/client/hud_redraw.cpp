@@ -63,6 +63,11 @@ void CHud::Think(void)
 			i->Think();
 	}
 
+	for (CRocketHudElem *i : m_rkHudList)
+	{
+		i->Update();
+	}
+
 	newfov = HUD_GetFOV();
 	if (newfov == 0)
 	{

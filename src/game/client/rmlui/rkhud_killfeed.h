@@ -23,6 +23,7 @@ public:
 	virtual void SetActive(bool bActive);
 	virtual bool ShouldDraw(void);
 	void ShowPanel(bool bShow, bool force);
+	virtual void Update(void) override;
 	void OnPlayerDeath(int killerId, int victimId, const char *killedwith, int killrarity);
 	// CGameEventListener THERE IS NO GAMEEVENTS :crymore:
 	// virtual void FireGameEvent(IGameEvent *event);
