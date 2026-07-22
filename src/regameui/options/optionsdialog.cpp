@@ -9,6 +9,7 @@
 
 #include <vgui_controls/Button.h>
 #include <vgui_controls/CheckButton.h>
+#include <vgui_controls/PropertySheet.h>
 #include <KeyValues.h>
 #include <vgui_controls/Label.h>
 

@@ -10,16 +10,13 @@
 #pragma once
 #endif
 
-#include <vgui_controls/Frame.h>
+#include <vgui/VGUI2.h>
 
-namespace vgui
+namespace vgui2
 {
-class Button;
-class CheckButton;
-class Label;
-};
-#include <vgui_controls/Controls.h>
-#include <vgui_controls/PropertySheet.h>
+class PropertySheet;
+}
+
 #include <vgui_controls/PropertyDialog.h>
 
 //-----------------------------------------------------------------------------
@@ -27,6 +24,8 @@ class Label;
 //-----------------------------------------------------------------------------
 class COptionsDialog : public vgui2::PropertyDialog
 {
+	DECLARE_CLASS_SIMPLE(COptionsDialog, vgui2::PropertyDialog);
+
 public:
     COptionsDialog(vgui2::Panel *parent);
     ~COptionsDialog();
@@ -37,8 +36,6 @@ public:
 protected:
     virtual void SetTitle(const char *title, bool surfaceTitle);
     virtual void OnClose();
-
-    typedef vgui2::PropertyDialog BaseClass;
 };
 
 #endif // OPTIONSDIALOG_H
