@@ -27,6 +27,7 @@
 #include "vgui/client_viewport.h"
 #include "rmlui/rkhud_infopanel.h"
 DEFINE_HUD_ELEM(CHudBattery);
+DECLARE_HUDELEMENT(CHudBattery);
 
 void CHudBattery::Init(void)
 {

@@ -29,6 +29,7 @@
 #define BAT_NAME "sprites/%d_Flashlight.spr"
 
 DEFINE_HUD_ELEM(CHudFlashlight);
+DECLARE_HUDELEMENT(CHudFlashlight);
 
 void CHudFlashlight::Init(void)
 {

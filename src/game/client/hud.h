@@ -33,6 +33,7 @@
 #include "hud/base.h"
 #include "player_info.h"
 #include "rainbow.h"
+#include "hudelementhelper.h"
 #include "rmlui/rkhud_elem_interface.h"
 #define RGB_YELLOWISH 0x00FFA000 //255,160,0
 #define RGB_REDISH    0x00FF1010 //255,160,0
@@ -143,7 +144,7 @@ public:
 	void Shutdown();
 	void ApplyViewportSchemeSettings(vgui2::IScheme *pScheme);
 	void SaveEngineVersion();
-
+	void AddHudElement(CHudElem *);
 	/**
 	 * Returns whether DLL is installed onto AG mod.
 	 */

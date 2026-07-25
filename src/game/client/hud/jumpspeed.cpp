@@ -10,6 +10,7 @@ ConVar hud_jumpspeed("hud_jumpspeed", "0", FCVAR_BHL_ARCHIVE, "Enable jumpspeed"
 ConVar hud_jumpspeed_below_cross("hud_jumpspeed_below_cross", "0", FCVAR_BHL_ARCHIVE, "Move jumpspeed to below the crosshair");
 
 DEFINE_HUD_ELEM(CHudJumpspeed);
+DECLARE_HUDELEMENT(CHudJumpspeed);
 
 void CHudJumpspeed::Init()
 {

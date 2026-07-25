@@ -83,6 +83,7 @@
 #include "hud/timer.h"
 #include "hud/strafeguide.h"
 #include "vgui/freezepanel.h"
+#include "hudelementhelper.h"
 
 // Adrenaline Gamer HUD Elements
 #include "hud/ag/ag_countdown.h"
@@ -370,33 +371,8 @@ void CHud::Init(void)
 	UpdateHudColors();
 
 	// Create HUD elements
-	RegisterHudElem<CHudAmmo>();
-	RegisterHudElem<CHudHealth>();
-	RegisterHudElem<CHudChat>();
-	RegisterHudElem<CHudCrosshair>();
-	RegisterHudElem<CHudSpectator>();
-	RegisterHudElem<CHudGeiger>();
-	RegisterHudElem<CHudTrain>();
-	RegisterHudElem<CHudBattery>();
-	RegisterHudElem<CHudFlashlight>();
-	RegisterHudElem<CHudMessage>();
-	RegisterHudElem<CHudScores>();
-	RegisterHudElem<CHudStatusBar>();
-	RegisterHudElem<CHudDeathNotice>();
-	RegisterHudElem<CHudAmmoSecondary>();
-	RegisterHudElem<CHudTextMessage>();
-	RegisterHudElem<CHudStatusIcons>();
-	RegisterHudElem<CHudMenu>();
-	RegisterHudElem<CHudVoiceStatus>();
-	RegisterHudElem<CHudVoiceStatusSelf>();
-	RegisterHudElem<CHudSpeedometer>();
-	RegisterHudElem<CHudJumpspeed>();
-	RegisterHudElem<CHudTimer>();
-	RegisterHudElem<CHudStrafeGuide>();
-	// RkHudKillfeed *m_pKillFeed = new RkHudKillfeed("hud_killfeed");
-	// LoadRkKillFeed();
-	// RkHudRoundTimer *m_pTimer = new RkHudRoundTimer("hud_infobar");
-	// LoadRkRoundTimer();
+	CHudElementHelper::CreateAllElements();
+
 	if (CHudRenderer::Get().IsAvailable())
 	{
 		RegisterHudElem<CHudDeathNoticePanel>();
@@ -1013,4 +989,11 @@ CON_COMMAND(_toggle, "Switches cvar values from arguments.")
 		cvar.SetValue(gEngfuncs.Cmd_Argv(2));
 		return;
 	}
+}
+void CHud::AddHudElement(CHudElem *pHudElement)
+{
+	// Add the hud element to the end of the array
+	m_HudList.push_back(pHudElement);
+
+	// pHudElement->m_iFlags |= HUDELEM_ACTIVE;
 }

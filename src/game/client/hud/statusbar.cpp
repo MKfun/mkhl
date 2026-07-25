@@ -24,6 +24,7 @@
 
 #include "hud.h"
 #include "cl_util.h"
+#include "hudelementhelper.h"
 #include "parsemsg.h"
 #include "statusbar.h"
 #include "text_message.h"
@@ -39,6 +40,7 @@ ConVar hud_centerid("hud_centerid", "0", FCVAR_ARCHIVE, "Show other players' nam
 extern ConVar hud_custom;
 
 DEFINE_HUD_ELEM(CHudStatusBar);
+DECLARE_HUDELEMENT(CHudStatusBar);
 
 void CHudStatusBar::ResetLineColor(int line)
 {

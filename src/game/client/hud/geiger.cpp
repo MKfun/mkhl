@@ -28,6 +28,7 @@
 #include "geiger.h"
 
 DEFINE_HUD_ELEM(CHudGeiger);
+DECLARE_HUDELEMENT(CHudGeiger);
 
 void CHudGeiger::Init(void)
 {

@@ -16,6 +16,7 @@
 #include "vgui/client_viewport.h"
 
 DEFINE_HUD_ELEM(CHudVoiceStatus);
+DECLARE_HUDELEMENT(CHudVoiceStatus);
 
 CHudVoiceStatus::CHudVoiceStatus()
     : vgui2::Panel(NULL, "HudVoiceStatus")

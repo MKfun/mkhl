@@ -26,6 +26,7 @@
 #include "ammo_secondary.h"
 
 DEFINE_HUD_ELEM(CHudAmmoSecondary);
+DECLARE_HUDELEMENT(CHudAmmoSecondary);
 
 void CHudAmmoSecondary::Init(void)
 {

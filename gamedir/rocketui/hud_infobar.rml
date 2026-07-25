@@ -103,6 +103,14 @@
 			    display: inline-block;
 			    position: relative;
 			}
+			@keyframes kill-pop {
+				0% { transform: scale(1.0); color: white; }
+				50% { transform: scale(2.0); color: red; }
+				100% { transform: scale(1.0); color: white; }
+			}
+			.kill-anim {
+				animation: kill-pop 0.3s;
+			}
 		</style>
 	</head>
 	<body>
@@ -124,7 +132,7 @@
 					</div>
 
 					<div class="ammocol" data-if="ammo_reserve > 0" style="">
-					    <h6 style="font-family: Lato;">x{{num_kills}}</h6>
+					    <h6 id="killAnim" style="font-family: Lato;">x{{num_kills}}</h6>
 						<h1 data-if="has_ammo_reserve" id="current_ammo" style="font-family: Counter-Strike;">{{ammo}}</h1>
 						<h1 data-if="has_ammo_reserve"> | </h1>
 						<h1 data-if="has_ammo_reserve" id="reserve_ammo" style="font-family: Counter-Strike; padding-right:10%;">{{ammo_reserve}}</h1>

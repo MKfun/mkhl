@@ -246,6 +246,7 @@ HSPRITE ghsprBuckets; // Sprite for top row of weapons menu
 #define HISTORY_DRAW_TIME "5"
 
 DEFINE_HUD_ELEM(CHudAmmo);
+DECLARE_HUDELEMENT(CHudAmmo);
 
 void CHudAmmo::Init()
 {
@@ -587,6 +588,10 @@ int CHudAmmo::MsgFunc_CurWeapon(const char *pszName, int iSize, void *pbuf)
 	pWeapon->iNumKills = m_NumEnemiesKilledThisSpawn;
 	if (RkHudInfoBar::m_Instance.m_pInstance)
 	{
+		if (RkHudInfoBar::infoBarData.numKills < m_NumEnemiesKilledThisSpawn)
+		{
+			RkHudInfoBar::m_Instance.DispatchKillAnimation();
+		}
 		RkHudInfoBar::infoBarData.numKills = m_NumEnemiesKilledThisSpawn;
 		// RkHudInfoBar::infoBarData.ammoReserve = gWR.CountAmmo(pw->iAmmo2Type);
 		if (RkHudInfoBar::m_Instance.m_dataModel)

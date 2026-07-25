@@ -20,6 +20,7 @@
 
 #include "hud.h"
 #include "cl_util.h"
+#include "hudelementhelper.h"
 #include "parsemsg.h"
 #include "death_notice.h"
 #include "spectator.h"
@@ -59,7 +60,7 @@ static int DEATHNOTICE_DISPLAY_TIME = 6;
 DeathNoticeItem rgDeathNoticeList[MAX_DEATHNOTICES + 1];
 
 DEFINE_HUD_ELEM(CHudDeathNotice);
-
+DECLARE_HUDELEMENT(CHudDeathNotice);
 void CHudDeathNotice::Init(void)
 {
 	BaseHudClass::Init();

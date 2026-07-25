@@ -39,6 +39,8 @@ add_sources(
 	global_consts.h
 	hud.cpp
 	hud.h
+	hudelementhelper.cpp
+	hudelementhelper.h
 	hud_iface.h
 	hud_msg.cpp
 	hud_redraw.cpp

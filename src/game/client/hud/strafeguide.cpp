@@ -20,6 +20,7 @@ ConVar hud_strafeguide_height("hud_strafeguide_height", "0", FCVAR_BHL_ARCHIVE, 
 ConVar hud_strafeguide_size("hud_strafeguide_size", "0", FCVAR_BHL_ARCHIVE, "Changes size for the strafing HUD");
 
 DEFINE_HUD_ELEM(CHudStrafeGuide);
+DECLARE_HUDELEMENT(CHudStrafeGuide);
 
 void CHudStrafeGuide::Init()
 {

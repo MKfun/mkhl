@@ -330,6 +330,7 @@ void CHudChatHistory::OnKeyCodeTyped(vgui2::KeyCode code)
 	}
 }
 
+DECLARE_HUDELEMENT(CHudChat);
 int CHudChat::m_nLineCounter = 1;
 
 //-----------------------------------------------------------------------------

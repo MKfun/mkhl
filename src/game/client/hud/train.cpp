@@ -27,6 +27,7 @@
 #include "train.h"
 
 DEFINE_HUD_ELEM(CHudTrain);
+DECLARE_HUDELEMENT(CHudTrain);
 
 void CHudTrain::Init(void)
 {

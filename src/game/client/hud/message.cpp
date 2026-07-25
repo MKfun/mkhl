@@ -37,6 +37,7 @@ char g_pCustomText[MAX_MESSAGE_TEXT_LENGTH];
 ConVar hud_message_draw_always("hud_message_draw_always", "0", FCVAR_BHL_ARCHIVE, "Display the server messages even when hud_draw is 0. Useful when recording HLKZ movies.");
 
 DEFINE_HUD_ELEM(CHudMessage);
+DECLARE_HUDELEMENT(CHudMessage);
 
 void CHudMessage::Init(void)
 {

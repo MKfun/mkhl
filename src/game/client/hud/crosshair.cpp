@@ -16,6 +16,7 @@ static ConVar cl_cross_t("cl_cross_t", "0", FCVAR_BHL_ARCHIVE);
 ConVar cl_cross_zoom("cl_cross_zoom", "2", FCVAR_BHL_ARCHIVE, "Zoomed crosshair mode: sprite, custom, both");
 
 DEFINE_HUD_ELEM(CHudCrosshair);
+DECLARE_HUDELEMENT(CHudCrosshair);
 
 CHudCrosshair::CHudCrosshair()
 {
