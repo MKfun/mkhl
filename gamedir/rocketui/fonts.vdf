@@ -2,6 +2,8 @@
 {
     "Lato"  "rocketui/fonts/Lato-Black.ttf"
     "Counter-Strike"  "rocketui/fonts/cstrike.ttf"
-    "Ubuntu Sans"	"rocketui/fonts/UbuntuSans.ttf"
+    "Funnel Display"    "rocketui/fonts/funneldisplay.ttf"
+    "EternalUI Bold"    "rocketui/fonts/eternalui_bold.ttf"
+    "HemiHead426"    "rocketui/fonts/HemiHead426-Regular.ttf"
     //"BoxRocket"       "rocketui/fonts/boxrocket-fixed.ttf" //fix this later
 }

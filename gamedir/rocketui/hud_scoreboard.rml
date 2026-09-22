@@ -1,128 +1,241 @@
 <rml>
 	<head>
 		<style>
-			body
-			{
-				font-family: Lato;
-				border: 1px #D89D74;
-				top: 35%;
-				left: 30%;
-				width: 40%;
-				height: 30%;
-				text-align: center;
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				font-family: "Funnel Display";
+				font-weight: 650;
 				position: absolute;
-				decorator: gradient( vertical #2B2C2C #030506 );
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
 			}
-			.playerrow {
-				display: block;
+			@keyframes scoreboard-appear {
+				from {
+					opacity: 0.0;
+					transform: translateY(-12dp);
+				}
+				to {
+					opacity: 1.0;
+					transform: translateY(0dp);
+				}
 			}
-			.namecol {
-				display: inline-block;
-				width: 20%;
+			#scoreboard {
+				position: absolute;
+				top: 15%;
+				left: 20%;
+				width: 60%;
+				height: 70%;
+				/* border: 1dp #D89D74; */
+				background-color: #2a2e3360;
+				display: flex;
+				flex-direction: column;
+				color: #FFFFFF;
+				transform-origin: 50% 50%;
 			}
-			.cashcol {
-				display: inline-block;
-				width: 10%;
+			#scoreboard.appear {
+				animation: scoreboard-appear 0.18s cubic-out;
 			}
-			.killscol {
-				display: inline-block;
-				width: 5%;
+			#header {
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+				align-items: center;
+				height: 32dp;
+				padding: 0 12dp;
+				font-size: 15dp;
+				flex-shrink: 0;
+				decorator: repeating-linear-gradient(
+					-45deg, 
+					#00000000 0px,
+					#00000000 10px, 
+					#e4e9f050 10px, 
+					#e4e9f050 20px
+					);
 			}
-			.deathscol {
-				display: inline-block;
-				width: 5%;
+			#server-name {
+				text-align: left;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+				flex: 1;
+				color: #FFFFFF;
+				font-weight: bold;
 			}
-			.assistscol {
-				display: inline-block;
-				width: 5%;
-			}
-			.spacercol {
-				display: inline-block;
-				width: 5%;
-			}
-			.pingcol {
-				display: inline-block;
-				width: 5%;
+			#map-name {
+				text-align: right;
+				flex-shrink: 0;
+				margin-left: 16dp;
+				color: #e4e9f0;
+				font-weight: bold;
 			}
 			#legend {
-				display: block;
-				decorator: gradient( vertical #2B2C2C #131516 );
-				font-size: 16px;
-				height: 7%;
-				width: 100%;
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				height: 28dp;
+				font-size: 13dp;
+				color: #e4e9f0;
+				font-weight: bold;
+				flex-shrink: 0;
+				
 			}
-			.ctplayer {
+			#playerlist {
+				flex: 1;
 				display: block;
-				decorator: gradient( vertical #6699CC #050506 );
+				overflow-y: auto;
 			}
-			.tplayer {
-				display: block;
-				decorator: gradient( vertical #EFB912 #050506 );
+			.playerrow {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				height: 31dp;
+				font-size: 14dp;
+				color: #DDDDDD;
 			}
-			#ct {
-				display: block;
-				max-height: 52%;
+			.playerrow:nth-child(even) {
+				background-color: #2a2e33;
 			}
-			#t {
-				position: absolute;
-				display: block;
-				top: 45%;
-				max-height: 45%;
+			.playerrow:hover {
+				background-color: #2a2e33;
+			}
+			.thisplayer {
+				color: #e4e9f0;
+				font-weight: 700;
+				decorator: repeating-linear-gradient(
+					-45deg, 
+					#00000000 0px,
+					#00000000 5px, 
+					#2a2e33 5px, 
+					#2a2e33 10px
+					);
+
+			}
+			.thisplayer .namecol
+			{
+				/* color: #2a2e33; */
+			}
+			.avatarcol {
+				width: 32dp;
+				height: 32dp;
+				margin-left: 8dp;
+				flex-shrink: 0;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+			.avatarimg {
+				width: 32dp;
+				height: 32dp;
+				border: 1dp #444444;
+			}
+			.namecol {
+				flex: 4;
+				text-align: left;
+				padding-left: 8dp;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+			.steamidcol {
+				flex: 2.8;
+				text-align: left;
+				padding-left: 8dp;
+				font-size: 11dp;
+				/* color: #888888; */
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+			.fragscol {
+				flex: 1.2;
+				text-align: center;
+			}
+			.deathscol {
+				flex: 1.2;
+				text-align: center;
+			}
+			.pingcol {
+				flex: 1.2;
+				text-align: center;
+				padding-right: 12dp;
 			}
 			#spec {
-				position: absolute;
-				text-align: left;
-				top: 95%;
-				max-height: 10%;
-				border-top: 1px #D89D74;
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				height: 26dp;
+				padding: 0 12dp;
+				font-size: 13dp;
+				color: #999999;
+				decorator: repeating-linear-gradient(
+					-45deg, 
+					#00000000 0px,
+					#00000000 10px, 
+					#e4e9f050 10px, 
+					#e4e9f050 20px
+					);
+				flex-shrink: 0;
 			}
-			#scores {
-				position: absolute;
-				text-align: left;
-				top: 0%;
-				left: 0%;
+			.noplayers {
+				text-align: center;
+				padding: 24dp;
+				color: #777777;
+				font-size: 14dp;
+			}
+			scrollbarvertical {
+				width: 10dp;
+			}
+			scrollbarvertical slidertrack {
+				background-color: #111111;
+			}
+			scrollbarvertical sliderbar {
+				width: 10dp;
+				min-height: 20dp;
+				background-color: #D89D74;
+			}
+			scrollbarvertical sliderbar:hover {
+				background-color: #FFA000;
+			}
+			scrollbarvertical sliderarrowdec,
+			scrollbarvertical sliderarrowinc {
+				display: none;
 			}
 		</style>
 	</head>
 	<body>
-		<div id="legend" data-model="scoreboard_model">
-			<div id="scores"> CT: {{ct_score}} - T: {{t_score}} </div>
-			<div class="namecol"> </div>
-			<div class="cashcol"> </div>
-			<div class="killscol"> K </div>
-			<div class="deathscol"> D </div>
-			<div class="assistscol"> A </div>
-			<div class="spacercol"> </div>
-			<div class="pingcol"> Ping </div>
-		</div>
-		<div id="ct" data-model="scoreboard_model">
-			<div data-for="goodplayer : ctplayers">
-				<div class="ctplayer" >
-					<div class="namecol"> {{goodplayer.name}} </div>
-					<div class="cashcol"> ${{goodplayer.cash}} </div>
-					<div class="killscol"> {{goodplayer.kills}} </div>
-					<div class="deathscol"> {{goodplayer.deaths}} </div>
-					<div class="assistscol"> {{goodplayer.assists}} </div>
-					<div class="spacercol"> </div>
-					<div class="pingcol"> {{goodplayer.ping}} </div>
+		<div id="scoreboard" data-model="scoreboard_model">
+			<div id="header">
+				<div id="server-name">{{server_name}}</div>
+				<div id="map-name">{{map_name}}</div>
+			</div>
+			<div id="legend">
+				<div class="avatarcol"></div>
+				<div class="namecol">PLAYER</div>
+				<div class="steamidcol">STEAM ID</div>
+				<div class="fragscol">FRAGS</div>
+				<div class="deathscol">DEATHS</div>
+				<div class="pingcol">PING</div>
+			</div>
+			<div id="playerlist">
+				<div class="noplayers" data-if="num_players == 0">No players connected</div>
+				<div data-for="player : players">
+					<div class="playerrow" data-class-thisplayer="player.thisplayer">
+						<div class="avatarcol"><img class="avatarimg" data-attr-src="player.avatar" /></div>
+						<div class="namecol">{{player.name}}</div>
+						<div class="steamidcol">{{player.steamid}}</div>
+						<div class="fragscol">{{player.frags}}</div>
+						<div class="deathscol">{{player.deaths}}</div>
+						<div class="pingcol">{{player.ping}}</div>
+					</div>
 				</div>
 			</div>
-		</div>
-		<div id="t" data-model="scoreboard_model">
-			<div data-for="badplayer : tplayers">
-				<div class="tplayer">
-					<div class="namecol"> {{badplayer.name}} </div>
-					<div class="cashcol"> ${{badplayer.cash}} </div>
-					<div class="killscol"> {{badplayer.kills}} </div>
-					<div class="deathscol"> {{badplayer.deaths}} </div>
-					<div class="assistscol"> {{badplayer.assists}} </div>
-					<div class="spacercol"> </div>
-					<div class="pingcol"> {{badplayer.ping}} </div>
-				</div>
+			<div id="spec">
+				Spectators: {{num_specs}}
 			</div>
-		</div>
-		<div id="spec" data-model="scoreboard_model">
-			Spectators: {{num_specs}}
 		</div>
 	</body>
 </rml>

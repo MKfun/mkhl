@@ -34,6 +34,12 @@ int g_iUser2 = 0;
 int g_iUser3 = 0;
 
 extern ConVar hud_scoreboard_mousebtn;
+extern ConVar rocket_enable;
+
+#pragma push_macro("Assert")
+#undef Assert
+#include "rmlui/rkhud_scoreboard.h"
+#pragma pop_macro("Assert")
 
 CClientViewport *g_pViewport = nullptr;
 
@@ -331,6 +337,9 @@ void CClientViewport::HideAllVGUIMenu()
 
 bool CClientViewport::IsScoreBoardVisible()
 {
+	if (rocket_enable.GetBool())
+		return RkHudScoreboard::m_Instance.m_bVisible;
+
 	return m_pScorePanel->IsVisible();
 }
 
@@ -338,7 +347,16 @@ void CClientViewport::ShowScoreBoard()
 {
 	if (gEngfuncs.GetMaxClients() > 1)
 	{
-		m_pScorePanel->ShowPanel(true);
+		if (rocket_enable.GetBool())
+		{
+			m_pScorePanel->ShowPanel(false);
+			RkHudScoreboard::m_Instance.ShowPanel(true, false);
+		}
+		else
+		{
+			RkHudScoreboard::m_Instance.ShowPanel(false, false);
+			m_pScorePanel->ShowPanel(true);
+		}
 	}
 }
 
@@ -348,6 +366,7 @@ void CClientViewport::HideScoreBoard()
 	if (gHUD.m_iIntermission)
 		return;
 
+	RkHudScoreboard::m_Instance.ShowPanel(false, false);
 	m_pScorePanel->ShowPanel(false);
 }
 

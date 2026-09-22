@@ -17,4 +17,7 @@ add_sources(
     rkhud_killfeed.h
     rkhud_speedometer.cpp
     rkhud_speedometer.h
+
+    rkhud_scoreboard.cpp
+    rkhud_scoreboard.h
 )

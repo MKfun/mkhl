@@ -1,12 +1,17 @@
 #include "rocketrenderer.h"
+#include <algorithm>
+#include <string.h>
+#include <math.h>
+#include <map>
+#include "client_steam_context.h"
+#include "tier0/platform.h"
+
 #pragma push_macro("Assert")
 #undef Assert
 #include <RmlUi/Core.h>
 #include <RmlUi/Core/Log.h>
 #include <RmlUi/Core/Platform.h>
 #include <RmlUi/Core/SystemInterface.h>
-#include <algorithm>
-#include <string.h>
 
 #if defined _WIN32
 #if _MSC_VER >= 1500
@@ -84,13 +89,111 @@ static const char* shader_frag_blend_mask = "#version 120\n"
 "    gl_FragColor = texColor * maskAlpha;\n"
 "}\n";
 
+static const char* shader_frag_gradient = "#version 120\n"
+"#define LINEAR 0\n"
+"#define RADIAL 1\n"
+"#define CONIC 2\n"
+"#define REPEATING_LINEAR 3\n"
+"#define REPEATING_RADIAL 4\n"
+"#define REPEATING_CONIC 5\n"
+"#define PI 3.14159265358979323846\n"
+"#define MAX_NUM_STOPS 16\n"
+"\n"
+"uniform int _func;\n"
+"uniform vec2 _p;\n"
+"uniform vec2 _v;\n"
+"uniform vec4 _stop_colors[MAX_NUM_STOPS];\n"
+"uniform float _stop_positions[MAX_NUM_STOPS];\n"
+"uniform int _num_stops;\n"
+"\n"
+"vec4 mix_stop_colors(float t) {\n"
+"    vec4 color = _stop_colors[0];\n"
+"    for (int i = 1; i < MAX_NUM_STOPS; i++) {\n"
+"        if (i >= _num_stops) break;\n"
+"        float edge0 = _stop_positions[i - 1];\n"
+"        float edge1 = _stop_positions[i];\n"
+"        float factor = (edge1 > edge0) ? smoothstep(edge0, edge1, t) : step(edge1, t);\n"
+"        color = mix(color, _stop_colors[i], factor);\n"
+"    }\n"
+"    return color;\n"
+"}\n"
+"\n"
+"void main() {\n"
+"    float t = 0.0;\n"
+"    if (_func == LINEAR || _func == REPEATING_LINEAR) {\n"
+"        float dist_square = dot(_v, _v);\n"
+"        vec2 V = gl_TexCoord[0].st - _p;\n"
+"        t = (dist_square > 0.000001) ? (dot(_v, V) / dist_square) : 0.0;\n"
+"    } else if (_func == RADIAL || _func == REPEATING_RADIAL) {\n"
+"        vec2 V = gl_TexCoord[0].st - _p;\n"
+"        t = length(_v * V);\n"
+"    } else if (_func == CONIC || _func == REPEATING_CONIC) {\n"
+"        vec2 diff = gl_TexCoord[0].st - _p;\n"
+"        vec2 V = vec2(_v.x * diff.x + _v.y * diff.y, -_v.y * diff.x + _v.x * diff.y);\n"
+"        t = 0.5 + atan(-V.x, V.y) / (2.0 * PI);\n"
+"    }\n"
+"\n"
+"    if (_func == REPEATING_LINEAR || _func == REPEATING_RADIAL || _func == REPEATING_CONIC) {\n"
+"        float t0 = _stop_positions[0];\n"
+"        float t1 = t0;\n"
+"        for (int i = 1; i < MAX_NUM_STOPS; i++) {\n"
+"            if (i < _num_stops) t1 = _stop_positions[i];\n"
+"        }\n"
+"        float span = t1 - t0;\n"
+"        if (span > 0.000001) {\n"
+"            t = t0 + mod(t - t0, span);\n"
+"        }\n"
+"    }\n"
+"\n"
+"    gl_FragColor = gl_Color * mix_stop_colors(t);\n"
+"}\n";
+
+static const char* shader_frag_creation = "#version 120\n"
+"uniform float _value;\n"
+"uniform vec2 _dimensions;\n"
+"void main() {\n"
+"    float t = _value;\n"
+"    vec3 c = vec3(0.0);\n"
+"    float l = 1.0;\n"
+"    for (int i = 0; i < 3; i++) {\n"
+"        vec2 p = gl_TexCoord[0].st;\n"
+"        vec2 uv = p;\n"
+"        p -= 0.5;\n"
+"        p.x *= (_dimensions.y > 0.0 ? _dimensions.x / _dimensions.y : 1.0);\n"
+"        float z = t + float(i) * 0.07;\n"
+"        l = length(p);\n"
+"        uv += p / (l > 0.0001 ? l : 0.0001) * (sin(z) + 1.0) * abs(sin(l * 9.0 - z - z));\n"
+"        c[i] = 0.01 / length(mod(uv, 1.0) - 0.5);\n"
+"    }\n"
+"    gl_FragColor = vec4(c / (l > 0.0001 ? l : 0.0001), gl_Color.a);\n"
+"}\n";
+
 namespace Gfx {
 
-enum class ProgramId { Passthrough, ColorMatrix, Blur, DropShadow, BlendMask, Count };
-enum class UniformId { Tex, ColorMatrix, TexelOffset, TexCoordMin, TexCoordMax, TexMask, Weights, Color, Count };
+enum class ProgramId { Passthrough, ColorMatrix, Blur, DropShadow, BlendMask, Gradient, Creation, Count };
+enum class UniformId {
+    Tex,
+    ColorMatrix,
+    TexelOffset,
+    TexCoordMin,
+    TexCoordMax,
+    TexMask,
+    Weights,
+    Color,
+    Func,
+    P,
+    V,
+    StopColors,
+    StopPositions,
+    NumStops,
+    Value,
+    Dimensions,
+    Count
+};
 
 static const char* const program_uniform_names[(size_t)UniformId::Count] = {
-    "_tex", "_color_matrix", "_texelOffset", "_texCoordMin", "_texCoordMax", "_texMask", "_weights[0]", "_color"
+    "_tex", "_color_matrix", "_texelOffset", "_texCoordMin", "_texCoordMax", "_texMask", "_weights[0]", "_color",
+    "_func", "_p", "_v", "_stop_colors[0]", "_stop_positions[0]", "_num_stops", "_value", "_dimensions"
 };
 
 struct ProgramData {
@@ -130,7 +233,10 @@ static bool CreateFragmentProgram(ProgramData& data, ProgramId id, const char* c
     GLint status;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
     if (status == GL_FALSE) {
-        Rml::Log::Message(Rml::Log::LT_ERROR, "Shader compile failure");
+        char log_buf[512];
+        GLsizei log_len = 0;
+        glGetShaderInfoLog(shader, sizeof(log_buf), &log_len, log_buf);
+        Rml::Log::Message(Rml::Log::LT_ERROR, "Shader compile failure: %s", log_buf);
         glDeleteShader(shader);
         return false;
     }
@@ -141,7 +247,10 @@ static bool CreateFragmentProgram(ProgramData& data, ProgramId id, const char* c
     
     glGetProgramiv(prog, GL_LINK_STATUS, &status);
     if (status == GL_FALSE) {
-        Rml::Log::Message(Rml::Log::LT_ERROR, "Program link failure");
+        char log_buf[512];
+        GLsizei log_len = 0;
+        glGetProgramInfoLog(prog, sizeof(log_buf), &log_len, log_buf);
+        Rml::Log::Message(Rml::Log::LT_ERROR, "Program link failure: %s", log_buf);
         glDeleteProgram(prog);
         glDeleteShader(shader);
         return false;
@@ -150,22 +259,19 @@ static bool CreateFragmentProgram(ProgramData& data, ProgramId id, const char* c
     data.frag_shaders[(size_t)id] = shader;
     data.programs[(size_t)id] = prog;
     
-    GLint num_active_uniforms = 0;
-    glGetProgramiv(prog, GL_ACTIVE_UNIFORMS, &num_active_uniforms);
-    char name_buf[64];
-    for (int unif = 0; unif < num_active_uniforms; ++unif) {
-        GLint array_size = 0;
-        GLenum type = 0;
-        GLsizei actual_length = 0;
-        glGetActiveUniform(prog, unif, 64, &actual_length, &array_size, &type, name_buf);
-        GLint location = glGetUniformLocation(prog, name_buf);
-        
-        for (int i = 0; i < (int)UniformId::Count; i++) {
-            if (strcmp(name_buf, program_uniform_names[i]) == 0) {
-                data.uniforms[(size_t)id][i] = location;
-                break;
+    for (int i = 0; i < (int)UniformId::Count; i++) {
+        GLint loc = glGetUniformLocation(prog, program_uniform_names[i]);
+        if (loc == -1) {
+            const char* base_name = program_uniform_names[i];
+            size_t len = strlen(base_name);
+            if (len > 3 && strcmp(base_name + len - 3, "[0]") == 0) {
+                char clean_name[64];
+                strncpy(clean_name, base_name, len - 3);
+                clean_name[len - 3] = '\0';
+                loc = glGetUniformLocation(prog, clean_name);
             }
         }
+        data.uniforms[(size_t)id][i] = loc;
     }
     return true;
 }
@@ -176,6 +282,8 @@ static bool CreateShaders(ProgramData& data) {
     CreateFragmentProgram(data, ProgramId::Blur, shader_frag_blur);
     CreateFragmentProgram(data, ProgramId::DropShadow, shader_frag_drop_shadow);
     CreateFragmentProgram(data, ProgramId::BlendMask, shader_frag_blend_mask);
+    CreateFragmentProgram(data, ProgramId::Gradient, shader_frag_gradient);
+    CreateFragmentProgram(data, ProgramId::Creation, shader_frag_creation);
     
     glUseProgram(data.programs[(size_t)ProgramId::BlendMask]);
     if(data.uniforms[(size_t)ProgramId::BlendMask][(size_t)UniformId::TexMask] != -1)
@@ -376,6 +484,48 @@ RocketRender::~RocketRender() {
     if (program_data) Gfx::DestroyShaders(*program_data);
 }
 
+struct SteamAvatarEntry
+{
+    GLuint textureId = 0;
+    int width = 0;
+    int height = 0;
+    bool isDefault = true;
+};
+static std::map<uint64, SteamAvatarEntry> s_steamAvatarCache;
+
+static void UpdatePendingSteamAvatars()
+{
+    if (!ClientSteamContext().SteamFriends() || !ClientSteamContext().SteamUtils())
+        return;
+
+    for (std::map<uint64, SteamAvatarEntry>::iterator it = s_steamAvatarCache.begin(); it != s_steamAvatarCache.end(); ++it)
+    {
+        if (it->second.isDefault && it->first != 0)
+        {
+            CSteamID steamID(it->first);
+            int iAvatar = ClientSteamContext().SteamFriends()->GetMediumFriendAvatar(steamID);
+            if (iAvatar > 0)
+            {
+                uint32 wide = 0, tall = 0;
+                if (ClientSteamContext().SteamUtils()->GetImageSize(iAvatar, &wide, &tall) && wide > 0 && tall > 0)
+                {
+                    int bufSize = wide * tall * 4;
+                    unsigned char *rgbDest = new unsigned char[bufSize];
+                    if (ClientSteamContext().SteamUtils()->GetImageRGBA(iAvatar, rgbDest, bufSize))
+                    {
+                        glBindTexture(GL_TEXTURE_2D, it->second.textureId);
+                        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, wide, tall, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgbDest);
+                        it->second.width = wide;
+                        it->second.height = tall;
+                        it->second.isDefault = false;
+                    }
+                    delete[] rgbDest;
+                }
+            }
+        }
+    }
+}
+
 void RocketRender::PrepareGLState()
 {
     if (!program_data) {
@@ -387,6 +537,15 @@ void RocketRender::PrepareGLState()
     }
     render_layers->BeginFrame(m_width, m_height);
 
+    UpdatePendingSteamAvatars();
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, m_width, m_height, 0, -10000, 10000);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
     glDisable(GL_CULL_FACE);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -394,6 +553,11 @@ void RocketRender::PrepareGLState()
     for (int i=0; i<16; i++) glDisableVertexAttribArray(i);
 
     glDisable(GL_ALPHA_TEST);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_LIGHTING);
+    glShadeModel(GL_SMOOTH);
+    glUseProgram(0);
+    glActiveTexture(GL_TEXTURE0);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
 
     glEnable(GL_BLEND);
@@ -416,20 +580,14 @@ struct geometryObjs {
 void RocketRender::RenderGeometry(Rml::CompiledGeometryHandle handle, Rml::Vector2f translation, Rml::TextureHandle texture)
 {
     geometryObjs* geometry = (geometryObjs*)handle;
-    glPushMatrix();
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0, m_width, m_height, 0, -10000, 10000);
 
     glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+    glPushMatrix();
+    glTranslatef(translation.x, translation.y, 0);
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
-
-    glTranslatef(translation.x, translation.y, 0);
 
     glBindBuffer(GL_ARRAY_BUFFER, geometry->vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geometry->ibo);
@@ -506,8 +664,122 @@ struct TGAHeader {
 };
 #pragma pack()
 
+static Rml::TextureHandle LoadSteamAvatar(Rml::Vector2i& texture_dimensions, const Rml::String& source)
+{
+    uint64 steamID64 = 0;
+    if (source.size() > 14)
+    {
+        steamID64 = (uint64)strtoull(source.c_str() + 14, NULL, 10);
+    }
+
+    std::map<uint64, SteamAvatarEntry>::iterator it = s_steamAvatarCache.find(steamID64);
+    if (it != s_steamAvatarCache.end() && !it->second.isDefault && it->second.textureId != 0)
+    {
+        texture_dimensions.x = it->second.width;
+        texture_dimensions.y = it->second.height;
+        return (Rml::TextureHandle)it->second.textureId;
+    }
+
+    int iAvatar = 0;
+    if (steamID64 != 0 && ClientSteamContext().SteamFriends() && ClientSteamContext().SteamUtils())
+    {
+        CSteamID steamID(steamID64);
+        iAvatar = ClientSteamContext().SteamFriends()->GetMediumFriendAvatar(steamID);
+        if (iAvatar <= 0)
+        {
+            ClientSteamContext().SteamFriends()->RequestUserInformation(steamID, false);
+        }
+    }
+
+    if (iAvatar > 0)
+    {
+        uint32 wide = 0, tall = 0;
+        if (ClientSteamContext().SteamUtils()->GetImageSize(iAvatar, &wide, &tall) && wide > 0 && tall > 0)
+        {
+            int bufSize = wide * tall * 4;
+            unsigned char *rgbDest = new unsigned char[bufSize];
+            if (ClientSteamContext().SteamUtils()->GetImageRGBA(iAvatar, rgbDest, bufSize))
+            {
+                GLuint texId = (it != s_steamAvatarCache.end()) ? it->second.textureId : 0;
+                if (texId == 0)
+                {
+                    glGenTextures(1, &texId);
+                }
+                glBindTexture(GL_TEXTURE_2D, texId);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, wide, tall, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgbDest);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+                SteamAvatarEntry &entry = s_steamAvatarCache[steamID64];
+                entry.textureId = texId;
+                entry.width = wide;
+                entry.height = tall;
+                entry.isDefault = false;
+
+                texture_dimensions.x = wide;
+                texture_dimensions.y = tall;
+
+                delete[] rgbDest;
+                return (Rml::TextureHandle)texId;
+            }
+            delete[] rgbDest;
+        }
+    }
+
+    if (it != s_steamAvatarCache.end() && it->second.textureId != 0)
+    {
+        texture_dimensions.x = it->second.width;
+        texture_dimensions.y = it->second.height;
+        return (Rml::TextureHandle)it->second.textureId;
+    }
+
+    GLuint texId = 0;
+    glGenTextures(1, &texId);
+    const int defSize = 32;
+    unsigned char defaultRgba[defSize * defSize * 4];
+    for (int y = 0; y < defSize; y++)
+    {
+        for (int x = 0; x < defSize; x++)
+        {
+            int idx = (y * defSize + x) * 4;
+            bool isHead = ((x - 16) * (x - 16) + (y - 11) * (y - 11) <= 25);
+            bool isBody = (y >= 19 && y <= 30 && (x >= 7 && x <= 25) && ((x - 16) * (x - 16) + (y - 25) * (y - 25) <= 100));
+            unsigned char bg = 38;
+            unsigned char fg = 120;
+            unsigned char c = (isHead || isBody) ? fg : bg;
+            defaultRgba[idx + 0] = c;
+            defaultRgba[idx + 1] = c;
+            defaultRgba[idx + 2] = c;
+            defaultRgba[idx + 3] = 255;
+        }
+    }
+    glBindTexture(GL_TEXTURE_2D, texId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, defSize, defSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, defaultRgba);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    SteamAvatarEntry &entry = s_steamAvatarCache[steamID64];
+    entry.textureId = texId;
+    entry.width = defSize;
+    entry.height = defSize;
+    entry.isDefault = true;
+
+    texture_dimensions.x = defSize;
+    texture_dimensions.y = defSize;
+    return (Rml::TextureHandle)texId;
+}
+
 Rml::TextureHandle RocketRender::LoadTexture(Rml::Vector2i& texture_dimensions, const Rml::String& source)
 {
+    if (source.rfind("steamavatar://", 0) == 0)
+    {
+        return LoadSteamAvatar(texture_dimensions, source);
+    }
+
     Rml::FileInterface* file_interface = Rml::GetFileInterface();
     Rml::FileHandle file_handle = file_interface->Open(source);
     if (!file_handle) return false;
@@ -575,7 +847,18 @@ Rml::TextureHandle RocketRender::GenerateTexture(Rml::Span<const Rml::byte> sour
     return (Rml::TextureHandle)texture_id;
 }
 
-void RocketRender::ReleaseTexture(Rml::TextureHandle texture) { glDeleteTextures(1, (GLuint*) &texture); }
+void RocketRender::ReleaseTexture(Rml::TextureHandle texture)
+{
+    for (std::map<uint64, SteamAvatarEntry>::iterator it = s_steamAvatarCache.begin(); it != s_steamAvatarCache.end(); ++it)
+    {
+        if (it->second.textureId == (GLuint)texture)
+        {
+            s_steamAvatarCache.erase(it);
+            break;
+        }
+    }
+    glDeleteTextures(1, (GLuint*) &texture);
+}
 void RocketRender::ReleaseGeometry(Rml::CompiledGeometryHandle handle) {
     geometryObjs* geometry = (geometryObjs*)handle;
     glDeleteBuffers(1, &geometry->vbo);
@@ -586,6 +869,7 @@ void RocketRender::ReleaseGeometry(Rml::CompiledGeometryHandle handle) {
 void RocketRender::SetTransform(const Rml::Matrix4f *trans)
 {
     m_transformEnabled = (bool)trans;
+    glMatrixMode(GL_MODELVIEW);
     if (trans) {
         transform = *trans;
         if (std::is_same<Rml::Matrix4f, Rml::ColumnMajorMatrix4f>::value)
@@ -738,13 +1022,225 @@ void RocketRender::ReleaseFilter(Rml::CompiledFilterHandle filter) {
     delete reinterpret_cast<CompiledFilter*>(filter);
 }
 
-Rml::CompiledShaderHandle RocketRender::CompileShader(const Rml::String& name, const Rml::Dictionary& parameters) {
-    // Custom decorators unsupported natively in this backport yet
+enum class CompiledShaderType {
+    Invalid = 0,
+    Gradient,
+    Creation
+};
+
+enum class ShaderGradientFunction {
+    Linear = 0,
+    Radial = 1,
+    Conic = 2,
+    RepeatingLinear = 3,
+    RepeatingRadial = 4,
+    RepeatingConic = 5
+};
+
+struct CompiledShader {
+    CompiledShaderType type;
+    ShaderGradientFunction gradient_function;
+    Rml::Vector2f p;
+    Rml::Vector2f v;
+    float stop_positions[16];
+    float stop_colors[16 * 4];
+    int num_stops;
+    Rml::Vector2f dimensions;
+};
+
+static void ApplyColorStopList(CompiledShader& shader, const Rml::Dictionary& shader_parameters)
+{
+    Rml::Dictionary::const_iterator it = shader_parameters.find("color_stop_list");
+    if (it == shader_parameters.end() || it->second.GetType() != Rml::Variant::COLORSTOPLIST)
+        return;
+
+    const Rml::ColorStopList& color_stop_list = it->second.GetReference<Rml::ColorStopList>();
+    const int num_stops = (color_stop_list.size() < 16) ? (int)color_stop_list.size() : 16;
+    shader.num_stops = num_stops;
+
+    for (int i = 0; i < num_stops; i++)
+    {
+        const Rml::ColorStop& stop = color_stop_list[i];
+        shader.stop_positions[i] = stop.position.number;
+        shader.stop_colors[i * 4 + 0] = stop.color.red / 255.0f;
+        shader.stop_colors[i * 4 + 1] = stop.color.green / 255.0f;
+        shader.stop_colors[i * 4 + 2] = stop.color.blue / 255.0f;
+        shader.stop_colors[i * 4 + 3] = stop.color.alpha / 255.0f;
+    }
+}
+
+Rml::CompiledShaderHandle RocketRender::CompileShader(const Rml::String& name, const Rml::Dictionary& parameters)
+{
+    CompiledShader shader;
+    memset(&shader, 0, sizeof(shader));
+
+    if (name == "linear-gradient" || name == "repeating-linear-gradient")
+    {
+        shader.type = CompiledShaderType::Gradient;
+        const bool repeating = Rml::Get(parameters, "repeating", false) || (name == "repeating-linear-gradient");
+        shader.gradient_function = (repeating ? ShaderGradientFunction::RepeatingLinear : ShaderGradientFunction::Linear);
+        shader.p = Rml::Get(parameters, "p0", Rml::Vector2f(0.f));
+        shader.v = Rml::Get(parameters, "p1", Rml::Vector2f(0.f)) - shader.p;
+        ApplyColorStopList(shader, parameters);
+    }
+    else if (name == "radial-gradient" || name == "repeating-radial-gradient")
+    {
+        shader.type = CompiledShaderType::Gradient;
+        const bool repeating = Rml::Get(parameters, "repeating", false) || (name == "repeating-radial-gradient");
+        shader.gradient_function = (repeating ? ShaderGradientFunction::RepeatingRadial : ShaderGradientFunction::Radial);
+        shader.p = Rml::Get(parameters, "center", Rml::Vector2f(0.f));
+        Rml::Vector2f radius = Rml::Get(parameters, "radius", Rml::Vector2f(1.f));
+        shader.v = Rml::Vector2f(1.f / (radius.x != 0.f ? radius.x : 1.f), 1.f / (radius.y != 0.f ? radius.y : 1.f));
+        ApplyColorStopList(shader, parameters);
+    }
+    else if (name == "conic-gradient" || name == "repeating-conic-gradient")
+    {
+        shader.type = CompiledShaderType::Gradient;
+        const bool repeating = Rml::Get(parameters, "repeating", false) || (name == "repeating-conic-gradient");
+        shader.gradient_function = (repeating ? ShaderGradientFunction::RepeatingConic : ShaderGradientFunction::Conic);
+        shader.p = Rml::Get(parameters, "center", Rml::Vector2f(0.f));
+        const float angle = Rml::Get(parameters, "angle", 0.f);
+        shader.v = Rml::Vector2f(cosf(angle), sinf(angle));
+        ApplyColorStopList(shader, parameters);
+    }
+    else if (name == "shader")
+    {
+        const Rml::String value = Rml::Get(parameters, "value", Rml::String());
+        if (value == "creation")
+        {
+            shader.type = CompiledShaderType::Creation;
+            shader.dimensions = Rml::Get(parameters, "dimensions", Rml::Vector2f(0.f));
+        }
+    }
+
+    if (shader.type != CompiledShaderType::Invalid)
+    {
+        CompiledShader* pShader = new CompiledShader(shader);
+        return reinterpret_cast<Rml::CompiledShaderHandle>(pShader);
+    }
+
+    Rml::Log::Message(Rml::Log::LT_WARNING, "Unsupported shader type '%s'.", name.c_str());
     return 0;
 }
-void RocketRender::RenderShader(Rml::CompiledShaderHandle shader_handle, Rml::CompiledGeometryHandle geometry_handle, Rml::Vector2f translation, Rml::TextureHandle texture) {
+
+void RocketRender::ReleaseShader(Rml::CompiledShaderHandle effect_handle)
+{
+    delete reinterpret_cast<CompiledShader*>(effect_handle);
 }
-void RocketRender::ReleaseShader(Rml::CompiledShaderHandle effect_handle) {
+
+void RocketRender::RenderShader(Rml::CompiledShaderHandle shader_handle, Rml::CompiledGeometryHandle geometry_handle, Rml::Vector2f translation, Rml::TextureHandle texture)
+{
+    if (!shader_handle || !geometry_handle)
+        return;
+
+    if (!program_data) {
+        program_data = Rml::MakeUnique<Gfx::ProgramData>();
+        Gfx::CreateShaders(*program_data);
+    }
+
+    const CompiledShader& shader = *reinterpret_cast<const CompiledShader*>(shader_handle);
+    geometryObjs* geometry = (geometryObjs*)geometry_handle;
+
+    if (shader.type == CompiledShaderType::Gradient)
+    {
+        GLuint prog = program_data->programs[(size_t)Gfx::ProgramId::Gradient];
+        if (!prog)
+            return;
+
+        glUseProgram(prog);
+
+        GLint loc_func = program_data->uniforms[(size_t)Gfx::ProgramId::Gradient][(size_t)Gfx::UniformId::Func];
+        GLint loc_p = program_data->uniforms[(size_t)Gfx::ProgramId::Gradient][(size_t)Gfx::UniformId::P];
+        GLint loc_v = program_data->uniforms[(size_t)Gfx::ProgramId::Gradient][(size_t)Gfx::UniformId::V];
+        GLint loc_num_stops = program_data->uniforms[(size_t)Gfx::ProgramId::Gradient][(size_t)Gfx::UniformId::NumStops];
+        GLint loc_stop_positions = program_data->uniforms[(size_t)Gfx::ProgramId::Gradient][(size_t)Gfx::UniformId::StopPositions];
+        GLint loc_stop_colors = program_data->uniforms[(size_t)Gfx::ProgramId::Gradient][(size_t)Gfx::UniformId::StopColors];
+
+        if (loc_func != -1) glUniform1i(loc_func, (int)shader.gradient_function);
+        if (loc_p != -1) glUniform2f(loc_p, shader.p.x, shader.p.y);
+        if (loc_v != -1) glUniform2f(loc_v, shader.v.x, shader.v.y);
+        if (loc_num_stops != -1) glUniform1i(loc_num_stops, shader.num_stops);
+        if (loc_stop_positions != -1) glUniform1fv(loc_stop_positions, shader.num_stops, shader.stop_positions);
+        if (loc_stop_colors != -1) glUniform4fv(loc_stop_colors, shader.num_stops, shader.stop_colors);
+
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glTranslatef(translation.x, translation.y, 0);
+
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glEnableClientState(GL_COLOR_ARRAY);
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        glDisableClientState(GL_NORMAL_ARRAY);
+
+        glBindBuffer(GL_ARRAY_BUFFER, geometry->vbo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geometry->ibo);
+
+        glVertexPointer(2, GL_FLOAT, sizeof(Rml::Vertex), (const GLvoid*)offsetof(Rml::Vertex, position));
+        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Rml::Vertex), (const GLvoid*)offsetof(Rml::Vertex, colour));
+        glTexCoordPointer(2, GL_FLOAT, sizeof(Rml::Vertex), (const GLvoid*)offsetof(Rml::Vertex, tex_coord));
+
+        glDisable(GL_TEXTURE_2D);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+        glDrawElements(GL_TRIANGLES, geometry->num_indices, GL_UNSIGNED_INT, (const GLvoid*)0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+        glPopMatrix();
+
+        glUseProgram(0);
+    }
+    else if (shader.type == CompiledShaderType::Creation)
+    {
+        GLuint prog = program_data->programs[(size_t)Gfx::ProgramId::Creation];
+        if (!prog)
+            return;
+
+        glUseProgram(prog);
+
+        GLint loc_value = program_data->uniforms[(size_t)Gfx::ProgramId::Creation][(size_t)Gfx::UniformId::Value];
+        GLint loc_dimensions = program_data->uniforms[(size_t)Gfx::ProgramId::Creation][(size_t)Gfx::UniformId::Dimensions];
+
+        if (loc_value != -1) glUniform1f(loc_value, (float)Plat_FloatTime());
+        if (loc_dimensions != -1) glUniform2f(loc_dimensions, shader.dimensions.x, shader.dimensions.y);
+
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glTranslatef(translation.x, translation.y, 0);
+
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glEnableClientState(GL_COLOR_ARRAY);
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        glDisableClientState(GL_NORMAL_ARRAY);
+
+        glBindBuffer(GL_ARRAY_BUFFER, geometry->vbo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geometry->ibo);
+
+        glVertexPointer(2, GL_FLOAT, sizeof(Rml::Vertex), (const GLvoid*)offsetof(Rml::Vertex, position));
+        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Rml::Vertex), (const GLvoid*)offsetof(Rml::Vertex, colour));
+        glTexCoordPointer(2, GL_FLOAT, sizeof(Rml::Vertex), (const GLvoid*)offsetof(Rml::Vertex, tex_coord));
+
+        glDisable(GL_TEXTURE_2D);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+        glDrawElements(GL_TRIANGLES, geometry->num_indices, GL_UNSIGNED_INT, (const GLvoid*)0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+        glPopMatrix();
+
+        glUseProgram(0);
+    }
 }
 
 void RocketRender::BlitLayerToPostprocessPrimary(Rml::LayerHandle layer_handle) {

@@ -2,6 +2,7 @@
 
 #include "rocketuiimpl.h"
 
+#include "tier0/platform.h"
 #include "tier2/tier2.h"
 #include "vgui/ISystem.h"
 
@@ -9,7 +10,7 @@ RocketSystem RocketSystem::m_Instance;
 
 double RocketSystem::GetElapsedTime()
 {
-    return (double)RocketUIImpl::m_Instance.GetTime();
+    return Plat_FloatTime();
 }
 
 bool RocketSystem::LogMessage(Rml::Log::Type type, const Rml::String &message)

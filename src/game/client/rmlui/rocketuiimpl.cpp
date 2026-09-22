@@ -106,7 +106,7 @@ bool RocketUIImpl::LoadFont( const char *filepath, const char* fontName, const c
 {
     unsigned char *fontBuffer = NULL;
     CUtlBuffer font;
-    unsigned int fontLen;
+    int fontLen;
 
     if( !ReadFile( filepath, path, font ) )
     {
@@ -114,24 +114,26 @@ bool RocketUIImpl::LoadFont( const char *filepath, const char* fontName, const c
         return false;
     }
 
-    fontLen = font.Size() - 1;
+    fontLen = font.TellPut();
 
-    if( fontLen >= ( 8 * 1024 * 1024 ) )
+    if( fontLen <= 0 || fontLen >= ( 8 * 1024 * 1024 ) )
     {
-        fprintf(stderr, "[RocketUI]Font (%s) is over 8MB!(%d). Not Loading.\n", filepath, fontLen );
+        fprintf(stderr, "[RocketUI]Font (%s) has invalid size (%d). Not Loading.\n", filepath, fontLen );
         return false;
     }
 
-    fprintf(stderr, "[RocketUI]Font size (%d)\n", fontLen );
+    fprintf(stderr, "[RocketUI]Font %s size (%d)\n", filepath, fontLen );
 
-    fontBuffer = new unsigned char[ fontLen + 1 ];
+    fontBuffer = new unsigned char[ fontLen ];
     // Add to list of alloc'd fonts. Freetype will use this memory until we Shutdown.
     m_fontAllocs.AddToTail( fontBuffer );
 
-    font.Get( fontBuffer, fontLen );
+    memcpy( fontBuffer, font.Base(), fontLen );
     Rml::Span<const Rml::byte> fontSpan(fontBuffer, fontLen);
 
-    if( !Rml::LoadFontFace( fontSpan, fontName, Rml::Style::FontStyle::Normal, Rml::Style::FontWeight::Normal, false ) )
+    Rml::Style::FontStyle fontStyle = (V_stristr(filepath, "italic") != NULL) ? Rml::Style::FontStyle::Italic : Rml::Style::FontStyle::Normal;
+
+    if( !Rml::LoadFontFace( fontSpan, fontName, fontStyle, Rml::Style::FontWeight::Auto, false ) )
     {
         fprintf(stderr,  "[RocketUI]Failed to Initialize %s font\n", fontName );
         return false;
@@ -144,12 +146,18 @@ bool RocketUIImpl::LoadFont( const char *filepath, const char* fontName, const c
 bool RocketUIImpl::LoadFonts()
 {
     bool fontsOK = true;
-    fontsOK &= LoadFont( "rocketui/fonts/Lato-Black.ttf", "Lato", "GAME" );
     CUtlVector<FontInfo> fontsVec;
     GetFontsFromConfig("rocketui/fonts.vdf", &fontsVec);
-    for (int i = 0; i < fontsVec.Count(); i++ )
+    if (fontsVec.Count() == 0)
     {
-        fontsOK &= LoadFont( fontsVec[i].path, fontsVec[i].name, "GAME" );
+        fontsOK &= LoadFont( "rocketui/fonts/Lato-Black.ttf", "Lato", "GAME" );
+    }
+    else
+    {
+        for (int i = 0; i < fontsVec.Count(); i++ )
+        {
+            fontsOK &= LoadFont( fontsVec[i].path, fontsVec[i].name, "GAME" );
+        }
     }
     return fontsOK;
 }
@@ -274,8 +282,10 @@ void RocketUIImpl::RunFrame(float time)
     // This is important. Update the current context 1x per frame.
     // This basically needs to be called whenever elements are added/changed/removed
     // I am calling it 1x per frame here instead of all over the place for simplicity and no overlap.
-    if( m_ctxCurrent )
-        m_ctxCurrent->Update();
+    if( m_ctxHud )
+        m_ctxHud->Update();
+    if( m_ctxMenu )
+        m_ctxMenu->Update();
 
 	// DLLHACKHACKHACK: if we can't set DPI at ::Init(),
 	// lets just observe convar there, the most hacky way.
@@ -465,8 +475,8 @@ void RocketUIImpl::RenderHUDFrame()
 
     m_ctxCurrent = m_ctxHud;
 
-    RocketRender::m_Instance.PrepareGLState();
     SaveGLState();
+    RocketRender::m_Instance.PrepareGLState();
 
     // m_ctxHud->Update();
     //m_ctxMenu->Update();
