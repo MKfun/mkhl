@@ -33,6 +33,7 @@ public:
     static struct InfoBarData
     {
         int hp;
+        float damage_hp;
         int armor;
         bool hasHelmet;
         int ammo;
@@ -48,6 +49,12 @@ public:
 		int numKills;
 	} infoBarData;
 	void UpdateHealth(int new_hp);
+	void UpdateDamageAnimation(float dt, float curtime);
+
+private:
+	float m_flDamageHp;
+	float m_flDamageHoldUntil;
+	float m_flLastTime;
 };
 
 #endif //KISAKSTRIKE_RKHUD_INFOBAR_H
