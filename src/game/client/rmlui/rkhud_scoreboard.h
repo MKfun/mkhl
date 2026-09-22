@@ -29,6 +29,7 @@ public:
 	Rml::ElementDocument *m_pInstance = nullptr;
 	Rml::DataModelHandle m_dataModel;
 	bool m_bVisible = false;
+	bool m_bWasIntermission = false;
 };
 
 #endif // RKHUD_SCOREBOARD_H

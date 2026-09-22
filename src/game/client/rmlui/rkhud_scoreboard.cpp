@@ -33,6 +33,7 @@ struct ScoreboardData
 	Rml::String mapName;
 	int numPlayers;
 	int numSpecs;
+	bool isIntermission;
 	Rml::Vector<PlayerEntry> players;
 } scoreboardData;
 
@@ -117,6 +118,7 @@ void LoadRkScoreboard()
 	constructor.Bind("map_name", &scoreboardData.mapName);
 	constructor.Bind("num_players", &scoreboardData.numPlayers);
 	constructor.Bind("num_specs", &scoreboardData.numSpecs);
+	constructor.Bind("is_intermission", &scoreboardData.isIntermission);
 
 	pScoreboard.m_dataModel = constructor.GetModelHandle();
 
@@ -151,6 +153,8 @@ void RkHudScoreboard::LevelInit()
 void RkHudScoreboard::LevelShutdown()
 {
 	scoreboardData.players.clear();
+	scoreboardData.isIntermission = false;
+	m_bWasIntermission = false;
 	UnloadRkScoreboard();
 }
 
@@ -171,6 +175,7 @@ void RkHudScoreboard::ShowPanel(bool bShow, bool force)
 				sb->RemoveProperty("animation");
 				sb->SetProperty("animation", "scoreboard-appear 0.18s cubic-out");
 			}
+
 		}
 		m_bVisible = true;
 		Update();
@@ -184,8 +189,18 @@ void RkHudScoreboard::ShowPanel(bool bShow, bool force)
 			{
 				sb->RemoveProperty("animation");
 			}
+			if (Rml::Element *curtain = m_pInstance->GetElementById("intermission-curtain"))
+			{
+				curtain->SetClass("appear", false);
+			}
 		}
 		m_bVisible = false;
+		m_bWasIntermission = false;
+		scoreboardData.isIntermission = false;
+		if (m_dataModel)
+		{
+			m_dataModel.DirtyVariable("is_intermission");
+		}
 	}
 }
 
@@ -271,9 +286,15 @@ void RkHudScoreboard::Update()
 
 	std::sort(scoreboardData.players.begin(), scoreboardData.players.end(), sortFunc);
 
+	bool bCurrentIntermission = (gHUD.m_iIntermission != 0);
+	scoreboardData.isIntermission = bCurrentIntermission;
+
+	m_bWasIntermission = bCurrentIntermission;
+
 	m_dataModel.DirtyVariable("players");
 	m_dataModel.DirtyVariable("server_name");
 	m_dataModel.DirtyVariable("map_name");
 	m_dataModel.DirtyVariable("num_players");
 	m_dataModel.DirtyVariable("num_specs");
+	m_dataModel.DirtyVariable("is_intermission");
 }
