@@ -2,7 +2,6 @@ local ffi = require("ffi")
 
 ffi.cdef[[
 
-    cl_enginefunc_t* GetEngineAPI(void);
     typedef int qboolean;
     typedef unsigned char byte;
     typedef int int32;
@@ -48,8 +47,14 @@ ffi.cdef[[
     struct client_sprite_t;
     typedef struct client_sprite_t client_sprite_t;
 
-    struct SCREENINFO;
-    typedef struct SCREENINFO SCREENINFO;
+    typedef struct SCREENINFO {
+        int iSize;
+        int iWidth;
+        int iHeight;
+        int iFlags;
+        int iCharHeight;
+        short charWidths[256];
+    } SCREENINFO;
 
     struct cvar_t;
     typedef struct cvar_t cvar_t;
@@ -57,20 +62,59 @@ ffi.cdef[[
     struct cmd_function_t;
     typedef struct cmd_function_t cmd_function_t;
 
-    struct hud_player_info_t;
-    typedef struct hud_player_info_t hud_player_info_t;
+    typedef struct hud_player_info_t {
+        char *name;
+        short ping;
+        byte thisplayer;
+        byte spectator;
+        byte packetloss;
+        char *model;
+        short topcolor;
+        short bottomcolor;
+    } hud_player_info_t;
 
     struct client_textmessage_t;
     typedef struct client_textmessage_t client_textmessage_t;
 
     struct con_nprint_s;
-    struct pmtrace_s;
+
+    typedef struct pmplane_s {
+        float normal[3];
+        float dist;
+    } pmplane_t;
+
+    typedef struct pmtrace_s {
+        qboolean allsolid;
+        qboolean startsolid;
+        qboolean inopen;
+        qboolean inwater;
+        float fraction;
+        float endpos[3];
+        pmplane_t plane;
+        int ent;
+        float deltavelocity[3];
+        int hitgroup;
+    } pmtrace_t;
+
     struct model_s;
 
     struct edict_t;
     typedef struct edict_t edict_t;
 
-    struct tagPOINT;
+    typedef struct tagPOINT {
+        int x;
+        int y;
+    } POINT;
+
+    typedef struct screenfade_s {
+        float fadeSpeed;
+        float fadeEnd;
+        float fadeTotalEnd;
+        float fadeReset;
+        byte fader, fadeg, fadeb, fadealpha;
+        int fadeFlags;
+    } screenfade_t;
+
     struct sequenceEntry_s;
     typedef struct sequenceEntry_s sequenceEntry_s;
 
@@ -287,17 +331,35 @@ ffi.cdef[[
         void (*pfnVguiWrap2_GetMouseDelta)(int *x, int *y);
         int (*pfnFilteredClientCmd)(const char *szCmdString);
     } cl_enginefunc_t;
+
+    cl_enginefunc_t* GetEngineAPI(void);
+
 ]]
 
-return {
+local current_engine = (function()
+    local ok, api = pcall(function() return ffi.C.GetEngineAPI() end)
+    return ok and api or nil
+end)()
+
+local M
+M = {
     cldll_func_t = ffi.typeof("cldll_func_t"),
     cl_enginefunc_t = ffi.typeof("cl_enginefunc_t"),
     cmdalias_t = ffi.typeof("cmdalias_t"),
-    
+    engfuncs = current_engine,
     bind_engine = function(ptr)
         return ffi.cast("cl_enginefunc_t*", ptr)
     end,
     bind_client = function(ptr)
         return ffi.cast("cldll_func_t*", ptr)
+    end,
+    get_engine = function()
+        return M.engfuncs
+    end,
+    set_engine = function(ptr)
+        M.engfuncs = ffi.cast("cl_enginefunc_t*", ptr)
+        return M.engfuncs
     end
 }
+
+return M
