@@ -48,9 +48,14 @@
 #include "crashhandler.h"
 #endif
 #include <signal.h>
+
+#include "luamanager.h"
+
 CHud gHUD;
 #include "rmlui/rocketuiimpl.h"
 #include "rmlui/rkhud_infopanel.h"
+
+extern lua_State *gLuaState;
 
 void InitInput(void);
 void ShutdownInput();
@@ -276,6 +281,8 @@ int CL_DLLEXPORT Initialize(cl_enginefunc_t *pEnginefuncs, int iVersion)
 	// So I just disabled it completely since it isn't used in vanilla HL.
 	//
 	// CL_LoadParticleMan();
+
+	CLuaManager::initLua(gLuaState);
 	return 1;
 }
 
@@ -450,7 +457,7 @@ void CL_DLLEXPORT HUD_ChatInputPosition(int *x, int *y)
 void CL_DLLEXPORT HUD_Shutdown(void)
 {
 	//	RecClShutdown();
-
+	CLuaManager::shutdownLua(gLuaState);
 	console::HudShutdown();
 	gHUD.Shutdown();
 	ShutdownInput();

@@ -4,6 +4,10 @@ add_sources(
 	bhlcfg.h
 	camera.h
 
+
+	luamanager.cpp
+	luamanager.h
+
 	cdll_int.cpp
 	cl_dll.h
 	cl_util.cpp

@@ -558,6 +558,7 @@ target_link_libraries( client
 	pcre
 	semver
 	nlohmann_json
+	LuaJIT::LuaJIT
 	${CLIENT_PLAT_LIBS}
 	Threads::Threads
 )
