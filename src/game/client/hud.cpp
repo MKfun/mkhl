@@ -609,6 +609,7 @@ void CHud::Shutdown()
 	{
 		i->LevelShutdown();
 	}
+	RocketUIImpl::m_Instance.Shutdown();
 }
 
 void CHud::ApplyViewportSchemeSettings(vgui2::IScheme *pScheme)

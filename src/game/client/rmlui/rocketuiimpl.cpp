@@ -1,6 +1,7 @@
 #include "rocketuiimpl.h"
 #include "FileSystem.h"
 #include "KeyValues.h"
+#include "RmlUi/Lua/Lua.h"
 #include "sdl_rt.h"
 #include "utlbuffer.h"
 #ifdef Debugger
@@ -19,6 +20,7 @@
 #include "keydefs.h"
 
 #include "rocketkeys.h"
+extern lua_State *gLuaState;
 
 #define GL_ALR_INCLUDED
 RocketUIImpl RocketUIImpl::m_Instance;
@@ -237,26 +239,27 @@ int RocketUIImpl::Init( void )
         Warning( "RocketUI: Initialise() failed!\n");
         return 0;
     }
-    if( !LoadFonts() )
-    {
-        Warning( "RocketUI: Failed to load fonts.\n" );
-        return 0;
-    }
+	Rml::Lua::Initialise(gLuaState);
+	if (!LoadFonts())
+	{
+		Warning("RocketUI: Failed to load fonts.\n");
+		return 0;
+	}
 
-    m_ctxMenu = Rml::CreateContext("menu", Rml::Vector2i(width, height));
-    m_ctxHud = Rml::CreateContext("hud", Rml::Vector2i(width, height));
+	m_ctxMenu = Rml::CreateContext("menu", Rml::Vector2i(width, height));
+	m_ctxHud = Rml::CreateContext("hud", Rml::Vector2i(width, height));
 
-    if ( !m_ctxMenu || !m_ctxHud )
-    {
-        Warning( "RocketUI: Failed to create Hud/Menu context\n" );
-        Rml::Shutdown();
-        return 0;
-    }
+	if (!m_ctxMenu || !m_ctxHud)
+	{
+		Warning("RocketUI: Failed to create Hud/Menu context\n");
+		Rml::Shutdown();
+		return 0;
+	}
 
-    m_ctxMenu->SetDensityIndependentPixelRatio(1.0f );
-    m_ctxHud->SetDensityIndependentPixelRatio(1.0f );
+	m_ctxMenu->SetDensityIndependentPixelRatio(1.0f);
+	m_ctxHud->SetDensityIndependentPixelRatio(1.0f);
 
-    return 1;
+	return 1;
 }
 
 void RocketUIImpl::Shutdown()
