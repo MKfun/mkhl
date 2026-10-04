@@ -1,5 +1,6 @@
 #include "rocketrenderer.h"
 #include <algorithm>
+#include <string>
 #include <string.h>
 #include <math.h>
 #include <map>
@@ -257,10 +258,8 @@ static bool CreateFragmentProgram(ProgramData& data, ProgramId id, const char* c
             const char* base_name = program_uniform_names[i];
             size_t len = strlen(base_name);
             if (len > 3 && strcmp(base_name + len - 3, "[0]") == 0) {
-                char clean_name[64];
-                strncpy(clean_name, base_name, len - 3);
-                clean_name[len - 3] = '\0';
-                loc = glGetUniformLocation(prog, clean_name);
+                std::string clean_name(base_name, len - 3);
+                loc = glGetUniformLocation(prog, clean_name.c_str());
             }
         }
         data.uniforms[(size_t)id][i] = loc;
