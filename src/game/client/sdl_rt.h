@@ -20,7 +20,17 @@ public:
 	decltype(SDL_GameControllerGetButton) *GameControllerGetButton = nullptr;
 	decltype(SDL_JoystickUpdate) *JoystickUpdate = nullptr;
     decltype(SDL_GetMouseState) *GetMouseState = nullptr;
+	decltype(SDL_GetModState) *GetModState = nullptr;
 	decltype(SDL_GL_GetProcAddress) *GL_GetProcAddress = nullptr;
+	decltype(SDL_AddEventWatch) *AddEventWatch = nullptr;
+	decltype(SDL_DelEventWatch) *DelEventWatch = nullptr;
+	decltype(SDL_StartTextInput) *StartTextInput = nullptr;
+	decltype(SDL_StopTextInput) *StopTextInput = nullptr;
+	decltype(SDL_IsTextInputActive) *IsTextInputActive = nullptr;
+	decltype(SDL_SetClipboardText) *SetClipboardText = nullptr;
+	decltype(SDL_GetClipboardText) *GetClipboardText = nullptr;
+	decltype(SDL_HasClipboardText) *HasClipboardText = nullptr;
+	decltype(SDL_free) *Free = nullptr;
 
 	/**
 	 * Custom ShowSimpleMessageBox, works on Windows without SDL.

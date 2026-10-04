@@ -16,7 +16,7 @@ documentReloadFuncs docReloadFuncs;
 
 RkHudInfoBar RkHudInfoBar::m_Instance = RkHudInfoBar("hud_infopanel");
 RkHudInfoBar::InfoBarData RkHudInfoBar::infoBarData = {
-	100, 100.0f, 0, false, 0, 0,
+	100, 0, false, 0, 0, 0,
 	"0", "0", "0", "0", false, 255, 255, 255, 0
 };
 
@@ -76,7 +76,6 @@ void LoadRkInfoBar()
 	}
 
 	constructor.Bind("hp", &RkHudInfoBar::infoBarData.hp);
-	constructor.Bind("damage_hp", &RkHudInfoBar::infoBarData.damage_hp);
 	constructor.Bind("armor", &RkHudInfoBar::infoBarData.armor);
 	constructor.Bind("ammo", &RkHudInfoBar::infoBarData.ammo);
 	constructor.Bind("ammo_reserve", &RkHudInfoBar::infoBarData.ammoReserve);
@@ -90,6 +89,7 @@ void LoadRkInfoBar()
 	constructor.Bind("col_b", &RkHudInfoBar::infoBarData.col_b);
 	constructor.Bind("has_ammo_reserve", &RkHudInfoBar::infoBarData.hasSecondary);
 	constructor.Bind("num_kills", &RkHudInfoBar::infoBarData.numKills);
+	constructor.Bind("ammo_secondary", &RkHudInfoBar::infoBarData.ammoSecondary);
 
 	pInfoBar.m_dataModel = constructor.GetModelHandle();
 
@@ -107,8 +107,6 @@ void LoadRkInfoBar()
 
 RkHudInfoBar::RkHudInfoBar(const char *value)
 	: m_bVisible(false)
-	, m_flDamageHp(100.0f)
-	, m_flDamageHoldUntil(0.0f)
 	, m_flLastTime(0.0f)
 {
     m_Instance = *this;
@@ -131,9 +129,6 @@ void RkHudInfoBar::DispatchKillAnimation()
 }
 void RkHudInfoBar::LevelInit()
 {
-    m_flDamageHp = (infoBarData.hp > 0) ? (float)infoBarData.hp : 100.0f;
-    infoBarData.damage_hp = m_flDamageHp;
-    m_flDamageHoldUntil = 0.0f;
     m_flLastTime = 0.0f;
 
     void LoadRkInfoBar();
@@ -142,9 +137,6 @@ void RkHudInfoBar::LevelInit()
 
 void RkHudInfoBar::LevelShutdown()
 {
-    m_flDamageHp = 100.0f;
-    infoBarData.damage_hp = 100.0f;
-    m_flDamageHoldUntil = 0.0f;
     m_flLastTime = 0.0f;
 
     void UnloadRkInfoBar();
@@ -186,10 +178,13 @@ void RkHudInfoBar::ShowPanel(bool bShow, bool force)
         if (dt < 0.0f) dt = 0.0f;
         m_flLastTime = curtime;
 
-        UpdateDamageAnimation(dt, curtime);
+        Rml::Dictionary params;
+        params["dt"] = dt;
+        params["curtime"] = curtime;
+        params["hp"] = infoBarData.hp;
+        m_pInstance->DispatchEvent("hud_update", params);
 
         m_dataModel.DirtyVariable( "hp" );
-        m_dataModel.DirtyVariable( "damage_hp" );
         m_dataModel.DirtyVariable( "ammo" );
         m_dataModel.DirtyVariable( "ammo_reserve" );
         m_dataModel.DirtyVariable( "fire_mode_string" );
@@ -203,6 +198,7 @@ void RkHudInfoBar::ShowPanel(bool bShow, bool force)
 		m_dataModel.DirtyVariable("col_g");
 		m_dataModel.DirtyVariable("col_b");
 		m_dataModel.DirtyVariable("num_kills");
+		m_dataModel.DirtyVariable("ammo_secondary");
 	}
 	else
 	{
@@ -227,77 +223,29 @@ bool RkHudInfoBar::ShouldDraw()
 
 void RkHudInfoBar::UpdateHealth(int new_hp)
 {
-    float curtime = gHUD.m_flTime;
-    if (curtime <= 0.0f)
+    if (infoBarData.hp != new_hp)
     {
-        curtime = (float)RocketSystem::m_Instance.GetElapsedTime();
-    }
+        int old_hp = infoBarData.hp;
+        infoBarData.hp = new_hp;
 
-    if (new_hp < infoBarData.hp)
-    {
-        if (m_flDamageHp < (float)infoBarData.hp)
-        {
-            m_flDamageHp = (float)infoBarData.hp;
-        }
-
-        float hold = rocket_hud_damage_hold_time.GetFloat();
-        if (hold < 0.0f)
-            hold = 0.35f;
-
-        m_flDamageHoldUntil = curtime + hold;
-    }
-    else if (new_hp > infoBarData.hp)
-    {
-        if (m_flDamageHp < (float)new_hp)
-        {
-            m_flDamageHp = (float)new_hp;
-        }
-        m_flDamageHoldUntil = 0.0f;
-    }
-
-    infoBarData.hp = new_hp;
-    infoBarData.damage_hp = m_flDamageHp;
-
-    if (m_dataModel)
-    {
-        m_dataModel.DirtyVariable("hp");
-        m_dataModel.DirtyVariable("damage_hp");
-    }
-}
-
-void RkHudInfoBar::UpdateDamageAnimation(float dt, float curtime)
-{
-    float targetHp = (float)infoBarData.hp;
-
-    if (m_flDamageHp < targetHp)
-    {
-        m_flDamageHp = targetHp;
-    }
-    else if (m_flDamageHp > targetHp)
-    {
-        if (curtime >= m_flDamageHoldUntil)
-        {
-            float diff = m_flDamageHp - targetHp;
-            float speedFactor = rocket_hud_damage_drain_speed.GetFloat();
-            if (speedFactor <= 0.0f)
-                speedFactor = 4.0f;
-
-            float drainSpeed = diff * speedFactor + 25.0f;
-            m_flDamageHp -= drainSpeed * dt;
-
-            if (m_flDamageHp <= targetHp)
-            {
-                m_flDamageHp = targetHp;
-            }
-        }
-    }
-
-    if (infoBarData.damage_hp != m_flDamageHp)
-    {
-        infoBarData.damage_hp = m_flDamageHp;
         if (m_dataModel)
         {
-            m_dataModel.DirtyVariable("damage_hp");
+            m_dataModel.DirtyVariable("hp");
+        }
+
+        if (m_pInstance)
+        {
+            float curtime = gHUD.m_flTime;
+            if (curtime <= 0.0f)
+            {
+                curtime = (float)RocketSystem::m_Instance.GetElapsedTime();
+            }
+
+            Rml::Dictionary params;
+            params["old_hp"] = old_hp;
+            params["new_hp"] = new_hp;
+            params["curtime"] = curtime;
+            m_pInstance->DispatchEvent("hp_change", params);
         }
     }
 }

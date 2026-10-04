@@ -976,16 +976,19 @@ void CHudAmmo::Draw(float flTime)
 			RkHudInfoBar::infoBarData.ammo = pw->iClip;
 			RkHudInfoBar::infoBarData.hasSecondary = pw->iClip >= 0;
 			RkHudInfoBar::infoBarData.ammoReserve = gWR.CountAmmo(pw->iAmmoType);
+			RkHudInfoBar::infoBarData.ammoSecondary = gWR.CountAmmo(pw->iAmmo2Type);
 			if (RkHudInfoBar::m_Instance.m_dataModel)
 			{
 				RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("ammo");
 				RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("ammo_reserve");
 				RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("has_ammo_reserve");
+				RkHudInfoBar::m_Instance.m_dataModel.DirtyVariable("ammo_secondary");
 			}
 		}
 	}
 	if (m_pHudCustom.GetBool() || rocket_enable.GetBool())
 	{
+		return;
 		// Hide vanilla hud ammo
 	}
 	// Does weapon have any ammo at all?

@@ -104,6 +104,7 @@
 #include "rmlui/rkhud_killfeed.h"
 #include "rmlui/rkhud_speedometer.h"
 #include "rmlui/rkhud_scoreboard.h"
+#include "rmlui/rkhud_chat.h"
 #pragma pop_macro("Assert")
 struct HudScaleInfo
 {
@@ -402,6 +403,7 @@ void CHud::Init(void)
 	RegisterRocketHudElem<RkHudKillfeed>();
 	RegisterRocketHudElem<RkHudSpeedometer>();
 	RegisterRocketHudElem<RkHudScoreboard>();
+	RegisterRocketHudElem<RkHudChat>();
 	// Init RmlUI hud elements
 	for (CRocketHudElem *i : m_rkHudList)
 		i->LevelInit();

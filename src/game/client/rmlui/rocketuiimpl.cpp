@@ -11,6 +11,7 @@
 #include "rocketsystem.h"
 #include "rocketrenderer.h"
 #include "rocketfilesystem.h"
+#define TIER2_GAMEUI_INTERNALS
 #include "tier2/tier2.h"
 #pragma push_macro("Assert")
 #undef Assert
@@ -18,13 +19,46 @@
 #include <RmlUi/Debugger.h>
 #pragma pop_macro("Assert")
 #include "keydefs.h"
-
 #include "rocketkeys.h"
+#include "rkhud_chat.h"
+#include "vgui/ILocalize.h"
+#include "tier1/strtools.h"
 extern lua_State *gLuaState;
 
 #define GL_ALR_INCLUDED
 RocketUIImpl RocketUIImpl::m_Instance;
 // EXPOSE_SINGLE_INTERFACE_GLOBALVAR( RocketUIImpl, IRocketUI, ROCKETUI_INTERFACE_VERSION, RocketUIImpl::m_Instance )
+
+static bool s_bHasSDLEventWatch = false;
+
+static int SDLCALL RocketUI_SDLEventWatcher(void *userdata, SDL_Event *event)
+{
+    if (event && event->type == SDL_TEXTINPUT && RocketUIImpl::m_Instance.IsConsumingInput())
+    {
+        if (event->text.text[0] != '\0' && event->text.text[0] != '\r' && event->text.text[0] != '\n')
+        {
+            Rml::Context *ctx = RocketUIImpl::m_Instance.GetActiveInputContext();
+            if (ctx)
+            {
+                ctx->ProcessTextInput(Rml::String(event->text.text));
+            }
+        }
+    }
+    return 1;
+}
+
+Rml::Context *RocketUIImpl::GetActiveInputContext()
+{
+    if (RkHudChat::m_Instance.ChatRaised() && m_ctxHud)
+    {
+        return m_ctxHud;
+    }
+    if (m_ctxCurrent)
+    {
+        return m_ctxCurrent;
+    }
+    return m_ctxHud;
+}
 
 ConVar rocket_enable( "rocket_enable", "1", 0, "Enables RocketUI" );
 ConVar rocket_hud_scale("rocket_hud_scale", "1.0", FCVAR_ARCHIVE, "Hud scale modifier");
@@ -259,11 +293,23 @@ int RocketUIImpl::Init( void )
 	m_ctxMenu->SetDensityIndependentPixelRatio(1.0f);
 	m_ctxHud->SetDensityIndependentPixelRatio(1.0f);
 
+	if (!s_bHasSDLEventWatch && GetSDL() && GetSDL()->AddEventWatch)
+	{
+		GetSDL()->AddEventWatch(RocketUI_SDLEventWatcher, nullptr);
+		s_bHasSDLEventWatch = true;
+	}
+
 	return 1;
 }
 
 void RocketUIImpl::Shutdown()
 {
+    if (s_bHasSDLEventWatch && GetSDL() && GetSDL()->DelEventWatch)
+    {
+        GetSDL()->DelEventWatch(RocketUI_SDLEventWatcher, nullptr);
+        s_bHasSDLEventWatch = false;
+    }
+
     // Shutdown RocketUI. All contexts are destroyed on shutdown.
     Rml::Shutdown();
 
@@ -311,11 +357,18 @@ void RocketUIImpl::DenyInputToGame( bool value, const char *why )
     }
     else
     {
-        m_numInputConsumers--;
+        if (m_numInputConsumers > 0)
+            m_numInputConsumers--;
         m_inputConsumers.FindAndRemove( CUtlString( why ) );
     }
 
     EnableCursor( (m_numInputConsumers > 0) );
+
+    // Always ensure text input is started so SDL2 generates SDL_TEXTINPUT events for both RocketUI and VGUI2!
+    if (GetSDL() && GetSDL()->StartTextInput)
+    {
+        GetSDL()->StartTextInput();
+    }
 
     Msg("input Consumers[%d]: ", m_numInputConsumers);
     for( int i = 0; i < m_inputConsumers.Count(); i++ )
@@ -355,117 +408,180 @@ bool IsMouseCode(int code)
 // return true if we want to deny the game the input.
 bool RocketUIImpl::HandleInputEvent(bool keyDown, int keyNumber, const char *bindName)
 {
-    // Haven't rendered our very first frame ever yet.
-    if( !m_ctxCurrent )
+    // Check which context should receive input.
+    Rml::Context *ctx = GetActiveInputContext();
+
+    if (!ctx)
         return false;
 
-    // Always get the mouse location.
-	int mx = 0, my = 0;
-	GetSDL()->GetMouseState(&mx, &my);
-	static Vector2D mousePos(0, 0);
-    if(mousePos != Vector2D(mx, my))
+    // Track key modifiers
+    static int s_fallbackKeyModifiers = 0;
+    int keyModifierState = 0;
+    if (GetSDL() && GetSDL()->GetModState)
     {
-        // TODO update this with keymodifiers
-        mousePos = Vector2D(mx, my);
-        m_ctxCurrent->ProcessMouseMove( mx, my, 0 );
+        SDL_Keymod mod = GetSDL()->GetModState();
+        if (mod & KMOD_CTRL)  keyModifierState |= Rml::Input::KM_CTRL;
+        if (mod & KMOD_SHIFT) keyModifierState |= Rml::Input::KM_SHIFT;
+        if (mod & KMOD_ALT)   keyModifierState |= Rml::Input::KM_ALT;
+        if (mod & KMOD_GUI)   keyModifierState |= Rml::Input::KM_META;
+        if (mod & KMOD_CAPS)  keyModifierState |= Rml::Input::KM_CAPSLOCK;
+        if (mod & KMOD_NUM)   keyModifierState |= Rml::Input::KM_NUMLOCK;
+    }
+    else
+    {
+        keyModifierState = s_fallbackKeyModifiers;
     }
 
-    // // Some edge cases
-    // if( event.m_nType == IE_ButtonPressed )
-    // {
-        // Check for debugger. Toggle on F8.
-        if( keyDown && keyNumber == K_F8 )
-        {
-            ToggleDebugger();
-            return true;
-        }
-        // The magical ESC key for the pause menu. The game handles this in an awful way
-        // CSGO will open the pause menu for us the 1st time, but after that it fubars
-        // In order to minimize this component from reaching into the gamecode,
-        // The pause menu will register itself via RegisterPauseMenu while loading.
-        // Kinda Hacky, but it is direct from keys.cpp and prevents the VGUI code from messing with it too much.
-        if( keyNumber == K_ESCAPE )
-        {
-            // if( m_togglePauseMenuFunc && m_pEngine->IsInGame() )
-            // {
-                // m_togglePauseMenuFunc();
-            // }
-        }
-    // }
-
-    // Nothing wants input, skip.
-    if( !IsConsumingInput() )
-        return false;
-
-    Rml::Input::KeyIdentifier key;
-    char ascii;
-
-    // switch( keyNumber )
-    // {
-    // case IE_ButtonDoubleClicked:
     if (keyDown)
     {
-        //TODO add key modifiers
-        if( IsMouseCode( keyNumber ) )
+        if (keyNumber == K_SHIFT) { keyModifierState |= Rml::Input::KM_SHIFT; s_fallbackKeyModifiers |= Rml::Input::KM_SHIFT; }
+        else if (keyNumber == K_CTRL) { keyModifierState |= Rml::Input::KM_CTRL; s_fallbackKeyModifiers |= Rml::Input::KM_CTRL; }
+        else if (keyNumber == K_ALT) { keyModifierState |= Rml::Input::KM_ALT; s_fallbackKeyModifiers |= Rml::Input::KM_ALT; }
+        else if (keyNumber == K_CAPSLOCK) { keyModifierState ^= Rml::Input::KM_CAPSLOCK; s_fallbackKeyModifiers ^= Rml::Input::KM_CAPSLOCK; }
+    }
+    else
+    {
+        if (keyNumber == K_SHIFT) { s_fallbackKeyModifiers &= ~Rml::Input::KM_SHIFT; keyModifierState &= ~Rml::Input::KM_SHIFT; }
+        else if (keyNumber == K_CTRL) { s_fallbackKeyModifiers &= ~Rml::Input::KM_CTRL; keyModifierState &= ~Rml::Input::KM_CTRL; }
+        else if (keyNumber == K_ALT) { s_fallbackKeyModifiers &= ~Rml::Input::KM_ALT; keyModifierState &= ~Rml::Input::KM_ALT; }
+    }
+
+    // Always get the mouse location.
+    int mx = 0, my = 0;
+    GetSDL()->GetMouseState(&mx, &my);
+    static Vector2D mousePos(0, 0);
+    if (mousePos != Vector2D(mx, my))
+    {
+        mousePos = Vector2D(mx, my);
+        ctx->ProcessMouseMove(mx, my, keyModifierState);
+    }
+
+    // Check for debugger. Toggle on F8.
+    if (keyDown && keyNumber == K_F8)
+    {
+        ToggleDebugger();
+        return true;
+    }
+
+    // If user presses toggleconsole or tilde/grave, close chat if open and pass key to engine
+    if (bindName && (!stricmp(bindName, "toggleconsole") || !stricmp(bindName, "cancelselect")))
+    {
+        if (RkHudChat::m_Instance.ChatRaised())
         {
-            switch( keyNumber )
+            RkHudChat::m_Instance.StopMessageMode();
+        }
+        return false;
+    }
+    if (keyNumber == '`' || keyNumber == '~')
+    {
+        if (RkHudChat::m_Instance.ChatRaised())
+        {
+            RkHudChat::m_Instance.StopMessageMode();
+        }
+        return false;
+    }
+
+    // Nothing wants input, skip.
+    if (!IsConsumingInput())
+        return false;
+
+    if (keyDown)
+    {
+        if (IsMouseCode(keyNumber))
+        {
+            switch (keyNumber)
             {
             case K_MOUSE1:
-                m_ctxCurrent->ProcessMouseButtonDown( 0, 0 );
+                ctx->ProcessMouseButtonDown(0, keyModifierState);
                 break;
             case K_MOUSE2:
-                m_ctxCurrent->ProcessMouseButtonDown( 1, 0 );
+                ctx->ProcessMouseButtonDown(1, keyModifierState);
                 break;
             case K_MOUSE3:
-                m_ctxCurrent->ProcessMouseButtonDown( 2, 0 );
+                ctx->ProcessMouseButtonDown(2, keyModifierState);
                 break;
             case K_MOUSE4:
-                m_ctxCurrent->ProcessMouseButtonDown( 3, 0 );
+                ctx->ProcessMouseButtonDown(3, keyModifierState);
                 break;
             case K_MOUSE5:
-                m_ctxCurrent->ProcessMouseButtonDown( 4, 0 );
+                ctx->ProcessMouseButtonDown(4, keyModifierState);
                 break;
             case K_MWHEELUP:
-                m_ctxCurrent->ProcessMouseWheel( -1, 0 );
+                ctx->ProcessMouseWheel(-1, keyModifierState);
                 break;
             case K_MWHEELDOWN:
-                m_ctxCurrent->ProcessMouseWheel( 1, 0 );
+                ctx->ProcessMouseWheel(1, keyModifierState);
                 break;
             }
         }
         else
         {
-            m_ctxCurrent->ProcessKeyDown( ButtonToRocketKey( keyNumber ), 0 );
+            Rml::Input::KeyIdentifier key = ButtonToRocketKey(keyNumber);
+            ctx->ProcessKeyDown(key, keyModifierState);
+
+            // Generate text input if Ctrl, Alt, Meta are not held
+            // When SDL event watcher is active, SDL_TEXTINPUT provides all text input (with proper UTF-8 layout translation)
+            if (!s_bHasSDLEventWatch && (keyModifierState & (Rml::Input::KM_CTRL | Rml::Input::KM_ALT | Rml::Input::KM_META)) == 0)
+            {
+                Rml::Character c = GetCharacterCode(key, keyModifierState);
+                if (c != Rml::Character::Null && (char32_t)c >= 32 && (char32_t)c != 127 && (char32_t)c != '\n' && (char32_t)c != '\r')
+                {
+                    ctx->ProcessTextInput(c);
+                }
+                else if (keyNumber >= 32 && keyNumber <= 126)
+                {
+                    ctx->ProcessTextInput((char)keyNumber);
+                }
+                else if ((unsigned char)keyNumber >= 128 && keyNumber <= 255)
+                {
+                    bool isSpecial = (keyNumber >= K_UPARROW && keyNumber <= K_WIN) ||
+                                     (keyNumber >= K_JOY1 && keyNumber <= K_MOUSE5) ||
+                                     (keyNumber == K_PAUSE);
+                    if (!isSpecial && g_pVGuiLocalize)
+                    {
+                        char ansi[2] = { (char)keyNumber, '\0' };
+                        wchar_t unicode[2] = { 0, 0 };
+                        g_pVGuiLocalize->ConvertANSIToUnicode(ansi, unicode, sizeof(unicode));
+                        if (unicode[0] != 0)
+                        {
+                            char utf8[8] = { 0 };
+                            Q_UnicodeToUTF8(unicode, utf8, sizeof(utf8));
+                            ctx->ProcessTextInput(Rml::String(utf8));
+                        }
+                    }
+                }
+            }
         }
     }
     else
     {
-        if( IsMouseCode( keyNumber ) )
+        if (IsMouseCode(keyNumber))
         {
-            switch( keyNumber )
+            switch (keyNumber)
             {
             case K_MOUSE1:
-                m_ctxCurrent->ProcessMouseButtonUp( 0, 0 );
+                ctx->ProcessMouseButtonUp(0, keyModifierState);
                 break;
             case K_MOUSE2:
-                m_ctxCurrent->ProcessMouseButtonUp( 1, 0 );
+                ctx->ProcessMouseButtonUp(1, keyModifierState);
                 break;
             case K_MOUSE3:
-                m_ctxCurrent->ProcessMouseButtonUp( 2, 0 );
+                ctx->ProcessMouseButtonUp(2, keyModifierState);
                 break;
             case K_MOUSE4:
-                m_ctxCurrent->ProcessMouseButtonUp( 3, 0 );
+                ctx->ProcessMouseButtonUp(3, keyModifierState);
                 break;
             case K_MOUSE5:
-                m_ctxCurrent->ProcessMouseButtonUp( 4, 0 );
+                ctx->ProcessMouseButtonUp(4, keyModifierState);
                 break;
             }
         }
         else
         {
-            m_ctxCurrent->ProcessKeyUp( ButtonToRocketKey( keyNumber ), 0 );
+            ctx->ProcessKeyUp(ButtonToRocketKey(keyNumber), keyModifierState);
         }
     }
+
     return IsConsumingInput();
 }
 

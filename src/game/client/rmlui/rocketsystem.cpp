@@ -1,6 +1,7 @@
 #include "rocketsystem.h"
 
 #include "rocketuiimpl.h"
+#include "sdl_rt.h"
 
 #include "tier0/platform.h"
 #include "tier2/tier2.h"
@@ -27,12 +28,57 @@ bool RocketSystem::LogMessage(Rml::Log::Type type, const Rml::String &message)
 
 void RocketSystem::SetClipboardText(const Rml::String& text)
 {
-    g_pVGuiSystem->SetClipboardText( text.c_str(), text.size() );
+    if (GetSDL() && GetSDL()->SetClipboardText)
+    {
+        GetSDL()->SetClipboardText(text.c_str());
+        return;
+    }
+    if (g_pVGuiSystem)
+    {
+        g_pVGuiSystem->SetClipboardText( text.c_str(), text.size() );
+    }
 }
 
 void RocketSystem::GetClipboardText(Rml::String& text)
 {
-    char buffer[1024];
-    g_pVGuiSystem->GetClipboardText(0, buffer, sizeof(buffer) );
-    text.copy(buffer, sizeof(buffer));
+    if (GetSDL() && GetSDL()->GetClipboardText)
+    {
+        char *raw_text = GetSDL()->GetClipboardText();
+        if (raw_text)
+        {
+            text = raw_text;
+            if (GetSDL()->Free)
+                GetSDL()->Free(raw_text);
+            return;
+        }
+    }
+    if (g_pVGuiSystem)
+    {
+        char buffer[1024];
+        buffer[0] = '\0';
+        g_pVGuiSystem->GetClipboardText(0, buffer, sizeof(buffer) );
+        text = buffer;
+    }
 }
+
+void RocketSystem::ActivateKeyboard(Rml::Vector2f caret_position, float line_height)
+{
+    (void)caret_position;
+    (void)line_height;
+    if (GetSDL() && GetSDL()->StartTextInput)
+    {
+        GetSDL()->StartTextInput();
+    }
+}
+
+void RocketSystem::DeactivateKeyboard()
+{
+    // Do not call SDL_StopTextInput() globally.
+    // The engine and VGUI2 (console, dialogs) require SDL text input to stay active
+    // in order to receive SDL_TEXTINPUT events for typing.
+    if (GetSDL() && GetSDL()->StartTextInput)
+    {
+        GetSDL()->StartTextInput();
+    }
+}
+

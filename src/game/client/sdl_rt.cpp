@@ -96,6 +96,16 @@ void CSDLRuntime::InitWindows()
 	m_bIsGood = m_bIsGood && fnLoadSym(JoystickUpdate, "SDL_JoystickUpdate");
 	m_bIsGood = m_bIsGood && fnLoadSym(GL_GetProcAddress, "SDL_GL_GetProcAddress");
 	m_bIsGood = m_bIsGood && fnLoadSym(GetMouseState, "SDL_GetMouseState");
+	m_bIsGood = m_bIsGood && fnLoadSym(GetModState, "SDL_GetModState");
+	m_bIsGood = m_bIsGood && fnLoadSym(AddEventWatch, "SDL_AddEventWatch");
+	m_bIsGood = m_bIsGood && fnLoadSym(DelEventWatch, "SDL_DelEventWatch");
+	m_bIsGood = m_bIsGood && fnLoadSym(StartTextInput, "SDL_StartTextInput");
+	m_bIsGood = m_bIsGood && fnLoadSym(StopTextInput, "SDL_StopTextInput");
+	m_bIsGood = m_bIsGood && fnLoadSym(IsTextInputActive, "SDL_IsTextInputActive");
+	m_bIsGood = m_bIsGood && fnLoadSym(SetClipboardText, "SDL_SetClipboardText");
+	m_bIsGood = m_bIsGood && fnLoadSym(GetClipboardText, "SDL_GetClipboardText");
+	m_bIsGood = m_bIsGood && fnLoadSym(HasClipboardText, "SDL_HasClipboardText");
+	m_bIsGood = m_bIsGood && fnLoadSym(Free, "SDL_free");
 	if (!m_bIsGood)
 	{
 		ConPrintf(ConColor::Red, "Failed to link with SDL2 in runtime.\n");
@@ -117,7 +127,17 @@ void CSDLRuntime::InitOther()
 	GameControllerGetButton = &SDL_GameControllerGetButton;
 	JoystickUpdate = &SDL_JoystickUpdate;
     GetMouseState = &SDL_GetMouseState;
+	GetModState = &SDL_GetModState;
 	GL_GetProcAddress = &SDL_GL_GetProcAddress;
+	AddEventWatch = &SDL_AddEventWatch;
+	DelEventWatch = &SDL_DelEventWatch;
+	StartTextInput = &SDL_StartTextInput;
+	StopTextInput = &SDL_StopTextInput;
+	IsTextInputActive = &SDL_IsTextInputActive;
+	SetClipboardText = &SDL_SetClipboardText;
+	GetClipboardText = &SDL_GetClipboardText;
+	HasClipboardText = &SDL_HasClipboardText;
+	Free = &SDL_free;
 
 	m_bIsGood = true;
 #endif

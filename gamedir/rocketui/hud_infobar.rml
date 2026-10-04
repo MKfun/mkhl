@@ -209,8 +209,139 @@
 				background-color: #ff0000;
 			}
 		</style>
+		<script>
+local cvar_ok, cvar = pcall(require, "hltypes.engine.cvar")
+
+InfoBar = InfoBar or {}
+
+InfoBar.damage_hp = 100.0
+InfoBar.damage_hold_until = 0.0
+InfoBar.last_hp = nil
+InfoBar.data_model = nil
+InfoBar.damage_bar_elem = nil
+InfoBar.doc = nil
+
+function InfoBar.GetHoldTime()
+	local hold = 0.35
+	if cvar_ok and cvar and cvar.getFloat then
+		local val = cvar.getFloat("rocket_hud_damage_hold_time")
+		if val >= 0.0 then hold = val end
+	end
+	return hold
+end
+
+function InfoBar.GetDrainSpeedFactor()
+	local speed = 4.0
+	if cvar_ok and cvar and cvar.getFloat then
+		local val = cvar.getFloat("rocket_hud_damage_drain_speed")
+		if val > 0.0 then speed = val end
+	end
+	return speed
+end
+
+function InfoBar.OnInit(arg1, arg2)
+	local doc = nil
+	if arg2 and type(arg2) == "userdata" then
+		doc = arg2
+	elseif arg1 and type(arg1) == "userdata" then
+		doc = arg1
+	end
+	if not doc then
+		local hud_ctx = rmlui.contexts["hud"]
+		if hud_ctx and hud_ctx.documents then
+			doc = hud_ctx.documents["hud_infobar"] or hud_ctx.documents[0]
+		end
+	end
+	InfoBar.doc = doc
+	if doc then
+		InfoBar.damage_bar_elem = doc:GetElementById("hp-damage")
+		if InfoBar.damage_bar_elem then
+			InfoBar.damage_bar_elem:SetAttribute("value", string.format("%.1f", InfoBar.damage_hp))
+		end
+	end
+end
+
+function InfoBar.OnHealthChange(new_hp, curtime)
+	curtime = curtime or 0.0
+	if InfoBar.last_hp == nil then
+		InfoBar.last_hp = new_hp
+		InfoBar.damage_hp = new_hp
+		InfoBar.damage_hold_until = 0.0
+		return
+	end
+
+	if new_hp < InfoBar.last_hp then
+		if InfoBar.damage_hp < InfoBar.last_hp then
+			InfoBar.damage_hp = InfoBar.last_hp
+		end
+		local hold = InfoBar.GetHoldTime()
+		InfoBar.damage_hold_until = curtime + hold
+	elseif new_hp > InfoBar.last_hp then
+		if InfoBar.damage_hp < new_hp then
+			InfoBar.damage_hp = new_hp
+		end
+		InfoBar.damage_hold_until = 0.0
+	end
+
+	InfoBar.last_hp = new_hp
+end
+
+function InfoBar.UpdateDamageAnimation(dt, curtime, target_hp)
+	if InfoBar.last_hp == nil then
+		InfoBar.last_hp = target_hp
+		InfoBar.damage_hp = target_hp
+		InfoBar.damage_hold_until = 0.0
+	elseif target_hp ~= InfoBar.last_hp then
+		InfoBar.OnHealthChange(target_hp, curtime)
+	end
+
+	if InfoBar.damage_hp < target_hp then
+		InfoBar.damage_hp = target_hp
+	elseif InfoBar.damage_hp > target_hp then
+		if curtime >= InfoBar.damage_hold_until then
+			local diff = InfoBar.damage_hp - target_hp
+			local speed_factor = InfoBar.GetDrainSpeedFactor()
+			local drain_speed = diff * speed_factor + 25.0
+			InfoBar.damage_hp = InfoBar.damage_hp - drain_speed * dt
+			if InfoBar.damage_hp <= target_hp then
+				InfoBar.damage_hp = target_hp
+			end
+		end
+	end
+
+	-- Update via element attribute directly
+	if not InfoBar.damage_bar_elem and InfoBar.doc then
+		InfoBar.damage_bar_elem = InfoBar.doc:GetElementById("hp-damage")
+	end
+	if InfoBar.damage_bar_elem then
+		InfoBar.damage_bar_elem:SetAttribute("value", string.format("%.1f", InfoBar.damage_hp))
+	end
+end
+
+function InfoBar.OnHudUpdate(event, doc)
+	if not InfoBar.doc and doc then
+		InfoBar.doc = doc
+	end
+	if not event or not event.parameters then return end
+
+	local dt = event.parameters["dt"] or 0.016
+	local curtime = event.parameters["curtime"] or 0.0
+	local hp = event.parameters["hp"] or InfoBar.last_hp or 100
+
+	InfoBar.UpdateDamageAnimation(dt, curtime, hp)
+end
+
+function InfoBar.OnHpChange(event, doc)
+	if not event or not event.parameters then return end
+	local new_hp = event.parameters["new_hp"]
+	local curtime = event.parameters["curtime"] or 0.0
+	if new_hp then
+		InfoBar.OnHealthChange(new_hp, curtime)
+	end
+end
+		</script>
 	</head>
-	<body>
+	<body id="hud_infobar" onload="InfoBar.OnInit(event, document)" onhud_update="InfoBar.OnHudUpdate(event, document)" onhp_change="InfoBar.OnHpChange(event, document)">
 		<div id="container">
 			<div class="bottom-content" data-model="infobar_model">
 				<div class="row" style="display:inline-block">
@@ -222,7 +353,7 @@
 									<h1 class="hpcoltext" id="HP" style="padding-left: 10dp;" data-class-critical="hp < 25">{{hp}}</h1>
 									<!-- <progress data-value="hp" max=100 style="width:25%;" data-class-critical="hp < 25"/> -->
 									 <div class="hp-bar-container" style="width:25%;">
-										<progress class="hp-damage" data-value="damage_hp" max=100 />
+										<progress id="hp-damage" class="hp-damage" max=100 />
 										<progress class="hp-current" data-value="hp" max=100 data-class-critical="hp < 25" />
 									</div>
 								</div>

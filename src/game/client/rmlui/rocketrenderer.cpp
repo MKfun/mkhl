@@ -33,7 +33,7 @@
 #endif
 
 // --- FBO & Shader Definitions ---
-#define BLUR_SIZE 7
+#define BLUR_SIZE 9
 #define BLUR_NUM_WEIGHTS ((BLUR_SIZE + 1) / 2)
 
 static const char* shader_frag_passthrough = "#version 120\n"
@@ -52,32 +52,24 @@ static const char* shader_frag_color_matrix = "#version 120\n"
 "}\n";
 
 static const char* shader_frag_blur = "#version 120\n"
-"#define BLUR_SIZE 7\n"
-"#define BLUR_NUM_WEIGHTS 4\n"
 "uniform sampler2D _tex;\n"
 "uniform vec2 _texelOffset;\n"
-"uniform float _weights[BLUR_NUM_WEIGHTS];\n"
-"uniform vec2 _texCoordMin;\n"
-"uniform vec2 _texCoordMax;\n"
+"uniform float _weights[5];\n"
 "void main() {\n"
-"    vec4 color = vec4(0.0);\n"
-"    for(int i = 0; i < BLUR_SIZE; i++) {\n"
-"        vec2 coord = gl_TexCoord[0].st - float(i - BLUR_NUM_WEIGHTS + 1) * _texelOffset;\n"
-"        vec2 in_region = step(_texCoordMin, coord) * step(coord, _texCoordMax);\n"
-"        color += texture2D(_tex, coord) * in_region.x * in_region.y * _weights[int(abs(float(i - BLUR_NUM_WEIGHTS + 1)))];\n"
-"    }\n"
+"    vec2 st = gl_TexCoord[0].st;\n"
+"    vec4 color = texture2D(_tex, st) * _weights[0];\n"
+"    color += (texture2D(_tex, st + _texelOffset)       + texture2D(_tex, st - _texelOffset))       * _weights[1];\n"
+"    color += (texture2D(_tex, st + 2.0 * _texelOffset) + texture2D(_tex, st - 2.0 * _texelOffset)) * _weights[2];\n"
+"    color += (texture2D(_tex, st + 3.0 * _texelOffset) + texture2D(_tex, st - 3.0 * _texelOffset)) * _weights[3];\n"
+"    color += (texture2D(_tex, st + 4.0 * _texelOffset) + texture2D(_tex, st - 4.0 * _texelOffset)) * _weights[4];\n"
 "    gl_FragColor = color;\n"
 "}\n";
 
 static const char* shader_frag_drop_shadow = "#version 120\n"
 "uniform sampler2D _tex;\n"
-"uniform vec2 _texCoordMin;\n"
-"uniform vec2 _texCoordMax;\n"
 "uniform vec4 _color;\n"
 "void main() {\n"
-"    vec2 coord = gl_TexCoord[0].st;\n"
-"    vec2 in_region = step(_texCoordMin, coord) * step(coord, _texCoordMax);\n"
-"    gl_FragColor = texture2D(_tex, coord).a * in_region.x * in_region.y * _color;\n"
+"    gl_FragColor = texture2D(_tex, gl_TexCoord[0].st).a * _color;\n"
 "}\n";
 
 static const char* shader_frag_blend_mask = "#version 120\n"
@@ -560,6 +552,10 @@ void RocketRender::PrepareGLState()
     glActiveTexture(GL_TEXTURE0);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
 
+    glViewport(0, 0, m_width, m_height);
+    glDisable(GL_SCISSOR_TEST);
+    scissor_state = Rml::Rectanglei::MakeInvalid();
+
     glEnable(GL_BLEND);
     glBlendColor(1, 1, 1, 1);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
@@ -638,8 +634,15 @@ Rml::CompiledGeometryHandle RocketRender::CompileGeometry(Rml::Span<const Rml::V
 
 void RocketRender::EnableScissorRegion(bool enable)
 {
-    if (enable) glEnable(GL_SCISSOR_TEST);
-    else glDisable(GL_SCISSOR_TEST);
+    if (enable)
+    {
+        glEnable(GL_SCISSOR_TEST);
+    }
+    else
+    {
+        glDisable(GL_SCISSOR_TEST);
+        scissor_state = Rml::Rectanglei::MakeInvalid();
+    }
 }
 
 void RocketRender::SetScissor(Rml::Rectanglei region, bool vertically_flip)
@@ -1277,22 +1280,23 @@ void RocketRender::RenderFilters(Rml::Span<const Rml::CompiledFilterHandle> filt
             glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         } else if (filter.type == FilterType::Blur) {
             glDisable(GL_BLEND);
-            Rml::Rectanglei win = scissor_state; 
-            win.p0.y = m_height - (scissor_state.p0.y + scissor_state.p1.y); 
-            RenderBlur(filter.sigma, render_layers->GetPostprocessPrimary(), render_layers->GetPostprocessSecondary(), win);
+            RenderBlur(filter.sigma, render_layers->GetPostprocessPrimary(), render_layers->GetPostprocessSecondary());
             glEnable(GL_BLEND);
         } else if (filter.type == FilterType::DropShadow) {
             glUseProgram(program_data->programs[(size_t)Gfx::ProgramId::DropShadow]);
             GLint prog = program_data->programs[(size_t)Gfx::ProgramId::DropShadow];
             glUniform4f(glGetUniformLocation(prog, "_color"), filter.color[0]/255.f, filter.color[1]/255.f, filter.color[2]/255.f, filter.color[3]/255.f);
-            glUniform2f(glGetUniformLocation(prog, "_texCoordMin"), scissor_state.p0.x / (float)m_width, (m_height - scissor_state.p1.y) / (float)m_height);
-            glUniform2f(glGetUniformLocation(prog, "_texCoordMax"), scissor_state.p1.x / (float)m_width, (m_height - scissor_state.p0.y) / (float)m_height);
             
             glBindFramebuffer(GL_FRAMEBUFFER, render_layers->GetPostprocessSecondary().framebuffer);
             glClearColor(0,0,0,0);
             glClear(GL_COLOR_BUFFER_BIT);
             glBindTexture(GL_TEXTURE_2D, render_layers->GetPostprocessPrimary().color_tex_buffer);
-            DrawFullscreenQuad(filter.offset / Rml::Vector2f(m_width, m_height));
+            DrawFullscreenQuad(filter.offset / Rml::Vector2f(-(float)m_width, (float)m_height));
+
+            if (filter.sigma >= 0.5f) {
+                RenderBlur(filter.sigma, render_layers->GetPostprocessSecondary(), render_layers->GetPostprocessTertiary());
+            }
+
             render_layers->SwapPostprocessPrimarySecondary();
             
             glUseProgram(program_data->programs[(size_t)Gfx::ProgramId::Passthrough]);
@@ -1330,35 +1334,64 @@ void RocketRender::RenderFilters(Rml::Span<const Rml::CompiledFilterHandle> filt
     glUseProgram(0);
 }
 
-void RocketRender::RenderBlur(float sigma, const Gfx::FramebufferData& source_destination, const Gfx::FramebufferData& temp, Rml::Rectanglei window) {
-    if (sigma <= 0.5f) return;
+void RocketRender::RenderBlur(float sigma, const Gfx::FramebufferData& source_destination, const Gfx::FramebufferData& temp) {
+    if (sigma <= 0.1f) return;
     
-    glUseProgram(program_data->programs[(size_t)Gfx::ProgramId::Blur]);
-    GLint prog = program_data->programs[(size_t)Gfx::ProgramId::Blur];
+    GLuint prog = program_data->programs[(size_t)Gfx::ProgramId::Blur];
+    if (!prog) return;
+    glUseProgram(prog);
     
+    float effective_sigma = std::min(sigma, 2.0f);
     float weights[BLUR_NUM_WEIGHTS];
     float sum = 0.0f;
     for (int i = 0; i < BLUR_NUM_WEIGHTS; i++) {
-        weights[i] = expf(-float(i * i) / (2.0f * sigma * sigma));
+        weights[i] = expf(-float(i * i) / (2.0f * effective_sigma * effective_sigma));
         sum += weights[i] * (i == 0 ? 1.0f : 2.0f);
     }
     for (int i = 0; i < BLUR_NUM_WEIGHTS; i++) weights[i] /= sum;
     
-    glUniform1fv(glGetUniformLocation(prog, "_weights[0]"), BLUR_NUM_WEIGHTS, weights);
-    glUniform2f(glGetUniformLocation(prog, "_texCoordMin"), window.p0.x / (float)m_width, window.p0.y / (float)m_height);
-    glUniform2f(glGetUniformLocation(prog, "_texCoordMax"), window.p1.x / (float)m_width, window.p1.y / (float)m_height);
-    
-    // Pass 1: horizontal
-    glBindFramebuffer(GL_FRAMEBUFFER, temp.framebuffer);
-    glBindTexture(GL_TEXTURE_2D, source_destination.color_tex_buffer);
-    glUniform2f(glGetUniformLocation(prog, "_texelOffset"), 1.0f / m_width, 0.0f);
-    DrawFullscreenQuad();
-    
-    // Pass 2: vertical
-    glBindFramebuffer(GL_FRAMEBUFFER, source_destination.framebuffer);
-    glBindTexture(GL_TEXTURE_2D, temp.color_tex_buffer);
-    glUniform2f(glGetUniformLocation(prog, "_texelOffset"), 0.0f, 1.0f / m_height);
-    DrawFullscreenQuad();
+    GLint loc_weights = program_data->uniforms[(size_t)Gfx::ProgramId::Blur][(size_t)Gfx::UniformId::Weights];
+    if (loc_weights == -1) loc_weights = glGetUniformLocation(prog, "_weights[0]");
+    if (loc_weights == -1) loc_weights = glGetUniformLocation(prog, "_weights");
+    if (loc_weights != -1) glUniform1fv(loc_weights, BLUR_NUM_WEIGHTS, weights);
+
+    GLint loc_offset = program_data->uniforms[(size_t)Gfx::ProgramId::Blur][(size_t)Gfx::UniformId::TexelOffset];
+    if (loc_offset == -1) loc_offset = glGetUniformLocation(prog, "_texelOffset");
+
+    GLint loc_tex = program_data->uniforms[(size_t)Gfx::ProgramId::Blur][(size_t)Gfx::UniformId::Tex];
+    if (loc_tex == -1) loc_tex = glGetUniformLocation(prog, "_tex");
+    if (loc_tex != -1) glUniform1i(loc_tex, 0);
+
+    // Calculate pass step sizes (dilated Gaussian cascade) to reach the requested sigma
+    std::vector<float> steps;
+    if (sigma <= 2.5f) {
+        steps.push_back(1.0f);
+    } else {
+        float current_sigma = 2.0f;
+        float current_step = 1.0f;
+        while (current_sigma < sigma && steps.size() < 6) {
+            steps.push_back(current_step);
+            current_step = std::min(current_step * 2.0f, sigma / 2.0f);
+            float variance_sum = 0.0f;
+            for (float s : steps) variance_sum += s * s;
+            current_sigma = 2.0f * sqrtf(variance_sum);
+        }
+        if (steps.empty()) steps.push_back(1.0f);
+    }
+
+    for (float step : steps) {
+        // Pass 1: horizontal blur from source_destination -> temp
+        glBindFramebuffer(GL_FRAMEBUFFER, temp.framebuffer);
+        glBindTexture(GL_TEXTURE_2D, source_destination.color_tex_buffer);
+        if (loc_offset != -1) glUniform2f(loc_offset, step / (float)m_width, 0.0f);
+        DrawFullscreenQuad();
+
+        // Pass 2: vertical blur from temp -> source_destination
+        glBindFramebuffer(GL_FRAMEBUFFER, source_destination.framebuffer);
+        glBindTexture(GL_TEXTURE_2D, temp.color_tex_buffer);
+        if (loc_offset != -1) glUniform2f(loc_offset, 0.0f, step / (float)m_height);
+        DrawFullscreenQuad();
+    }
 }
 
 void RocketRender::DrawFullscreenQuad() { DrawFullscreenQuad(Rml::Vector2f(0.f), Rml::Vector2f(1.f)); }

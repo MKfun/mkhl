@@ -20,4 +20,6 @@ add_sources(
 
     rkhud_scoreboard.cpp
     rkhud_scoreboard.h
+    rkhud_chat.cpp
+    rkhud_chat.h
 )

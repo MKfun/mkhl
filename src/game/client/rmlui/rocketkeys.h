@@ -7,154 +7,96 @@
 #include "vgui/KeyCode.h"
 
 // Keycode converter helper.
-inline const Rml::Input::KeyIdentifier ButtonToRocketKey( int button )
+// Keycode converter helper.
+inline Rml::Input::KeyIdentifier ButtonToRocketKey( int button )
 {
     using namespace Rml::Input;
 
-    switch( button )
+    // ASCII lower-case letters
+    if (button >= 'a' && button <= 'z')
+        return (KeyIdentifier)(KI_A + (button - 'a'));
+    // ASCII upper-case letters
+    if (button >= 'A' && button <= 'Z')
+        return (KeyIdentifier)(KI_A + (button - 'A'));
+    // ASCII digits
+    if (button >= '0' && button <= '9')
+        return (KeyIdentifier)(KI_0 + (button - '0'));
+
+    switch (button)
     {
-    // case KEY_0:
-    //     return KI_0;
-    // case KEY_1:
-    //     return KI_1;
-    // case KEY_2:
-    //     return KI_2;
-    // case KEY_3:
-    //     return KI_3;
-    // case KEY_4:
-    //     return KI_4;
-    // case KEY_5:
-    //     return KI_5;
-    // case KEY_6:
-    //     return KI_6;
-    // case KEY_7:
-    //     return KI_7;
-    // case KEY_8:
-    //     return KI_8;
-    // case KEY_9:
-    //     return KI_9;
-    // case KEY_A:
-    //     return KI_A;
-    // case KEY_B:
-    //     return KI_B;
-    // case KEY_C:
-    //     return KI_C;
-    // case KEY_D:
-    //     return KI_D;
-    // case KEY_E:
-    //     return KI_E;
-    // case KEY_F:
-    //     return KI_F;
-    // case KEY_G:
-    //     return KI_G;
-    // case KEY_H:
-    //     return KI_H;
-    // case KEY_I:
-    //     return KI_I;
-    // case KEY_J:
-    //     return KI_J;
-    // case KEY_K:
-    //     return KI_K;
-    // case KEY_L:
-    //     return KI_L;
-    // case KEY_M:
-    //     return KI_M;
-    // case KEY_N:
-    //     return KI_N;
-    // case KEY_O:
-    //     return KI_O;
-    // case KEY_P:
-    //     return KI_P;
-    // case KEY_Q:
-    //     return KI_Q;
-    // case KEY_R:
-    //     return KI_R;
-    // case KEY_S:
-    //     return KI_S;
-    // case KEY_T:
-    //     return KI_T;
-    // case KEY_U:
-    //     return KI_U;
-    // case KEY_V:
-    //     return KI_V;
-    // case KEY_W:
-    //     return KI_W;
-    // case KEY_X:
-    //     return KI_X;
-    // case KEY_Y:
-    //     return KI_Y;
-    // case KEY_Z:
-    //     return KI_Z;
-    // case K_KP_0:
-    //     return KI_NUMPAD0;
-    // case K_KP_1:
-    //     return KI_NUMPAD1;
-    // case K_KP_2:
-    //     return KI_NUMPAD2;
-    // case K_KP_3:
-    //     return KI_NUMPAD3;
-    // case K_KP_4:
-    //     return KI_NUMPAD4;
-    // case K_KP_5:
-    //     return KI_NUMPAD5;
-    // case K_KP_6:
-    //     return KI_NUMPAD6;
-    // case K_KP_7:
-    //     return KI_NUMPAD7;
-    // case K_KP_8:
-    //     return KI_NUMPAD8;
-    // case K_KP_9:
-    //     return KI_NUMPAD9;
-    // case K_KP_DIVIDE:
-    //     return KI_DIVIDE;
-    // case K_KP_MULTIPLY:
-    //     return KI_MULTIPLY;
-    case K_KP_MINUS:
-        return KI_SUBTRACT;
-    case K_KP_PLUS:
-        return KI_ADD;
-    case K_KP_ENTER:
-        return KI_NUMPADENTER;
-    // case K_KP_DECIMAL:
-    //     return KI_DECIMAL;
-    // case KEY_LBRACKET:
-    //     return KI_OEM_4;
-    // case KEY_RBRACKET:
-    //     return KI_OEM_6;
-    // case KEY_SEMICOLON:
-    //     return KI_OEM_1;
-    // case KEY_APOSTROPHE:
-    //     return KI_OEM_7;
-    // case KEY_BACKQUOTE:
-    //     return KI_OEM_3;
-    // case KEY_COMMA:
-    //     return KI_OEM_COMMA;
-    // case KEY_PERIOD:
-    //     return KI_OEM_PERIOD;
-    // case KEY_SLASH:
-    //     return KI_OEM_2;
-    // case KEY_BACKSLASH:
-    //     return KI_OEM_5;
-    // case KEY_MINUS:
-    //     return KI_OEM_MINUS;
-    // case KEY_EQUAL:
-    //     return KI_OEM_PLUS;
+    // ASCII punctuation / symbols
+    case ' ':
+        return KI_SPACE;
+    case ';': case ':':
+        return KI_OEM_1;
+    case '=': case '+':
+        return KI_OEM_PLUS;
+    case ',': case '<':
+        return KI_OEM_COMMA;
+    case '-': case '_':
+        return KI_OEM_MINUS;
+    case '.': case '>':
+        return KI_OEM_PERIOD;
+    case '/': case '?':
+        return KI_OEM_2;
+    case '`': case '~':
+        return KI_OEM_3;
+    case '[': case '{':
+        return KI_OEM_4;
+    case '\\': case '|':
+        return KI_OEM_5;
+    case ']': case '}':
+        return KI_OEM_6;
+    case '\'': case '\"':
+        return KI_OEM_7;
+    case ')':
+        return KI_0;
+    case '!':
+        return KI_1;
+    case '@':
+        return KI_2;
+    case '#':
+        return KI_3;
+    case '$':
+        return KI_4;
+    case '%':
+        return KI_5;
+    case '^':
+        return KI_6;
+    case '&':
+        return KI_7;
+    case '*':
+        return KI_8;
+    case '(':
+        return KI_9;
+
+    // GoldSrc keydefs
     case K_ENTER:
         return KI_RETURN;
-    case K_SPACE:
-        return KI_SPACE;
+    case K_ESCAPE:
+        return KI_ESCAPE;
     case K_BACKSPACE:
         return KI_BACK;
     case K_TAB:
         return KI_TAB;
-    //case KEY_CAPSLOCK:
-    //    return KI_
-    //case KEY_NUMLOCK:
-    //    return KI_
-    case K_ESCAPE:
-        return KI_ESCAPE;
-    //case KEY_SCROLLLOCK:
-    //    return KI_
+    case K_UPARROW:
+        return KI_UP;
+    case K_DOWNARROW:
+        return KI_DOWN;
+    case K_LEFTARROW:
+        return KI_LEFT;
+    case K_RIGHTARROW:
+        return KI_RIGHT;
+    case K_ALT:
+        return KI_LMENU;
+    case K_CTRL:
+        return KI_LCONTROL;
+    case K_SHIFT:
+        return KI_LSHIFT;
+    case K_CAPSLOCK:
+        return KI_CAPITAL;
+    case K_WIN:
+        return KI_LWIN;
     case K_INS:
         return KI_INSERT;
     case K_DEL:
@@ -169,32 +111,7 @@ inline const Rml::Input::KeyIdentifier ButtonToRocketKey( int button )
         return KI_NEXT;
     case K_PAUSE:
         return KI_PAUSE;
-    //case KEY_LSHIFT:
-    //    return KI
-    //case KEY_RSHIFT:
-    //    return KI_
-    //case KEY_LALT:
-    //    return KI_
-    //case KEY_RALT:
-    //    return KI_
-    //case KEY_LCONTROL:
-    //    return KI_
-    //case KEY_RCONTROL:
-    //    return KI_
-    //case KEY_LWIN:
-    //    return KI_
-    //case KEY_RWIN:
-    //    return KI_
-    //case KEY_APP:
-    //    return KI_
-    case K_UPARROW:
-        return KI_UP;
-    case K_LEFTARROW:
-        return KI_LEFT;
-    case K_DOWNARROW:
-        return KI_DOWN;
-    case K_RIGHTARROW:
-        return KI_RIGHT;
+
     case K_F1:
         return KI_F1;
     case K_F2:
@@ -219,16 +136,146 @@ inline const Rml::Input::KeyIdentifier ButtonToRocketKey( int button )
         return KI_F11;
     case K_F12:
         return KI_F12;
-        //case KEY_CAPSLOCKTOGGLE:
-        //    return KI_
-        //case KEY_NUMLOCKTOGGLE:
-        //    return KI_
-        //case KEY_SCROLLLOCKTOGGLE:
-        //    return KI_
+
+    case K_KP_HOME:
+        return KI_NUMPAD7;
+    case K_KP_UPARROW:
+        return KI_NUMPAD8;
+    case K_KP_PGUP:
+        return KI_NUMPAD9;
+    case K_KP_LEFTARROW:
+        return KI_NUMPAD4;
+    case K_KP_5:
+        return KI_NUMPAD5;
+    case K_KP_RIGHTARROW:
+        return KI_NUMPAD6;
+    case K_KP_END:
+        return KI_NUMPAD1;
+    case K_KP_DOWNARROW:
+        return KI_NUMPAD2;
+    case K_KP_PGDN:
+        return KI_NUMPAD3;
+    case K_KP_ENTER:
+        return KI_NUMPADENTER;
+    case K_KP_INS:
+        return KI_NUMPAD0;
+    case K_KP_DEL:
+        return KI_DECIMAL;
+    case K_KP_SLASH:
+        return KI_DIVIDE;
+    case K_KP_MINUS:
+        return KI_SUBTRACT;
+    case K_KP_PLUS:
+        return KI_ADD;
+    case K_KP_MUL:
+        return KI_MULTIPLY;
 
     default:
-        return KI_UNKNOWN;
+        break;
     }
+
+    // VGUI KeyCodes fallback
+    if (button >= vgui2::KEY_0 && button <= vgui2::KEY_9)
+        return (KeyIdentifier)(KI_0 + (button - vgui2::KEY_0));
+    if (button >= vgui2::KEY_A && button <= vgui2::KEY_Z)
+        return (KeyIdentifier)(KI_A + (button - vgui2::KEY_A));
+    if (button >= vgui2::KEY_PAD_0 && button <= vgui2::KEY_PAD_9)
+        return (KeyIdentifier)(KI_NUMPAD0 + (button - vgui2::KEY_PAD_0));
+
+    switch (button)
+    {
+    case vgui2::KEY_PAD_DIVIDE:
+        return KI_DIVIDE;
+    case vgui2::KEY_PAD_MULTIPLY:
+        return KI_MULTIPLY;
+    case vgui2::KEY_PAD_MINUS:
+        return KI_SUBTRACT;
+    case vgui2::KEY_PAD_PLUS:
+        return KI_ADD;
+    case vgui2::KEY_PAD_ENTER:
+        return KI_NUMPADENTER;
+    case vgui2::KEY_PAD_DECIMAL:
+        return KI_DECIMAL;
+    case vgui2::KEY_LBRACKET:
+        return KI_OEM_4;
+    case vgui2::KEY_RBRACKET:
+        return KI_OEM_6;
+    case vgui2::KEY_SEMICOLON:
+        return KI_OEM_1;
+    case vgui2::KEY_APOSTROPHE:
+        return KI_OEM_7;
+    case vgui2::KEY_BACKQUOTE:
+        return KI_OEM_3;
+    case vgui2::KEY_COMMA:
+        return KI_OEM_COMMA;
+    case vgui2::KEY_PERIOD:
+        return KI_OEM_PERIOD;
+    case vgui2::KEY_SLASH:
+        return KI_OEM_2;
+    case vgui2::KEY_BACKSLASH:
+        return KI_OEM_5;
+    case vgui2::KEY_MINUS:
+        return KI_OEM_MINUS;
+    case vgui2::KEY_EQUAL:
+        return KI_OEM_PLUS;
+    case vgui2::KEY_ENTER:
+        return KI_RETURN;
+    case vgui2::KEY_SPACE:
+        return KI_SPACE;
+    case vgui2::KEY_BACKSPACE:
+        return KI_BACK;
+    case vgui2::KEY_TAB:
+        return KI_TAB;
+    case vgui2::KEY_CAPSLOCK:
+        return KI_CAPITAL;
+    case vgui2::KEY_NUMLOCK:
+        return KI_NUMLOCK;
+    case vgui2::KEY_ESCAPE:
+        return KI_ESCAPE;
+    case vgui2::KEY_SCROLLLOCK:
+        return KI_SCROLL;
+    case vgui2::KEY_INSERT:
+        return KI_INSERT;
+    case vgui2::KEY_DELETE:
+        return KI_DELETE;
+    case vgui2::KEY_HOME:
+        return KI_HOME;
+    case vgui2::KEY_END:
+        return KI_END;
+    case vgui2::KEY_PAGEUP:
+        return KI_PRIOR;
+    case vgui2::KEY_PAGEDOWN:
+        return KI_NEXT;
+    case vgui2::KEY_LSHIFT:
+        return KI_LSHIFT;
+    case vgui2::KEY_RSHIFT:
+        return KI_RSHIFT;
+    case vgui2::KEY_LALT:
+        return KI_LMENU;
+    case vgui2::KEY_RALT:
+        return KI_RMENU;
+    case vgui2::KEY_LCONTROL:
+        return KI_LCONTROL;
+    case vgui2::KEY_RCONTROL:
+        return KI_RCONTROL;
+    case vgui2::KEY_LWIN:
+        return KI_LWIN;
+    case vgui2::KEY_RWIN:
+        return KI_RWIN;
+    case vgui2::KEY_APP:
+        return KI_APPS;
+    case vgui2::KEY_UP:
+        return KI_UP;
+    case vgui2::KEY_LEFT:
+        return KI_LEFT;
+    case vgui2::KEY_DOWN:
+        return KI_DOWN;
+    case vgui2::KEY_RIGHT:
+        return KI_RIGHT;
+    default:
+        break;
+    }
+
     return KI_UNKNOWN;
 }
 
@@ -237,7 +284,7 @@ inline const Rml::Input::KeyIdentifier ButtonToRocketKey( int button )
     combination of shift and capslock state.
  */
 
-char ascii_map[4][51] =
+static const char ascii_map[4][51] =
     {
         // shift off and capslock off
         {
@@ -460,7 +507,7 @@ char ascii_map[4][51] =
         }
     };
 
-char keypad_map[2][18] =
+static const char keypad_map[2][18] =
     {
         {
             '0',

@@ -33,12 +33,12 @@ public:
     static struct InfoBarData
     {
         int hp;
-        float damage_hp;
         int armor;
         bool hasHelmet;
         int ammo;
         int ammoReserve;
-        Rml::String fireModeString;
+		int ammoSecondary;
+		Rml::String fireModeString;
         Rml::String primaryString;
         Rml::String secondaryString;
         Rml::String knifeString;
@@ -49,11 +49,8 @@ public:
 		int numKills;
 	} infoBarData;
 	void UpdateHealth(int new_hp);
-	void UpdateDamageAnimation(float dt, float curtime);
 
 private:
-	float m_flDamageHp;
-	float m_flDamageHoldUntil;
 	float m_flLastTime;
 };
 
