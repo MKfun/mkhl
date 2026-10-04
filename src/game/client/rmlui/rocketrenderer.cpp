@@ -15,6 +15,9 @@
 #include <RmlUi/Core/SystemInterface.h>
 
 #if defined _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #if _MSC_VER >= 1500
 #pragma push_macro("ARRAYSIZE")
 #ifdef ARRAYSIZE
@@ -25,6 +28,12 @@
 #pragma comment(lib, "opengl32.lib")
 #define GL_GLEXT_PROTOTYPES 1
 #include <windows.h>
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
 #include "glad/glad.h"
 #elif defined POSIX
 #include "glad/glad.h"
@@ -1340,7 +1349,7 @@ void RocketRender::RenderBlur(float sigma, const Gfx::FramebufferData& source_de
     if (!prog) return;
     glUseProgram(prog);
     
-    float effective_sigma = std::min(sigma, 2.0f);
+    float effective_sigma = (std::min)(sigma, 2.0f);
     float weights[BLUR_NUM_WEIGHTS];
     float sum = 0.0f;
     for (int i = 0; i < BLUR_NUM_WEIGHTS; i++) {
@@ -1370,7 +1379,7 @@ void RocketRender::RenderBlur(float sigma, const Gfx::FramebufferData& source_de
         float current_step = 1.0f;
         while (current_sigma < sigma && steps.size() < 6) {
             steps.push_back(current_step);
-            current_step = std::min(current_step * 2.0f, sigma / 2.0f);
+            current_step = (std::min)(current_step * 2.0f, sigma / 2.0f);
             float variance_sum = 0.0f;
             for (float s : steps) variance_sum += s * s;
             current_sigma = 2.0f * sqrtf(variance_sum);
