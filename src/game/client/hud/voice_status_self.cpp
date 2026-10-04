@@ -9,7 +9,7 @@
 #include "vgui/client_viewport.h"
 
 DEFINE_HUD_ELEM(CHudVoiceStatusSelf);
-
+DECLARE_HUDELEMENT(CHudVoiceStatusSelf);
 CHudVoiceStatusSelf::CHudVoiceStatusSelf()
     : vgui2::Panel(NULL, "HudVoiceSelfStatus")
 {

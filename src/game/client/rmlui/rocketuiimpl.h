@@ -115,6 +115,7 @@ public:
     {
         return m_ctxCurrent;
     }
+    Rml::Context *GetActiveInputContext();
 private:
     bool LoadFont( const char *filepath, const char* fontname, const char *path );
     bool LoadFonts();

@@ -1,67 +1,245 @@
 <rml>
 	<head>
 		<style>
+			div
+			{
+				display: block;
+			}
 			body
 			{
 				font-family: Lato;
-				width: 28%;
-				height: 20%;
+				width: 30%;
+				height: 22%;
 				position: absolute;
 				left: 1%;
-				top: 79%;
+				top: 76%;
+				border: 1px rgba(0, 0, 0, 0);
+				overflow: hidden;
+			}
+			body.chat_open
+			{
 				decorator: gradient( vertical #2B2C2C #131516 );
-
 				border: 1px #D89D74;
-				margin: auto;
-				opacity: 0.5;
-				overflow: scroll;
 			}
 			scrollbarvertical
 			{
-			    width: 1em;
-            }
-            .chat_username_server
-            {
-                color: #FFFFF0;
-            }
+				display: none;
+			}
+			body.chat_open scrollbarvertical
+			{
+				display: block;
+				width: 1em;
+			}
+			.chat_username_server
+			{
+				color: #FFFFF0;
+			}
 			.chat_username_friend
 			{
-                color: #6B8E23;
+				color: #6B8E23;
 			}
 			.chat_username_foe
 			{
-			    /*font-effect: glow(1px #DD0000);*/
-			    color: #FF6633;
+				color: #FF6633;
 			}
 			.chat_message
 			{
+				color: #EEEEEE;
 			}
 			.chat_line
 			{
+				display: block;
+				width: 100%;
+				font-size: 13px;
+				margin-bottom: 2px;
+				word-break: break-word;
+				font-effect: shadow(1px 1px black);
+			}
+			.chat_line_hidden
+			{
+				display: none;
 			}
 			#chat_lines
 			{
-			    display: block;
-			    vertical-align: top;
-			    overflow: scroll;
+				display: block;
+				vertical-align: top;
+				width: 100%;
+				height: 100%;
+				overflow-y: auto;
+				overflow-x: hidden;
+			}
+			body.chat_open #chat_lines
+			{
+				height: 78%;
 			}
 			#chat_input
 			{
-			    position: fixed;
-			    vertical-align: bottom;
-			    background-color: rgba(0, 0, 0, 255);
-			    overflow-x: scroll;
-			    max-width: 100%;
-			    height: 6%;
-			    top: 94%;
+				display: none;
+				vertical-align: bottom;
+				background-color: rgba(0, 0, 0, 220);
+				color: #FFFFFF;
+				font-size: 13px;
+				width: 100%;
+				height: 20%;
+				border: 1px #555555;
+			}
+			body.chat_open #chat_input
+			{
+				display: block;
 			}
 		</style>
-	</head>
-	<body>
-	    <div id="chat_lines">
+		<script>
+Chat = Chat or {}
+Chat.doc = nil
+Chat.lines_elem = nil
+Chat.is_open = false
+Chat.last_curtime = 0.0
 
-	    </div>
-        <br/>
-        <input id="chat_input" type="text" size="128" name="chat_input"/>
+local cvar_ok, cvar = pcall(require, "hltypes.engine.cvar")
+
+function Chat.GetTimeout()
+	if cvar_ok and cvar and cvar.getFloat then
+		local ok, val = pcall(cvar.getFloat, "hud_saytext_time")
+		if ok and val and val >= 0 then
+			return val
+		end
+	end
+	return 12.0
+end
+
+function Chat.GetLinesElement()
+	if not Chat.lines_elem and Chat.doc then
+		Chat.lines_elem = Chat.doc:GetElementById("chat_lines")
+	end
+	return Chat.lines_elem
+end
+
+function Chat.ShowAllMessages()
+	local lines_elem = Chat.GetLinesElement()
+	if not lines_elem then return end
+
+	local children = lines_elem.child_nodes
+	local count = #children
+	for i = 1, count do
+		local child = children[i]
+		if child and child:IsClassSet("chat_line") then
+			if child:IsClassSet("chat_line_hidden") then
+				child:SetClass("chat_line_hidden", false)
+			end
+			if child.style.opacity ~= "1.0" then
+				child.style.opacity = "1.0"
+			end
+		end
+	end
+
+	lines_elem.scroll_top = lines_elem.scroll_height - lines_elem.client_height
+end
+
+function Chat.UpdateMessages(curtime)
+	local lines_elem = Chat.GetLinesElement()
+	if not lines_elem then return end
+
+	local timeout = Chat.GetTimeout()
+	local fade_duration = math.min(1.5, timeout * 0.3)
+	if timeout <= 0 then
+		fade_duration = 0
+	end
+
+	local children = lines_elem.child_nodes
+	local count = #children
+	if count == 0 then return end
+
+	for i = 1, count do
+		local child = children[i]
+		if child and child:IsClassSet("chat_line") then
+			local time_attr = child:GetAttribute("data-time")
+			local msg_time = tonumber(time_attr)
+			if msg_time then
+				local age = curtime - msg_time
+				if age < 0 then
+					age = 0
+				end
+
+				if timeout <= 0 or age >= timeout then
+					-- Expired message
+					if not child:IsClassSet("chat_line_hidden") then
+						child:SetClass("chat_line_hidden", true)
+						child.style.opacity = "0.0"
+					end
+				elseif age >= (timeout - fade_duration) and fade_duration > 0 then
+					-- Fading message
+					if child:IsClassSet("chat_line_hidden") then
+						child:SetClass("chat_line_hidden", false)
+					end
+					local alpha = (timeout - age) / fade_duration
+					if alpha < 0 then alpha = 0 elseif alpha > 1 then alpha = 1 end
+					child.style.opacity = string.format("%.2f", alpha)
+				else
+					-- Fresh message
+					if child:IsClassSet("chat_line_hidden") then
+						child:SetClass("chat_line_hidden", false)
+					end
+					child.style.opacity = "1.0"
+				end
+			end
+		end
+	end
+end
+
+function Chat.OnInit(event, doc)
+	Chat.doc = doc
+	Chat.lines_elem = doc:GetElementById("chat_lines")
+	Chat.is_open = false
+end
+
+function Chat.OnChatOpen(event, doc)
+	if not Chat.doc and doc then
+		Chat.doc = doc
+	end
+	Chat.is_open = true
+	Chat.ShowAllMessages()
+end
+
+function Chat.OnChatClose(event, doc)
+	if not Chat.doc and doc then
+		Chat.doc = doc
+	end
+	Chat.is_open = false
+	if Chat.last_curtime and Chat.last_curtime > 0 then
+		Chat.UpdateMessages(Chat.last_curtime)
+	end
+	local lines_elem = Chat.GetLinesElement()
+	if lines_elem then
+		lines_elem.scroll_top = lines_elem.scroll_height - lines_elem.client_height
+	end
+end
+
+function Chat.OnChatUpdate(event, doc)
+	if not Chat.doc and doc then
+		Chat.doc = doc
+	end
+	if not event or not event.parameters then return end
+
+	local curtime = event.parameters["curtime"] or 0.0
+	local is_open = event.parameters["is_open"]
+	Chat.last_curtime = curtime
+
+	if is_open ~= nil then
+		if is_open and not Chat.is_open then
+			Chat.OnChatOpen(event, doc)
+		elseif not is_open and Chat.is_open then
+			Chat.OnChatClose(event, doc)
+		end
+	end
+
+	if not Chat.is_open then
+		Chat.UpdateMessages(curtime)
+	end
+end
+		</script>
+	</head>
+	<body id="hud_chat" onload="Chat.OnInit(event, document)" onchat_update="Chat.OnChatUpdate(event, document)" onchat_open="Chat.OnChatOpen(event, document)" onchat_close="Chat.OnChatClose(event, document)">
+		<div id="chat_lines"></div>
+		<input id="chat_input" type="text" size="128" name="chat_input"/>
 	</body>
 </rml>

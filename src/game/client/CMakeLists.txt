@@ -4,6 +4,10 @@ add_sources(
 	bhlcfg.h
 	camera.h
 
+
+	luamanager.cpp
+	luamanager.h
+
 	cdll_int.cpp
 	cl_dll.h
 	cl_util.cpp
@@ -39,6 +43,8 @@ add_sources(
 	global_consts.h
 	hud.cpp
 	hud.h
+	hudelementhelper.cpp
+	hudelementhelper.h
 	hud_iface.h
 	hud_msg.cpp
 	hud_redraw.cpp

@@ -31,6 +31,7 @@
 #include "vgui/client_viewport.h"
 
 DEFINE_HUD_ELEM(CHudTextMessage);
+DECLARE_HUDELEMENT(CHudTextMessage);
 
 ConVar hud_hide_center_messages("hud_hide_center_messages", "0", FCVAR_BHL_ARCHIVE, "Hide the center messages, useful when recording HLKZ movies.");
 

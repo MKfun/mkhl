@@ -40,6 +40,7 @@ int KB_ConvertString(char *in, char **ppout);
 
 DEFINE_HUD_ELEM(CHudMenu);
 
+DECLARE_HUDELEMENT(CHudMenu);
 void CHudMenu::Init(void)
 {
 	BaseHudClass::Init();

@@ -23,6 +23,7 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "scores.h"
+#include "hudelementhelper.h"
 #include "vgui/client_viewport.h"
 #include "hud/ag/ag_global.h"
 
@@ -31,7 +32,7 @@ ConVar hud_scores_pos("hud_scores_pos", "30 50", FCVAR_BHL_ARCHIVE, "Position of
 ConVar hud_scores_alpha("hud_scores_alpha", "20", FCVAR_BHL_ARCHIVE, "Alpha of HUD scoreboard");
 
 DEFINE_HUD_ELEM(CHudScores);
-
+DECLARE_HUDELEMENT(CHudScores);
 void CHudScores::Init()
 {
 	m_iFlags |= HUD_ACTIVE;

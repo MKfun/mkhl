@@ -50,7 +50,7 @@ int giDmgFlags[NUM_DMG_TYPES] = {
 };
 
 DEFINE_HUD_ELEM(CHudHealth);
-
+DECLARE_HUDELEMENT(CHudHealth);
 void CHudHealth::Init(void)
 {
 	BaseHudClass::Init();

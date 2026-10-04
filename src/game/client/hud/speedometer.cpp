@@ -10,6 +10,7 @@ ConVar hud_speedometer("hud_speedometer", "0", FCVAR_BHL_ARCHIVE, "Enable speedo
 ConVar hud_speedometer_below_cross("hud_speedometer_below_cross", "0", FCVAR_BHL_ARCHIVE, "Move speedometer to below the crosshair");
 
 DEFINE_HUD_ELEM(CHudSpeedometer);
+DECLARE_HUDELEMENT(CHudSpeedometer);
 
 void CHudSpeedometer::Init()
 {

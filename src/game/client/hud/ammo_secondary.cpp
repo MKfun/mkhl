@@ -25,7 +25,10 @@
 #include "parsemsg.h"
 #include "ammo_secondary.h"
 
+extern ConVar hud_custom;
+extern ConVar rocket_enable;
 DEFINE_HUD_ELEM(CHudAmmoSecondary);
+DECLARE_HUDELEMENT(CHudAmmoSecondary);
 
 void CHudAmmoSecondary::Init(void)
 {
@@ -52,6 +55,10 @@ void CHudAmmoSecondary::VidInit()
 
 void CHudAmmoSecondary::Draw(float flTime)
 {
+	if (hud_custom.GetBool() || rocket_enable.GetBool())
+	{
+		return;
+	}
 	if ((gHUD.m_iHideHUDDisplay & (HIDEHUD_WEAPONS | HIDEHUD_ALL)))
 		return;
 

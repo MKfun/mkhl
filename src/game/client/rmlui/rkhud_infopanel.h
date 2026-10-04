@@ -37,7 +37,8 @@ public:
         bool hasHelmet;
         int ammo;
         int ammoReserve;
-        Rml::String fireModeString;
+		int ammoSecondary;
+		Rml::String fireModeString;
         Rml::String primaryString;
         Rml::String secondaryString;
         Rml::String knifeString;
@@ -48,6 +49,9 @@ public:
 		int numKills;
 	} infoBarData;
 	void UpdateHealth(int new_hp);
+
+private:
+	float m_flLastTime;
 };
 
 #endif //KISAKSTRIKE_RKHUD_INFOBAR_H

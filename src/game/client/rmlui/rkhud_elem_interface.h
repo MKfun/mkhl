@@ -10,6 +10,7 @@ public:
 	virtual void SetActive(bool bActive) = 0;
 	virtual bool ShouldDraw(void) = 0;
 	virtual void ShowPanel(bool bShow, bool force) = 0;
+	virtual void Update(void) {};
 };
 
 #endif // RKHUD_ELEM_INTERFACE_H

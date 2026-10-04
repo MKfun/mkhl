@@ -49,6 +49,7 @@ RulesRequestStatus g_eRulesRequestStatus = SOCKET_NONE;
 NetSocket g_timerSocket = 0; // We will declare socket here to not include winsocks in hud.h
 
 DEFINE_HUD_ELEM(CHudTimer);
+DECLARE_HUDELEMENT(CHudTimer);
 
 void CHudTimer::Init()
 {

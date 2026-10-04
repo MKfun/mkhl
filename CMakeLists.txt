@@ -551,6 +551,7 @@ endif()
 target_link_libraries( client
 	rmlui_core
 	rmlui_debugger
+	rmlui_lua
 	${GAME_COMMON_LIBS}
 	${SOURCE_SDK_LIBS}
 	${UPDATER_LIBS}
@@ -558,6 +559,7 @@ target_link_libraries( client
 	pcre
 	semver
 	nlohmann_json
+	LuaJIT::LuaJIT
 	${CLIENT_PLAT_LIBS}
 	Threads::Threads
 )

@@ -25,6 +25,12 @@
 #include "results.h"
 #include "hud/ag/ag_location.h"
 #include "gameui/gameui_viewport.h"
+#pragma push_macro("Assert")
+#undef Assert
+#include "rmlui/rkhud_chat.h"
+#pragma pop_macro("Assert")
+
+extern ConVar rocket_enable;
 
 ConVar hud_saytext("hud_saytext", "1", FCVAR_BHL_ARCHIVE, "Enable/disable display of new chat messages");
 ConVar hud_saytext_time("hud_saytext_time", "12", FCVAR_BHL_ARCHIVE, "How long for new messages should stay on the screen");
@@ -330,6 +336,7 @@ void CHudChatHistory::OnKeyCodeTyped(vgui2::KeyCode code)
 	}
 }
 
+DECLARE_HUDELEMENT(CHudChat);
 int CHudChat::m_nLineCounter = 1;
 
 //-----------------------------------------------------------------------------
@@ -647,6 +654,12 @@ void CHudChat::Printf(const char *fmt, ...)
 //-----------------------------------------------------------------------------
 void CHudChat::StartMessageMode(int iMessageModeType)
 {
+	if (rocket_enable.GetBool() && RkHudChat::m_Instance.m_pInstance)
+	{
+		RkHudChat::m_Instance.StartMessageMode(iMessageModeType);
+		return;
+	}
+
 	m_nMessageMode = iMessageModeType;
 
 	m_pChatInput->ClearEntry();
@@ -706,6 +719,11 @@ void CHudChat::StartMessageMode(int iMessageModeType)
 //-----------------------------------------------------------------------------
 void CHudChat::StopMessageMode(void)
 {
+	if (RkHudChat::m_Instance.m_pInstance)
+	{
+		RkHudChat::m_Instance.StopMessageMode();
+	}
+
 	CGameUIViewport::Get()->PreventEscapeToShow(false);
 
 	SetKeyBoardInputEnabled(false);
@@ -1267,28 +1285,12 @@ void CHudChat::ChatPrintf(int iPlayerIndex, const char *fmt, ...)
 	if (!*pmsg)
 		return;
 
-	CHudChatLine *line = FindUnusedChatLine();
-	if (!line)
-	{
-		line = FindUnusedChatLine();
-	}
-
-	if (!line)
-	{
-		return;
-	}
-
 	// If a player is muted for voice, also mute them for text because jerks gonna jerk.
 	if (GetThisPlayerInfo() && cl_mute_all_comms.GetBool() && iPlayerIndex != 0 && iPlayerIndex != GetThisPlayerInfo()->GetIndex())
 	{
 		if (GetClientVoiceMgr() && GetClientVoiceMgr()->IsPlayerBlocked(iPlayerIndex))
 			return;
 	}
-
-	line->SetText("");
-
-	int iNameStart = 0;
-	int iNameLength = 0;
 
 	const char *playerName = "Console";
 	if (CPlayerInfo *pi = GetPlayerInfoSafe(iPlayerIndex))
@@ -1297,45 +1299,134 @@ void CHudChat::ChatPrintf(int iPlayerIndex, const char *fmt, ...)
 	}
 
 	int msglen = strlen(pmsg);
-	int bufSize = (msglen + 1) * sizeof(wchar_t);
-	wchar_t *wbuf = static_cast<wchar_t *>(_alloca(bufSize));
-	if (wbuf)
+
+	if (RkHudChat::m_Instance.m_pInstance && rocket_enable.GetBool())
 	{
-		Color clrNameColor = GetClientColor(iPlayerIndex);
-
-		line->SetExpireTime();
-
-		g_pVGuiLocalize->ConvertANSIToUnicode(pmsg, wbuf, bufSize);
-
-		// find the player's name in the unicode string, in case there is no color markup
-		const char *pName = playerName;
-
-		if (pName)
+		RkHudChat::MessageSender sender = RkHudChat::SERVER;
+		if (iPlayerIndex > 0)
 		{
-			// miniag issue: server-side is giving a name with colorcodes while say message doesn't have them
-			// server-side will give the name with colors removed after first name change
-			// so until that, we need to remove them by ourselves and try to find again
-			if (pi && !pi->HasRealName() && !strstr(pmsg, playerName))
-				pName = RemoveColorCodes(pName);
-
-			wchar_t wideName[MAX_PLAYER_NAME];
-			g_pVGuiLocalize->ConvertANSIToUnicode(pName, wideName, sizeof(wideName));
-
-			const wchar_t *nameInString = wcsstr(wbuf, wideName);
-
-			if (nameInString)
-			{
-				iNameStart = (nameInString - wbuf);
-				iNameLength = wcslen(wideName);
-			}
+			CPlayerInfo *speaker = GetPlayerInfoSafe(iPlayerIndex);
+			CPlayerInfo *local = GetThisPlayerInfo();
+			if (speaker && local && (speaker->GetIndex() == local->GetIndex() || (speaker->GetTeamNumber() > 0 && speaker->GetTeamNumber() == local->GetTeamNumber())))
+				sender = RkHudChat::FRIEND;
+			else
+				sender = RkHudChat::FOE;
 		}
 
-		line->SetVisible(false);
-		line->SetNameStart(iNameStart);
-		line->SetNameLength(iNameLength);
-		line->SetNameColor(clrNameColor);
+		char cleanBuffer[4096];
+		RemoveColorCodes(pmsg, cleanBuffer, sizeof(cleanBuffer));
 
-		line->InsertAndColorizeText(wbuf, iPlayerIndex);
+		// Strip trailing newlines
+		int cleanLen = strlen(cleanBuffer);
+		while (cleanLen > 0 && (cleanBuffer[cleanLen - 1] == '\n' || cleanBuffer[cleanLen - 1] == '\r'))
+		{
+			cleanBuffer[cleanLen - 1] = '\0';
+			cleanLen--;
+		}
+
+		if (iPlayerIndex > 0)
+		{
+			// Search for player's name in cleanBuffer
+			const char *pName = playerName;
+			char strippedName[256];
+			RemoveColorCodes(pName, strippedName, sizeof(strippedName));
+
+			const char *namePos = strstr(cleanBuffer, strippedName);
+			if (!namePos && pName != strippedName)
+			{
+				namePos = strstr(cleanBuffer, pName);
+			}
+
+			const char *colon = nullptr;
+			if (namePos)
+			{
+				colon = strstr(namePos + strlen(strippedName), ": ");
+			}
+			else
+			{
+				colon = strstr(cleanBuffer, ": ");
+			}
+
+			if (colon)
+			{
+				std::string name(cleanBuffer, colon - cleanBuffer);
+				while (!name.empty() && (name.back() == ' ' || name.back() == '\t'))
+				{
+					name.pop_back();
+				}
+				const char *text = colon + 2; // skip ": "
+				RkHudChat::m_Instance.AddChatString(name.c_str(), text, sender);
+			}
+			else
+			{
+				// No colon separator found - whole string is message
+				RkHudChat::m_Instance.AddChatString(nullptr, cleanBuffer, sender);
+			}
+		}
+		else
+		{
+			// Server / Console message
+			RkHudChat::m_Instance.AddChatString(nullptr, cleanBuffer, RkHudChat::SERVER);
+		}
+	}
+	else
+	{
+		CHudChatLine *line = FindUnusedChatLine();
+		if (!line)
+		{
+			line = FindUnusedChatLine();
+		}
+
+		if (!line)
+		{
+			return;
+		}
+
+		line->SetText("");
+
+		int iNameStart = 0;
+		int iNameLength = 0;
+
+		int bufSize = (msglen + 1) * sizeof(wchar_t);
+		wchar_t *wbuf = static_cast<wchar_t *>(_alloca(bufSize));
+		if (wbuf)
+		{
+			Color clrNameColor = GetClientColor(iPlayerIndex);
+
+			line->SetExpireTime();
+
+			g_pVGuiLocalize->ConvertANSIToUnicode(pmsg, wbuf, bufSize);
+
+			// find the player's name in the unicode string, in case there is no color markup
+			const char *pName = playerName;
+
+			if (pName)
+			{
+				// miniag issue: server-side is giving a name with colorcodes while say message doesn't have them
+				// server-side will give the name with colors removed after first name change
+				// so until that, we need to remove them by ourselves and try to find again
+				if (pi && !pi->HasRealName() && !strstr(pmsg, playerName))
+					pName = RemoveColorCodes(pName);
+
+				wchar_t wideName[MAX_PLAYER_NAME];
+				g_pVGuiLocalize->ConvertANSIToUnicode(pName, wideName, sizeof(wideName));
+
+				const wchar_t *nameInString = wcsstr(wbuf, wideName);
+
+				if (nameInString)
+				{
+					iNameStart = (nameInString - wbuf);
+					iNameLength = wcslen(wideName);
+				}
+			}
+
+			line->SetVisible(false);
+			line->SetNameStart(iNameStart);
+			line->SetNameLength(iNameLength);
+			line->SetNameColor(clrNameColor);
+
+			line->InsertAndColorizeText(wbuf, iPlayerIndex);
+		}
 	}
 
 	if (hud_saytext.GetBool() && hud_saytext_sound.GetFloat() > 0)

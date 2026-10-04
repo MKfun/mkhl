@@ -2,14 +2,14 @@
 	<head>
 		<style>
 			body {
-				font-family: Lato;
+				font-family: EternalUI Bold;
 				width: 100%;
 				height: 20%;
 				position: absolute;
 				top: 79%;
 				margin: auto;
 				bottom: 0;
-				margin-bottom: 2dp;
+				margin-bottom: -2dp;
 			}
 			#container {
 				position: relative;
@@ -43,11 +43,19 @@
 				border: 2dp #dddddd11;
 				border-radius: 0dp;
 				margin-left: 5dp;
-				padding-left: 0 !important;
-				opacity: 0.70;
+				padding-left: 0;
+				/* opacity: 0.70; */
                 height: 15dp;
 				top: 40%;
-				background-color: #03030399;
+				/* background-color: #03030399; */
+				min-width: 130dp;
+								decorator: repeating-linear-gradient(
+					-45deg, 
+					#00000000 0dp,
+					#00000000 5dp, 
+					#2a2e3350 5dp, 
+					#2a2e3350 10dp
+					);
 			}
 
 			progress fill {
@@ -61,27 +69,14 @@
 			}
 			.hpcol
 			{
- 				display: inline-block;
-				decorator: image(images/healtharmor_background.tga);
-				font-family: Counter-Strike;
+ 				display: flex;
+				font-family: EternalUI Bold;
 				bottom: 0;
 			    position: absolute;
-
+				flex-direction: column;
 				width: 512dp;
-				justify-content: center;
-				align-items: center;
-			}
-			.ammocol
-			{
-			    display: inline;
-			    position: absolute;
-				decorator: image(images/ammo_background.tga);
-				bottom: 0;
-				width: 256dp;
-				right: 0;
-				flex:1;
-				display: flex;
-				justify-content: center;
+				/* justify-content: center; */
+				/* align-items: center; */
 			}
 			.critical
 			{
@@ -103,32 +98,286 @@
 			    display: inline-block;
 			    position: relative;
 			}
+			@keyframes kill-pop {
+				0% { transform: scale(1.0); color: white; }
+				50% { transform: scale(2.0); color: red; }
+				100% { transform: scale(1.0); color: white; }
+			}
+			.kill-anim {
+				animation: kill-pop 0.3s;
+			}
+			.footer
+			{
+				display: flex;
+				/* justify-content: ; */
+				width: 80%;
+				height: 8dp;
+				/* margin-left: -5dp; */
+				padding: 0;
+				decorator: repeating-linear-gradient(
+					-45deg, 
+					#00000000 0dp,
+					#00000000 10dp, 
+					#e4e9f0 10dp, 
+					#e4e9f0 20dp
+					);
+			}
+			.ammocol
+			{
+				display: flex;
+				flex-direction: column;
+				display: flex;
+			    position: absolute;
+				bottom: 0;
+				right: 0;
+				width: 150dp;
+			}
+			.ammocol .footer
+			{
+				width: 100%;
+			}
+			.mainammo
+			{
+				display: flex;
+				flex-direction: row;
+			}
+			.hpcoltext
+			{
+				min-width: 46px;
+			}
+			.stats
+			{
+				display: flex;
+				flex-direction: column;
+				max-width: 210dp;
+				min-width: 210dp;
+			}
+			.underlabel
+			{
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+			}
+			.mainsection
+			{
+				display: flex;
+				flex-direction: row;
+			}
+			.hp-bar-container {
+				display: flex;
+				position: relative;
+				border-radius: 0dp;
+				margin-left: 5dp;
+				padding-left: 0;
+				opacity: 0.70;
+                height: 15dp;
+				min-width: 130dp;
+				max-width: 130dp;
+				justify-content: center;
+				/* top: 40%; */
+			}
+			.hp-bar-container progress {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+			.hp-bar-container progress.hp-damage {
+				border: 2dp #dddddd11;
+				border-radius: 0dp;
+				/* background-color: #03030399; */
+				opacity: 0.90;
+			}
+			.hp-bar-container progress.hp-damage fill {
+				margin: 0;
+				background-color: #FF2E93;
+			}
+			.hp-bar-container progress.hp-current {
+				border: 2dp transparent;
+				border-radius: 0dp;
+				background-color: transparent;
+				opacity: 1.0;
+			}
+			.hp-bar-container progress.hp-current fill {
+				margin: 0;
+				background-color: #ffffff;
+			}
+			.hp-bar-container progress.hp-current.critical fill {
+				background-color: #ff0000;
+			}
 		</style>
+		<script>
+local cvar_ok, cvar = pcall(require, "hltypes.engine.cvar")
+
+InfoBar = InfoBar or {}
+
+InfoBar.damage_hp = 100.0
+InfoBar.damage_hold_until = 0.0
+InfoBar.last_hp = nil
+InfoBar.data_model = nil
+InfoBar.damage_bar_elem = nil
+InfoBar.doc = nil
+
+function InfoBar.GetHoldTime()
+	local hold = 0.35
+	if cvar_ok and cvar and cvar.getFloat then
+		local val = cvar.getFloat("rocket_hud_damage_hold_time")
+		if val >= 0.0 then hold = val end
+	end
+	return hold
+end
+
+function InfoBar.GetDrainSpeedFactor()
+	local speed = 4.0
+	if cvar_ok and cvar and cvar.getFloat then
+		local val = cvar.getFloat("rocket_hud_damage_drain_speed")
+		if val > 0.0 then speed = val end
+	end
+	return speed
+end
+
+function InfoBar.OnInit(arg1, arg2)
+	local doc = nil
+	if arg2 and type(arg2) == "userdata" then
+		doc = arg2
+	elseif arg1 and type(arg1) == "userdata" then
+		doc = arg1
+	end
+	if not doc then
+		local hud_ctx = rmlui.contexts["hud"]
+		if hud_ctx and hud_ctx.documents then
+			doc = hud_ctx.documents["hud_infobar"] or hud_ctx.documents[0]
+		end
+	end
+	InfoBar.doc = doc
+	if doc then
+		InfoBar.damage_bar_elem = doc:GetElementById("hp-damage")
+		if InfoBar.damage_bar_elem then
+			InfoBar.damage_bar_elem:SetAttribute("value", string.format("%.1f", InfoBar.damage_hp))
+		end
+	end
+end
+
+function InfoBar.OnHealthChange(new_hp, curtime)
+	curtime = curtime or 0.0
+	if InfoBar.last_hp == nil then
+		InfoBar.last_hp = new_hp
+		InfoBar.damage_hp = new_hp
+		InfoBar.damage_hold_until = 0.0
+		return
+	end
+
+	if new_hp < InfoBar.last_hp then
+		if InfoBar.damage_hp < InfoBar.last_hp then
+			InfoBar.damage_hp = InfoBar.last_hp
+		end
+		local hold = InfoBar.GetHoldTime()
+		InfoBar.damage_hold_until = curtime + hold
+	elseif new_hp > InfoBar.last_hp then
+		if InfoBar.damage_hp < new_hp then
+			InfoBar.damage_hp = new_hp
+		end
+		InfoBar.damage_hold_until = 0.0
+	end
+
+	InfoBar.last_hp = new_hp
+end
+
+function InfoBar.UpdateDamageAnimation(dt, curtime, target_hp)
+	if InfoBar.last_hp == nil then
+		InfoBar.last_hp = target_hp
+		InfoBar.damage_hp = target_hp
+		InfoBar.damage_hold_until = 0.0
+	elseif target_hp ~= InfoBar.last_hp then
+		InfoBar.OnHealthChange(target_hp, curtime)
+	end
+
+	if InfoBar.damage_hp < target_hp then
+		InfoBar.damage_hp = target_hp
+	elseif InfoBar.damage_hp > target_hp then
+		if curtime >= InfoBar.damage_hold_until then
+			local diff = InfoBar.damage_hp - target_hp
+			local speed_factor = InfoBar.GetDrainSpeedFactor()
+			local drain_speed = diff * speed_factor + 25.0
+			InfoBar.damage_hp = InfoBar.damage_hp - drain_speed * dt
+			if InfoBar.damage_hp <= target_hp then
+				InfoBar.damage_hp = target_hp
+			end
+		end
+	end
+
+	-- Update via element attribute directly
+	if not InfoBar.damage_bar_elem and InfoBar.doc then
+		InfoBar.damage_bar_elem = InfoBar.doc:GetElementById("hp-damage")
+	end
+	if InfoBar.damage_bar_elem then
+		InfoBar.damage_bar_elem:SetAttribute("value", string.format("%.1f", InfoBar.damage_hp))
+	end
+end
+
+function InfoBar.OnHudUpdate(event, doc)
+	if not InfoBar.doc and doc then
+		InfoBar.doc = doc
+	end
+	if not event or not event.parameters then return end
+
+	local dt = event.parameters["dt"] or 0.016
+	local curtime = event.parameters["curtime"] or 0.0
+	local hp = event.parameters["hp"] or InfoBar.last_hp or 100
+
+	InfoBar.UpdateDamageAnimation(dt, curtime, hp)
+end
+
+function InfoBar.OnHpChange(event, doc)
+	if not event or not event.parameters then return end
+	local new_hp = event.parameters["new_hp"]
+	local curtime = event.parameters["curtime"] or 0.0
+	if new_hp then
+		InfoBar.OnHealthChange(new_hp, curtime)
+	end
+end
+		</script>
 	</head>
-	<body>
+	<body id="hud_infobar" onload="InfoBar.OnInit(event, document)" onhud_update="InfoBar.OnHudUpdate(event, document)" onhp_change="InfoBar.OnHpChange(event, document)">
 		<div id="container">
 			<div class="bottom-content" data-model="infobar_model">
 				<div class="row" style="display:inline-block">
 					<div class="hpcol" style="padding-left: 5dp; padding-bottom: 2dp; ">
-					    <div class="imagediv">
-				        <svg class="image" width="24" height="24" src="images/health.svg"/>
-					    </div>
-						<h1 id="HP" style="flex: 1; margin-left: 10dp;" data-class-critical="hp < 25">{{hp}}</h1>
-						<progress data-value="hp" max=100 style="flex: 1; width:25%;" data-class-critical="hp < 25"/>
-                        <div class="imagediv">
-				        <svg class="image" width="24" height="24" src="images/shield.svg"/>
-					    </div>
-						<h1 id="AP" style="padding-left: 10dp;">{{armor}}</h1>
-
-						<progress data-value="armor" max=100 style="margin-left: 10dp; width:25%;" />
+						<div class="mainsection">
+							<div class="stats">
+								<p>HEALTH</p>
+								<div class="underlabel">
+									<h1 class="hpcoltext" id="HP" style="padding-left: 10dp;" data-class-critical="hp < 25">{{hp}}</h1>
+									<!-- <progress data-value="hp" max=100 style="width:25%;" data-class-critical="hp < 25"/> -->
+									 <div class="hp-bar-container" style="width:25%;">
+										<progress id="hp-damage" class="hp-damage" max=100 />
+										<progress class="hp-current" data-value="hp" max=100 data-class-critical="hp < 25" />
+									</div>
+								</div>
+							</div>
+							<div class="stats">
+								<p>SUIT</p>
+								<div class="underlabel">
+									<h1 class="hpcoltext" id="AP" style="padding-left: 10dp;">{{armor}}</h1>
+									<progress data-value="armor" max=100 style="width:25%;" > </progress>
+								</div>
+							</div>
+						</div>
+						<div class="footer"></div>
 					</div>
-
-					<div class="ammocol" data-if="ammo_reserve > 0" style="">
-					    <h6 style="font-family: Lato;">x{{num_kills}}</h6>
-						<h1 data-if="has_ammo_reserve" id="current_ammo" style="font-family: Counter-Strike;">{{ammo}}</h1>
-						<h1 data-if="has_ammo_reserve"> | </h1>
-						<h1 data-if="has_ammo_reserve" id="reserve_ammo" style="font-family: Counter-Strike; padding-right:10%;">{{ammo_reserve}}</h1>
-						<h1 data-if="!has_ammo_reserve" id="reserve_ammo" style="font-family: Counter-Strike; padding-right:10%;">{{ammo_reserve}}</h1>
+					
+					<div class="ammocol" data-if="ammo_reserve > 0">
+						<h6 id="killAnim">x{{num_kills}}</h6>
+						<div class="mainammo">
+							<h1 data-if="has_ammo_reserve" id="current_ammo">{{ammo}} </h1>
+							<h1 class="hl2-ammo-sep" data-if="has_ammo_reserve"> | </h1>
+							<h1 data-if="has_ammo_reserve" id="reserve_ammo">{{ammo_reserve}}</h1>
+							<h1 data-if="!has_ammo_reserve" id="reserve_ammo">{{ammo_reserve}}</h1>
+						</div>
+						<div class="footer"></div>
 					</div>
 				</div>
 			</div>

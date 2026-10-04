@@ -28,7 +28,7 @@
 #include "status_icons.h"
 
 DEFINE_HUD_ELEM(CHudStatusIcons);
-
+DECLARE_HUDELEMENT(CHudStatusIcons);
 void CHudStatusIcons::Init(void)
 {
 	BaseHudClass::Init();

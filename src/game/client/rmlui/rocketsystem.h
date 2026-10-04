@@ -31,6 +31,12 @@ public:
     /// Get clipboard text.
     /// @param[out] text Retrieved text from clipboard.
     void GetClipboardText(Rml::String& text) override;
+
+    /// Activate keyboard (starts SDL text input).
+    void ActivateKeyboard(Rml::Vector2f caret_position, float line_height) override;
+
+    /// Deactivate keyboard (stops SDL text input).
+    void DeactivateKeyboard() override;
 };
 
 
