@@ -1,0 +1,16 @@
+add_sources(
+	bitbuffer.h
+	bitbuffer.cpp
+	containers.h
+	containers.cpp
+	tokenline.h
+	tokenline.cpp
+	director_cmd.h
+	director_cmd.cpp
+	demoplayer_ifaces.h
+	basesystemmodule.h
+	basesystemmodule.cpp
+	demoplayer.h
+	demoplayer.cpp
+	${CMAKE_SOURCE_DIR}/src/public/vinterface/interface.cpp
+)

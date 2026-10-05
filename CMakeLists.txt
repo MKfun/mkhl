@@ -720,3 +720,36 @@ clear_sources()
 # Tests
 #-----------------------------------------------------------------
 add_subdirectory( src/tests )
+
+#-----------------------------------------------------------------
+# DemoPlayer
+#-----------------------------------------------------------------
+# add_sources( "${HL_COMMON_SRCS}" )
+# add_sources( "${HL_ENGINE_SRCS}" )
+# add_sources( "${HL_PUBLIC_SRCS}" )
+add_subdirectory( src/demoplayer )
+preprocess_sources()
+
+add_library( demoplayer SHARED ${PREP_SRCS} )
+
+target_include_directories( demoplayer PRIVATE
+	${CMAKE_SOURCE_DIR}/src/demoplayer
+	${CMAKE_SOURCE_DIR}/src/public
+	${CMAKE_SOURCE_DIR}/src/common
+)
+
+if( WIN32 )
+	set( DEMOPLAYER_PLAT_LIBS )
+else()
+	set( DEMOPLAYER_PLAT_LIBS dl m )
+endif()
+
+target_link_libraries( demoplayer PRIVATE ${DEMOPLAYER_PLAT_LIBS} )
+
+set_target_properties( demoplayer PROPERTIES
+	PREFIX ""
+	OUTPUT_NAME "demoplayer"
+)
+create_source_groups( "${CMAKE_SOURCE_DIR}" )
+clear_sources()
+
